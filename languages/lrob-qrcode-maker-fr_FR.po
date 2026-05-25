@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: LRob - QR Code Maker 0.1.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/lrob-qrcode-"
 "maker\n"
-"POT-Creation-Date: 2026-05-25T09:19:19+00:00\n"
+"POT-Creation-Date: 2026-05-25T10:31:26+00:00\n"
 "Last-Translator: LRob <claude@lrob.fr>\n"
 "Language-Team: French <claude@lrob.fr>\n"
 "Language: fr_FR\n"
@@ -77,7 +77,7 @@ msgid "Classy rounded"
 msgstr "Élégant arrondi"
 
 #: src/Admin/LibraryPage.php:69 src/Admin/SettingsPage.php:20
-#: src/Admin/SettingsPage.php:126
+#: src/Admin/SettingsPage.php:129
 msgid "Insufficient permissions."
 msgstr "Permissions insuffisantes."
 
@@ -114,7 +114,7 @@ msgid_plural "%d scans"
 msgstr[0] "%d scan"
 msgstr[1] "%d scans"
 
-#: src/Admin/LibraryPage.php:143 src/Admin/LibraryPage.php:209
+#: src/Admin/LibraryPage.php:143 src/Admin/LibraryPage.php:213
 #: src/Admin/SettingsPage.php:36
 msgid "Tracking"
 msgstr "Suivi"
@@ -123,8 +123,8 @@ msgstr "Suivi"
 msgid "Off"
 msgstr "Désactivé"
 
-#: src/Admin/LibraryPage.php:154 src/Admin/LibraryPage.php:320
-#: src/Admin/LibraryPage.php:337 src/Admin/LibraryPage.php:374
+#: src/Admin/LibraryPage.php:154 src/Admin/LibraryPage.php:324
+#: src/Admin/LibraryPage.php:341 src/Admin/LibraryPage.php:378
 #: src/Block/Maker.php:133 src/Block/Maker.php:153
 msgid "Export QR Code"
 msgstr "Exporter le QR Code"
@@ -137,70 +137,74 @@ msgstr "Modifier"
 msgid "Delete"
 msgstr "Supprimer"
 
-#: src/Admin/LibraryPage.php:181
+#: src/Admin/LibraryPage.php:178 src/Admin/SettingsPage.php:102
+msgid "Sponsor message"
+msgstr "Message sponsor"
+
+#: src/Admin/LibraryPage.php:185
 msgid "Designer"
 msgstr "Concepteur"
 
-#: src/Admin/LibraryPage.php:182 src/Admin/LibraryPage.php:338
+#: src/Admin/LibraryPage.php:186 src/Admin/LibraryPage.php:342
 #: src/Block/Maker.php:131
 msgid "Close"
 msgstr "Fermer"
 
-#: src/Admin/LibraryPage.php:190
+#: src/Admin/LibraryPage.php:194
 msgid "Label"
 msgstr "Libellé"
 
-#: src/Admin/LibraryPage.php:194 src/Block/Maker.php:113
+#: src/Admin/LibraryPage.php:198 src/Block/Maker.php:113
 msgid "Content type"
 msgstr "Type de contenu"
 
 #. translators: %s: tracking URL prefix, e.g. /qr
-#: src/Admin/LibraryPage.php:217
+#: src/Admin/LibraryPage.php:221
 msgid "Use a short %s URL and count scans"
 msgstr "Utiliser une URL courte %s et compter les scans"
 
-#: src/Admin/LibraryPage.php:224
+#: src/Admin/LibraryPage.php:228
 msgid "Will resolve to"
 msgstr "Redirigera vers"
 
-#: src/Admin/LibraryPage.php:229 src/Block/Maker.php:128
+#: src/Admin/LibraryPage.php:233 src/Block/Maker.php:128
 msgid "Design"
 msgstr "Apparence"
 
-#: src/Admin/LibraryPage.php:233 src/Block/Maker.php:114
+#: src/Admin/LibraryPage.php:237 src/Block/Maker.php:114
 #: assets/js/block-editor.js:103
 msgid "Foreground"
 msgstr "Premier plan"
 
-#: src/Admin/LibraryPage.php:237 src/Block/Maker.php:115
+#: src/Admin/LibraryPage.php:241 src/Block/Maker.php:115
 #: assets/js/block-editor.js:104
 msgid "Background"
 msgstr "Arrière-plan"
 
-#: src/Admin/LibraryPage.php:241 src/Block/Maker.php:116
+#: src/Admin/LibraryPage.php:245 src/Block/Maker.php:116
 #: assets/js/block-editor.js:105
 msgid "Eye color"
 msgstr "Couleur des yeux"
 
-#: src/Admin/LibraryPage.php:246 src/Block/Maker.php:117
+#: src/Admin/LibraryPage.php:250 src/Block/Maker.php:117
 msgid "Transparent background"
 msgstr "Fond transparent"
 
-#: src/Admin/LibraryPage.php:251 src/Block/Maker.php:118
+#: src/Admin/LibraryPage.php:255 src/Block/Maker.php:118
 #: assets/js/block-editor.js:107
 msgid "Dot shape"
 msgstr "Forme des points"
 
-#: src/Admin/LibraryPage.php:263 src/Block/Maker.php:119
+#: src/Admin/LibraryPage.php:267 src/Block/Maker.php:119
 #: assets/js/block-editor.js:117
 msgid "Eye shape"
 msgstr "Forme des yeux"
 
-#: src/Admin/LibraryPage.php:276 src/Block/Maker.php:123
+#: src/Admin/LibraryPage.php:280 src/Block/Maker.php:123
 msgid "Error correction"
 msgstr "Correction d’erreur"
 
-#: src/Admin/LibraryPage.php:278 src/Block/Maker.php:134
+#: src/Admin/LibraryPage.php:282 src/Block/Maker.php:134
 msgid ""
 "Higher levels stay scannable when partially obscured (e.g. logo overlay), at "
 "the cost of denser modules. H is required for large logos."
@@ -209,68 +213,68 @@ msgstr ""
 "ex. avec un logo), au prix d’une grille plus dense. H est requis pour les "
 "gros logos."
 
-#: src/Admin/LibraryPage.php:281 src/Block/Maker.php:135
+#: src/Admin/LibraryPage.php:285 src/Block/Maker.php:135
 msgid "7% recovery"
 msgstr "récupération 7%"
 
-#: src/Admin/LibraryPage.php:282 src/Block/Maker.php:136
+#: src/Admin/LibraryPage.php:286 src/Block/Maker.php:136
 msgid "15% recovery"
 msgstr "récupération 15%"
 
-#: src/Admin/LibraryPage.php:283 src/Block/Maker.php:137
+#: src/Admin/LibraryPage.php:287 src/Block/Maker.php:137
 msgid "25% recovery"
 msgstr "récupération 25%"
 
-#: src/Admin/LibraryPage.php:284 src/Block/Maker.php:138
+#: src/Admin/LibraryPage.php:288 src/Block/Maker.php:138
 msgid "30% recovery"
 msgstr "récupération 30%"
 
-#: src/Admin/LibraryPage.php:289 src/Block/Maker.php:129
+#: src/Admin/LibraryPage.php:293 src/Block/Maker.php:129
 msgid "Logo"
 msgstr "Logo"
 
-#: src/Admin/LibraryPage.php:295 src/Admin/Menu.php:112
+#: src/Admin/LibraryPage.php:299 src/Admin/Menu.php:113
 msgid "Pick logo from Media Library"
 msgstr "Choisir un logo dans la médiathèque"
 
-#: src/Admin/LibraryPage.php:298 src/Admin/Menu.php:114
+#: src/Admin/LibraryPage.php:302 src/Admin/Menu.php:115
 msgid "Remove logo"
 msgstr "Retirer le logo"
 
-#: src/Admin/LibraryPage.php:301
+#: src/Admin/LibraryPage.php:305
 msgid "PNG, JPEG, or WebP from the Media Library. Saved with the QR code."
 msgstr "PNG, JPEG ou WebP depuis la médiathèque. Conservé avec le QR code."
 
-#: src/Admin/LibraryPage.php:304 src/Block/Maker.php:126
+#: src/Admin/LibraryPage.php:308 src/Block/Maker.php:126
 msgid "Clear QR modules behind logo"
 msgstr "Effacer les modules QR derrière le logo"
 
-#: src/Admin/LibraryPage.php:308 src/Block/Maker.php:127
+#: src/Admin/LibraryPage.php:312 src/Block/Maker.php:127
 msgid "Logo size"
 msgstr "Taille du logo"
 
-#: src/Admin/LibraryPage.php:317 src/Admin/LibraryPage.php:371
+#: src/Admin/LibraryPage.php:321 src/Admin/LibraryPage.php:375
 #: src/Block/Maker.php:130
 msgid "Cancel"
 msgstr "Annuler"
 
-#: src/Admin/LibraryPage.php:323
+#: src/Admin/LibraryPage.php:327
 msgid "Save to library"
 msgstr "Enregistrer dans la bibliothèque"
 
-#: src/Admin/LibraryPage.php:346 src/Block/Maker.php:132
+#: src/Admin/LibraryPage.php:350 src/Block/Maker.php:132
 msgid "Size"
 msgstr "Taille"
 
-#: src/Admin/LibraryPage.php:353 src/Block/Maker.php:151
+#: src/Admin/LibraryPage.php:357 src/Block/Maker.php:151
 msgid "Custom…"
 msgstr "Personnalisée…"
 
-#: src/Admin/LibraryPage.php:357 src/Block/Maker.php:152
+#: src/Admin/LibraryPage.php:361 src/Block/Maker.php:152
 msgid "Custom size (px)"
 msgstr "Taille personnalisée (px)"
 
-#: src/Admin/LibraryPage.php:361 src/Block/Maker.php:150
+#: src/Admin/LibraryPage.php:365 src/Block/Maker.php:150
 msgid "Format"
 msgstr "Format"
 
@@ -290,37 +294,101 @@ msgstr "Bibliothèque"
 msgid "Settings"
 msgstr "Réglages"
 
-#: src/Admin/Menu.php:108
+#: src/Admin/Menu.php:109
 msgid "Delete this QR code? This cannot be undone."
 msgstr "Supprimer ce QR code ? Cette action est irréversible."
 
-#: src/Admin/Menu.php:109
+#: src/Admin/Menu.php:110
 msgid "Saving…"
 msgstr "Enregistrement…"
 
-#: src/Admin/Menu.php:110
+#: src/Admin/Menu.php:111
 msgid "Saved"
 msgstr "Enregistré"
 
-#: src/Admin/Menu.php:111
+#: src/Admin/Menu.php:112
 msgid "Error"
 msgstr "Erreur"
 
-#: src/Admin/Menu.php:113
+#: src/Admin/Menu.php:114
 msgid "Change logo"
 msgstr "Changer de logo"
 
-#: src/Admin/Menu.php:115
+#: src/Admin/Menu.php:116
 msgid "Choose a logo image"
 msgstr "Choisir une image de logo"
 
-#: src/Admin/Menu.php:116
+#: src/Admin/Menu.php:117
 msgid "Use this logo"
 msgstr "Utiliser ce logo"
 
-#: src/Admin/Menu.php:117
+#: src/Admin/Menu.php:118
 msgid "Slug allocated on save"
 msgstr "slug attribué à la sauvegarde"
+
+#: src/Admin/Menu.php:137
+msgid "Your website is too slow?"
+msgstr "Votre site est trop lent ?"
+
+#: src/Admin/Menu.php:138
+msgid "Get the fastest WordPress hosting"
+msgstr "Optez pour l’hébergement WordPress le plus rapide"
+
+#: src/Admin/Menu.php:142
+msgid "Managing multiple websites?"
+msgstr "Vous gérez plusieurs sites ?"
+
+#: src/Admin/Menu.php:143
+msgid "Centralized WordPress hosting for agencies"
+msgstr "Hébergement WordPress centralisé pour agences"
+
+#: src/Admin/Menu.php:147
+msgid "Tired of robotic support chatbots?"
+msgstr "Fatigué du support robotisé ?"
+
+#: src/Admin/Menu.php:148
+msgid "Get human WordPress support by LRob"
+msgstr "Support WordPress humain chez LRob"
+
+#: src/Admin/Menu.php:152
+msgid "Worried about WordPress attacks?"
+msgstr "Inquiet des attaques WordPress ?"
+
+#: src/Admin/Menu.php:153
+msgid "Hardened WordPress hosting with WAF"
+msgstr "Hébergement WordPress sécurisé avec WAF"
+
+#: src/Admin/Menu.php:157
+msgid "Backups shouldn’t be an extra."
+msgstr "Les sauvegardes ne devraient pas être en option."
+
+#: src/Admin/Menu.php:158
+msgid "WordPress hosting with 1-year backups included"
+msgstr "Hébergement WordPress avec 1 an de sauvegardes inclus"
+
+#: src/Admin/Menu.php:162
+msgid "Going green?"
+msgstr "Une démarche éco-responsable ?"
+
+#: src/Admin/Menu.php:163
+msgid "Eco-friendly WordPress hosting"
+msgstr "Hébergement WordPress écologique"
+
+#: src/Admin/Menu.php:167
+msgid "Need data sovereignty?"
+msgstr "Besoin de souveraineté des données ?"
+
+#: src/Admin/Menu.php:168
+msgid "French WordPress hosting, EU data residency"
+msgstr "Hébergement WordPress français, données hébergées en UE"
+
+#: src/Admin/Menu.php:172
+msgid "Stuck on a slow host?"
+msgstr "Coincé sur un hébergeur lent ?"
+
+#: src/Admin/Menu.php:173
+msgid "Switch to LRob — migration included"
+msgstr "Passez chez LRob — migration incluse"
 
 #: src/Admin/SettingsPage.php:28
 msgid "QR Code Maker — Settings"

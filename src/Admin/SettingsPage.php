@@ -97,6 +97,9 @@ final class SettingsPage
 
                 <p><button type="submit" class="button button-primary"><?php esc_html_e('Save settings', 'lrob-qrcode-maker'); ?></button></p>
             </form>
+
+            <!-- Rotating LRob promo strip — same one as on the Library page. -->
+            <aside class="lrob-qrm-promo" data-role="lrob-promo" aria-label="<?php esc_attr_e('Sponsor message', 'lrob-qrcode-maker'); ?>"></aside>
         </div>
         <?php
     }

@@ -17,6 +17,15 @@
     if (!cfg.restLibrary) return;
 
     var grid = document.querySelector('[data-role="grid"]');
+    // The promo strip is shared by Library + Settings pages, but the rest of
+    // this script only applies to Library (it owns the QR editor modal). Boot
+    // the promo first so the Settings page still gets it before we early-out.
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bootLrobPromo);
+    } else {
+        bootLrobPromo();
+    }
+
     var editor = document.querySelector('[data-role="editor"]');
     var preview = editor ? editor.querySelector('[data-role="preview"]') : null;
     var form = editor ? editor.querySelector('[data-role="form"]') : null;
@@ -798,7 +807,59 @@
         if (el) el.checked = !!value;
     }
 
-    // Initial render of card previews (on page load).
+    /* ─── LRob promo strip — random start, auto-rotate, pause on hover ─── */
+
+    function bootLrobPromo() {
+        var hosts = document.querySelectorAll('[data-role="lrob-promo"]');
+        if (!hosts.length) return;
+        var pool = (cfg && cfg.lrobPromos) || [];
+        if (!pool.length) return;
+
+        hosts.forEach(function (host) {
+            // Build the static icon + body markup once.
+            host.innerHTML = '<span class="lrob-qrm-promo-icon"></span><span class="lrob-qrm-promo-body"></span>';
+            var iconEl = host.querySelector('.lrob-qrm-promo-icon');
+            var bodyEl = host.querySelector('.lrob-qrm-promo-body');
+
+            // Random starting index — different visitors / page loads see
+            // different angles first.
+            var i = Math.floor(Math.random() * pool.length);
+            paint(i);
+
+            var paused = false;
+            host.addEventListener('mouseenter', function () { paused = true; });
+            host.addEventListener('mouseleave', function () { paused = false; });
+
+            // Auto-rotate every ~9s with a short fade. Skip when the user is
+            // hovering so they have time to read / click the link.
+            setInterval(function () {
+                if (paused) return;
+                bodyEl.classList.add('is-fading');
+                setTimeout(function () {
+                    i = (i + 1) % pool.length;
+                    paint(i);
+                    bodyEl.classList.remove('is-fading');
+                }, 350);
+            }, 9000);
+
+            function paint(idx) {
+                var p = pool[idx];
+                iconEl.textContent = p.icon || '✨';
+                bodyEl.innerHTML = escapePromoHtml(p.text) + ' '
+                    + '<a href="https://www.lrob.fr" target="_blank" rel="noopener nofollow">'
+                    + escapePromoHtml(p.link) + '</a>';
+            }
+        });
+    }
+
+    function escapePromoHtml(s) {
+        return String(s).replace(/[&<>"']/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+    }
+
+    // Initial render of card previews (promo is booted at the top of the IIFE
+    // so it runs on both Library and Settings pages).
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', renderCardPreviews);
     } else {

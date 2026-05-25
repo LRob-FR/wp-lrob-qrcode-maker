@@ -104,6 +104,7 @@ final class Menu
                 'format' => (string) ($settings['default_export_format'] ?? 'webp'),
             ],
             'contentTypes'   => \LRob\QRCodeMaker\Support\ContentTypes::definitions(),
+            'lrobPromos'     => self::lrob_promo_messages(),
             'i18n'        => [
                 'confirmDelete' => __('Delete this QR code? This cannot be undone.', 'lrob-qrcode-maker'),
                 'saving'        => __('Saving…', 'lrob-qrcode-maker'),
@@ -118,6 +119,60 @@ final class Menu
             ],
         ]);
         wp_set_script_translations('lrob-qrm-admin', 'lrob-qrcode-maker');
+    }
+
+    /**
+     * Marketing message pool for the LRob promo strip in the admin (Library +
+     * Settings pages). One item is picked at random on page load and the strip
+     * auto-rotates through them. Each message has a different anchor keyword
+     * so the backlink carries varied SEO weight rather than a single phrase.
+     *
+     * @return array<int, array{icon:string, text:string, link:string}>
+     */
+    private static function lrob_promo_messages(): array
+    {
+        return [
+            [
+                'icon' => '⚡',
+                'text' => __('Your website is too slow?', 'lrob-qrcode-maker'),
+                'link' => __('Get the fastest WordPress hosting', 'lrob-qrcode-maker'),
+            ],
+            [
+                'icon' => '🏢',
+                'text' => __('Managing multiple websites?', 'lrob-qrcode-maker'),
+                'link' => __('Centralized WordPress hosting for agencies', 'lrob-qrcode-maker'),
+            ],
+            [
+                'icon' => '🧑‍💼',
+                'text' => __('Tired of robotic support chatbots?', 'lrob-qrcode-maker'),
+                'link' => __('Get human WordPress support by LRob', 'lrob-qrcode-maker'),
+            ],
+            [
+                'icon' => '🛡️',
+                'text' => __('Worried about WordPress attacks?', 'lrob-qrcode-maker'),
+                'link' => __('Hardened WordPress hosting with WAF', 'lrob-qrcode-maker'),
+            ],
+            [
+                'icon' => '💾',
+                'text' => __('Backups shouldn’t be an extra.', 'lrob-qrcode-maker'),
+                'link' => __('WordPress hosting with 1-year backups included', 'lrob-qrcode-maker'),
+            ],
+            [
+                'icon' => '🌿',
+                'text' => __('Going green?', 'lrob-qrcode-maker'),
+                'link' => __('Eco-friendly WordPress hosting', 'lrob-qrcode-maker'),
+            ],
+            [
+                'icon' => '🇫🇷',
+                'text' => __('Need data sovereignty?', 'lrob-qrcode-maker'),
+                'link' => __('French WordPress hosting, EU data residency', 'lrob-qrcode-maker'),
+            ],
+            [
+                'icon' => '🚚',
+                'text' => __('Stuck on a slow host?', 'lrob-qrcode-maker'),
+                'link' => __('Switch to LRob — migration included', 'lrob-qrcode-maker'),
+            ],
+        ];
     }
 
     public static function asset_version(string $relative): string

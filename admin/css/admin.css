@@ -700,3 +700,56 @@ body.lrob-qrm-modal-open {
     margin-bottom: 12px;
 }
 
+
+/* ─── LRob promo strip (rotating sponsor messages) ──────────────────── */
+
+.lrob-qrm-promo {
+    margin: 28px 0 0;
+    padding: 14px 18px;
+    background: linear-gradient(135deg, #f0f6fc 0%, #f6f7f7 100%);
+    border: 1px solid #c3d4e6;
+    border-left: 4px solid #2271b1;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    overflow: hidden;
+}
+
+.lrob-qrm-promo-icon {
+    font-size: 1.4em;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.lrob-qrm-promo-body {
+    flex: 1;
+    font-size: 0.92em;
+    color: #1d2327;
+    line-height: 1.4;
+    transition: opacity .35s ease;
+}
+
+.lrob-qrm-promo-body.is-fading { opacity: 0; }
+
+.lrob-qrm-promo-body a {
+    color: #135e96;
+    font-weight: 500;
+    text-decoration: underline;
+    text-decoration-color: rgba(19, 94, 150, 0.4);
+    text-underline-offset: 2px;
+}
+
+.lrob-qrm-promo-body a:hover {
+    text-decoration-color: #135e96;
+}
+
+.lrob-qrm-promo-body a::after {
+    content: " →";
+    display: inline-block;
+    transition: transform .2s ease;
+}
+
+.lrob-qrm-promo-body a:hover::after { transform: translateX(2px); }

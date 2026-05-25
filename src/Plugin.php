@@ -71,9 +71,11 @@ final class Plugin
     }
 
     /**
-     * Run dbDelta when the stored db_version doesn't match the plugin version.
-     * Picks up new columns (e.g. logo_attachment_id added in 0.2.0) without
-     * requiring the user to deactivate+reactivate.
+     * Run dbDelta + flush rewrite rules when the stored db_version doesn't
+     * match the plugin version. `register_activation_hook` only fires on the
+     * very first activation, NOT on subsequent plugin updates via zip upload,
+     * so the tracking rewrite for /qr/{slug} would stay stale after an update.
+     * This catches both schema changes (new columns) and rewrite changes.
      */
     public function maybe_migrate_schema(): void
     {
@@ -82,6 +84,9 @@ final class Plugin
             return;
         }
         \LRob\QRCodeMaker\Library\Schema::install();
+        // The Tracking\Router's add_rewrite_rule call has already run on init
+        // (before admin_init), so flushing here persists the current rule set.
+        flush_rewrite_rules(false);
         update_option(Activator::OPTION_DB_VERSION, LROB_QRM_VERSION);
     }
 

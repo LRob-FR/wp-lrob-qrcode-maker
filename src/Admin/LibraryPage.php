@@ -173,6 +173,10 @@ final class LibraryPage
                 <?php endif; ?>
             </section>
 
+            <!-- Rotating LRob promo strip — random message on load, fades through
+                 the whole pool every ~10s. Same set is shown on the Settings page. -->
+            <aside class="lrob-qrm-promo" data-role="lrob-promo" aria-label="<?php esc_attr_e('Sponsor message', 'lrob-qrcode-maker'); ?>"></aside>
+
             <!-- Editor modal: hidden by default, opened by "Create new" or any card's Edit button. -->
             <div class="lrob-qrm-modal" data-role="editor" hidden>
                 <div class="lrob-qrm-modal-backdrop" data-action="cancel" aria-hidden="true"></div>
