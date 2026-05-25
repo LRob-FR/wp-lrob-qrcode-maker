@@ -20,7 +20,6 @@
 
     var InspectorControls = blockEditor.InspectorControls;
     var useBlockProps = blockEditor.useBlockProps;
-    var PanelBody = components.PanelBody;
     var TextControl = components.TextControl;
     var SelectControl = components.SelectControl;
     var ToggleControl = components.ToggleControl;
@@ -33,13 +32,13 @@
      *  swatch is the native browser picker (familiar, free); the text field
      *  accepts pasted hex codes from a brand palette. Three- and six-digit
      *  hex are accepted, the `#` is auto-prefixed, only valid values are
-     *  pushed to the parent block attribute. */
+     *  pushed to the parent block attribute. Visual styling lives in
+     *  block-editor.css under .lrob-qrm-block-color-row so it follows the
+     *  block-editor sidebar's foreground/background CSS variables. */
     function ColorRow(label, value, onChange) {
         var state = useState(value || '#000000');
         var local = state[0];
         var setLocal = state[1];
-        // Sync the local text-input value when the parent attribute changes
-        // (e.g. user picked via the swatch, theme reset, etc.).
         useEffect(function () { setLocal(value || '#000000'); }, [value]);
 
         function commit(raw) {
@@ -47,7 +46,6 @@
             var v = String(raw).trim();
             if (v && v[0] !== '#') v = '#' + v;
             if (/^#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/.test(v)) {
-                // Expand shorthand #abc → #aabbcc for consistency.
                 if (v.length === 4) {
                     v = '#' + v[1] + v[1] + v[2] + v[2] + v[3] + v[3];
                 }
@@ -57,17 +55,13 @@
 
         return el(
             BaseControl,
-            { label: label },
-            el('div', { style: { display: 'flex', gap: '6px', alignItems: 'center' } },
+            { label: label, className: 'lrob-qrm-block-color-control' },
+            el('div', { className: 'lrob-qrm-block-color-row' },
                 el('input', {
                     type: 'color',
                     value: value || '#000000',
                     onChange: function (e) { commit(e.target.value); },
-                    style: {
-                        width: '44px', height: '32px', padding: '2px',
-                        border: '1px solid #ccd0d4', borderRadius: '4px',
-                        cursor: 'pointer', flexShrink: 0
-                    },
+                    className: 'lrob-qrm-block-color-swatch',
                     'aria-label': label
                 }),
                 el('input', {
@@ -77,14 +71,7 @@
                     placeholder: '#000000',
                     spellCheck: false,
                     maxLength: 7,
-                    style: {
-                        flex: 1, minWidth: 0, height: '32px',
-                        padding: '4px 8px',
-                        border: '1px solid #ccd0d4', borderRadius: '4px',
-                        fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-                        fontSize: '12px',
-                        textTransform: 'lowercase'
-                    }
+                    className: 'lrob-qrm-block-color-hex'
                 })
             )
         );
@@ -103,8 +90,7 @@
                     className: 'lrob-qrm-block-preview-sample',
                     style: {
                         background: a.bgColor,
-                        color: a.fgColor,
-                        borderRadius: a.dotShape === 'rounded' ? '8px' : (a.dotShape === 'dots' ? '50%' : '0')
+                        color: a.fgColor
                     }
                 }, 'QR'),
                 el('p', { className: 'lrob-qrm-block-preview-caption' },
@@ -113,12 +99,12 @@
             )
         );
 
+        // All settings live flat in the inspector — no PanelBody groupings.
+        // The block has few enough controls that categorisation is overhead.
         var inspector = InspectorControls && el(
             InspectorControls,
             null,
-            el(
-                PanelBody,
-                { title: __('Defaults', 'lrob-qrcode-maker'), initialOpen: true },
+            el('div', { className: 'lrob-qrm-block-settings' },
                 el(TextControl, {
                     label: __('Default URL or text', 'lrob-qrcode-maker'),
                     help: __('Pre-fill the input on first load (leave empty for a blank form).', 'lrob-qrcode-maker'),
@@ -131,7 +117,8 @@
                     options: [
                         { label: 'WebP', value: 'webp' },
                         { label: 'PNG',  value: 'png' },
-                        { label: 'JPEG', value: 'jpeg' }
+                        { label: 'JPEG', value: 'jpeg' },
+                        { label: 'AVIF', value: 'avif' }
                     ],
                     onChange: function (v) { set({ defaultFormat: v }); }
                 }),
@@ -146,24 +133,10 @@
                         { label: '4096 × 4096', value: '4096' }
                     ],
                     onChange: function (v) { set({ defaultSize: parseInt(v, 10) || 1024 }); }
-                })
-            ),
-            el(
-                PanelBody,
-                { title: __('Style', 'lrob-qrcode-maker'), initialOpen: true },
+                }),
                 ColorRow(__('Foreground', 'lrob-qrcode-maker'), a.fgColor, function (v) { set({ fgColor: v }); }),
                 ColorRow(__('Background', 'lrob-qrcode-maker'), a.bgColor, function (v) { set({ bgColor: v }); }),
                 ColorRow(__('Eye color', 'lrob-qrcode-maker'), a.eyeColor, function (v) { set({ eyeColor: v }); }),
-                el(SelectControl, {
-                    label: __('Dot shape', 'lrob-qrcode-maker'),
-                    value: a.dotShape,
-                    options: [
-                        { label: __('Square', 'lrob-qrcode-maker'),  value: 'square' },
-                        { label: __('Rounded', 'lrob-qrcode-maker'), value: 'rounded' },
-                        { label: __('Dots', 'lrob-qrcode-maker'),    value: 'dots' }
-                    ],
-                    onChange: function (v) { set({ dotShape: v }); }
-                }),
                 el(SelectControl, {
                     label: __('Eye shape', 'lrob-qrcode-maker'),
                     value: a.eyeShape,
@@ -173,11 +146,7 @@
                         { label: __('Dots', 'lrob-qrcode-maker'),    value: 'dots' }
                     ],
                     onChange: function (v) { set({ eyeShape: v }); }
-                })
-            ),
-            el(
-                PanelBody,
-                { title: __('Layout', 'lrob-qrcode-maker'), initialOpen: false },
+                }),
                 el(SelectControl, {
                     label: __('Maker layout', 'lrob-qrcode-maker'),
                     value: a.layout || 'preview-right',
@@ -187,18 +156,14 @@
                         { label: __('Stacked (preview on top)', 'lrob-qrcode-maker'), value: 'stacked' }
                     ],
                     onChange: function (v) { set({ layout: v }); }
-                })
-            ),
-            el(
-                PanelBody,
-                { title: __('Theme', 'lrob-qrcode-maker'), initialOpen: false },
+                }),
                 el(SelectControl, {
                     label: __('Color scheme', 'lrob-qrcode-maker'),
-                    value: a.theme || 'light',
+                    value: a.theme || 'auto',
                     options: [
+                        { label: __('Auto (follow visitor’s OS preference)', 'lrob-qrcode-maker'), value: 'auto' },
                         { label: __('Light', 'lrob-qrcode-maker'),  value: 'light' },
                         { label: __('Dark', 'lrob-qrcode-maker'),   value: 'dark' },
-                        { label: __('Auto (follow visitor’s OS preference)', 'lrob-qrcode-maker'), value: 'auto' },
                         { label: __('Inherit from site theme (FSE)', 'lrob-qrcode-maker'), value: 'site' },
                         { label: __('Custom', 'lrob-qrcode-maker'), value: 'custom' }
                     ],
@@ -212,19 +177,10 @@
                 (a.theme === 'custom') && ColorRow(__('Select / input background', 'lrob-qrcode-maker'),  a.customInputBg     || '#ffffff', function (v) { set({ customInputBg: v }); }),
                 (a.theme === 'custom') && ColorRow(__('Text', 'lrob-qrcode-maker'),                       a.customText        || '#1d2327', function (v) { set({ customText: v }); }),
                 (a.theme === 'custom') && ColorRow(__('Muted text', 'lrob-qrcode-maker'),                 a.customMuted       || '#646970', function (v) { set({ customMuted: v }); }),
-                (a.theme === 'custom') && ColorRow(__('Accent (download button)', 'lrob-qrcode-maker'),   a.customAccent      || '#1a73e8', function (v) { set({ customAccent: v }); })
-            ),
-            el(
-                PanelBody,
-                { title: __('What visitors can edit', 'lrob-qrcode-maker'), initialOpen: false },
+                (a.theme === 'custom') && ColorRow(__('Accent (download button)', 'lrob-qrcode-maker'),   a.customAccent      || '#1a73e8', function (v) { set({ customAccent: v }); }),
                 el(ToggleControl, {
-                    label: __('Allow uploading a logo', 'lrob-qrcode-maker'),
-                    checked: !!a.showLogoUpload,
-                    onChange: function (v) { set({ showLogoUpload: v }); }
-                }),
-                el(ToggleControl, {
-                    label: __('Show "Powered by LRob" footer', 'lrob-qrcode-maker'),
-                    help: __('Small credit + backlink at the bottom of the maker.', 'lrob-qrcode-maker'),
+                    label: __('Show credit footer', 'lrob-qrcode-maker'),
+                    help: __('Small "QR Code generator by LRob" line + backlink at the bottom of the maker.', 'lrob-qrcode-maker'),
                     checked: !!a.showCredit,
                     onChange: function (v) { set({ showCredit: v }); }
                 })

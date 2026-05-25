@@ -34,6 +34,7 @@
     var currentId = 0;
     var qrPreview = null;
     var logoPreviewUrl = null;
+    var logoPreviewAspect = 1;
     var mediaFrame = null;
 
     /* ─── AVIF capability detection ──────────────────────────────────── */
@@ -57,10 +58,11 @@
         if (!window.QRCodeStyling) return null;
         if (qrPreview) return qrPreview;
         qrPreview = new window.QRCodeStyling({
+            type: 'svg',
             width: 280, height: 280, data: ' ',
             margin: 8,
             qrOptions: { errorCorrectionLevel: 'M' },
-            dotsOptions: { color: '#000', type: 'square' },
+            dotsOptions: { color: '#000', type: 'square', roundSize: false },
             backgroundOptions: { color: '#fff' },
             cornersSquareOptions: { color: '#000', type: 'square' },
             cornersDotOptions: { color: '#000', type: 'square' }
@@ -77,7 +79,7 @@
         var spec = {
             data:           (fd.get('data') || '').toString(),
             size:           parseInt(defaults.size, 10) || 1024,
-            ecLevel:        (fd.get('ecLevel') || 'H').toString(),
+            ecLevel:        'L',
             fgColor:        (fd.get('fgColor') || '#000000').toString(),
             bgColor:        (fd.get('bgColor') || '#ffffff').toString(),
             eyeColor:       (fd.get('eyeColor') || '#000000').toString(),
@@ -110,14 +112,11 @@
             var savedSlug = (trackingUrlEl && trackingUrlEl.getAttribute('data-current-slug')) || '';
             encoded = (cfg.trackingBase || '/') + (savedSlug || 'preview');
         }
+        var ec = effectiveEc(d.spec.ecLevel, encoded, logoPreviewUrl, d.spec.logoSizeRatio, logoPreviewAspect);
         qp.update({
             data: encoded,
-            qrOptions: {
-                errorCorrectionLevel: d.spec.ecLevel,
-                typeNumber: 0,
-                mode: 'Byte'
-            },
-            dotsOptions: { color: d.spec.fgColor, type: normalizeDotShape(d.spec.dotShape) },
+            qrOptions: { errorCorrectionLevel: ec, typeNumber: 0, mode: 'Byte' },
+            dotsOptions: { color: d.spec.fgColor, type: normalizeDotShape(d.spec.dotShape), roundSize: false },
             backgroundOptions: { color: d.spec.bgTransparent ? 'rgba(0,0,0,0)' : d.spec.bgColor },
             cornersSquareOptions: { color: d.spec.eyeColor, type: normalizeEyeShape(d.spec.eyeShape) },
             cornersDotOptions: {
@@ -132,6 +131,36 @@
                 hideBackgroundDots: !!d.spec.logoBackground
             }
         });
+        renderStats(encoded, ec);
+    }
+
+    var statsEl = form ? form.parentNode.querySelector('[data-role="stats"]') : null;
+    var statsNoticeEl = form ? form.parentNode.querySelector('[data-role="stats-notice"]') : null;
+    var statsI18n = (cfg && cfg.i18n) || {};
+
+    function renderStats(data, effEc) {
+        if (!statsEl || !window.lrobQrmContent || !window.lrobQrmContent.qrStats) return;
+        var s = window.lrobQrmContent.qrStats(data, effEc);
+        var line = '', notice = '';
+        if (s.overflow) {
+            notice = statsI18n.statsOverflow || 'Content too large to encode as a QR.';
+        } else if (s.version) {
+            line = (statsI18n.statsTemplate || 'QR v%v · %m×%m modules · %b bytes · EC %e')
+                .replace('%v', s.version).replace(/%m/g, s.modules)
+                .replace('%b', s.bytes).replace('%e', s.ec);
+            if (s.bytes > 200) {
+                notice = statsI18n.statsLengthWarn || 'Past ~200 bytes, some smartphones may fail to scan the QR.';
+                var isVcard = window.lrobQrmContent.guessType && window.lrobQrmContent.guessType(data) === 'vcard';
+                if (isVcard) {
+                    notice += ' ' + (statsI18n.statsLengthWarnVcardSuffix || 'For a contact card, hosting the .vcf file and encoding its URL keeps the QR much shorter.');
+                }
+            }
+        }
+        statsEl.textContent = line;
+        if (statsNoticeEl) {
+            statsNoticeEl.textContent = notice;
+            statsNoticeEl.hidden = !notice;
+        }
     }
 
     // Shape value normalisation: accepts both the new qr-code-styling values
@@ -172,9 +201,24 @@
     var pickLogoBtn = form.querySelector('[data-action="pick-logo"]');
     var removeLogoBtn = form.querySelector('[data-action="remove-logo"]');
 
-    function setLogo(attachmentId, previewUrl) {
+    function setLogo(attachmentId, previewUrl, aspect) {
         if (logoIdInput) logoIdInput.value = String(attachmentId || 0);
         logoPreviewUrl = previewUrl || null;
+        if (typeof aspect === 'number' && aspect > 0) {
+            logoPreviewAspect = aspect;
+        } else if (previewUrl) {
+            logoPreviewAspect = 1;
+            var probe = new Image();
+            probe.onload = function () {
+                if (probe.naturalWidth > 0) {
+                    logoPreviewAspect = probe.naturalHeight / probe.naturalWidth;
+                    refreshPreview();
+                }
+            };
+            probe.src = previewUrl;
+        } else {
+            logoPreviewAspect = 1;
+        }
         if (logoThumb) {
             if (previewUrl) {
                 logoThumb.src = previewUrl;
@@ -214,7 +258,9 @@
                 } else if (att.sizes && att.sizes.thumbnail && att.sizes.thumbnail.url) {
                     thumbUrl = att.sizes.thumbnail.url;
                 }
-                setLogo(att.id, thumbUrl);
+                var aspect = (att.width && att.height && att.width > 0)
+                    ? (att.height / att.width) : 1;
+                setLogo(att.id, thumbUrl, aspect);
             });
         }
         mediaFrame.open();
@@ -422,14 +468,14 @@
             var info;
             try { info = JSON.parse(raw); } catch (e) { return; }
             var d = info.design || {};
-            var ec = d.ecLevel || 'M';
-            if (info.logoUrl && (ec === 'L' || ec === 'M')) ec = 'H';
+            var ec = effectiveEc('L', info.encoded, info.logoUrl, d.logoSizeRatio, info.logoAspect);
             var qp = new window.QRCodeStyling({
+                type: 'svg',
                 width: 240, height: 240,
                 data: (info.encoded || ' '),
                 margin: 6,
                 qrOptions: { errorCorrectionLevel: ec, typeNumber: 0, mode: 'Byte' },
-                dotsOptions: { color: d.fgColor || '#000000', type: normalizeDotShape(d.dotShape) },
+                dotsOptions: { color: d.fgColor || '#000000', type: normalizeDotShape(d.dotShape), roundSize: false },
                 backgroundOptions: { color: d.bgTransparent ? 'rgba(0,0,0,0)' : (d.bgColor || '#ffffff') },
                 cornersSquareOptions: { color: d.eyeColor || d.fgColor || '#000000', type: normalizeEyeShape(d.eyeShape) },
                 cornersDotOptions: {
@@ -459,6 +505,7 @@
     var exportPreviewQr = null;
     var exportSpec = null;    // current spec being exported
     var exportLogoUrl = null; // logo URL bound to this export
+    var exportLogoAspect = 1;
     var exportLabel = '';     // filename base
 
     if (exportSizeSelect) {
@@ -498,7 +545,7 @@
         }
     }
 
-    function openExportModal(spec, logoUrl, label) {
+    function openExportModal(spec, logoUrl, label, logoAspect) {
         if (!exportModal) return;
         if (!spec || !spec.data || !spec.data.toString().trim()) {
             alert(cfg.i18n.error || 'Error');
@@ -506,6 +553,7 @@
         }
         exportSpec = spec;
         exportLogoUrl = logoUrl || null;
+        exportLogoAspect = (typeof logoAspect === 'number' && logoAspect > 0) ? logoAspect : 1;
         exportLabel = label || '';
         applyExportDefaults();
         renderExportPreview();
@@ -516,10 +564,10 @@
     function closeExportModal() {
         if (!exportModal) return;
         exportModal.hidden = true;
-        // Restore body scroll only if the editor isn't also open.
         if (editor.hidden) document.body.classList.remove('lrob-qrm-modal-open');
         exportSpec = null;
         exportLogoUrl = null;
+        exportLogoAspect = 1;
         exportLabel = '';
     }
 
@@ -527,11 +575,12 @@
         if (!exportPreview || !exportSpec || !window.QRCodeStyling) return;
         exportPreview.innerHTML = '';
         exportPreviewQr = new window.QRCodeStyling({
+            type: 'svg',
             width: 240, height: 240,
             data: exportSpec.data,
             margin: 8,
-            qrOptions: { errorCorrectionLevel: effectiveEc(exportSpec.ecLevel, exportLogoUrl), typeNumber: 0, mode: 'Byte' },
-            dotsOptions: { color: exportSpec.fgColor || '#000000', type: normalizeDotShape(exportSpec.dotShape) },
+            qrOptions: { errorCorrectionLevel: effectiveEc(exportSpec.ecLevel, exportSpec.data, exportLogoUrl, exportSpec.logoSizeRatio, exportLogoAspect), typeNumber: 0, mode: 'Byte' },
+            dotsOptions: { color: exportSpec.fgColor || '#000000', type: normalizeDotShape(exportSpec.dotShape), roundSize: false },
             backgroundOptions: { color: exportSpec.bgTransparent ? 'rgba(0,0,0,0)' : (exportSpec.bgColor || '#ffffff') },
             cornersSquareOptions: { color: exportSpec.eyeColor || exportSpec.fgColor || '#000000', type: normalizeEyeShape(exportSpec.eyeShape) },
             cornersDotOptions: { color: exportSpec.eyeColor || exportSpec.fgColor || '#000000', type: innerEyeFromOuter(exportSpec.eyeShape) },
@@ -546,10 +595,39 @@
         exportPreviewQr.append(exportPreview);
     }
 
-    function effectiveEc(ec, logoUrl) {
-        var lvl = ec || 'M';
-        if (logoUrl && (lvl === 'L' || lvl === 'M')) return 'H';
-        return lvl;
+    var EC_BYTE_CAP_V40 = { L: 2953, M: 2331, Q: 1663, H: 1273 };
+    var EC_RECOVERY    = { L: 0.07, M: 0.15, Q: 0.25, H: 0.30 };
+    var EC_RANK        = { L: 0, M: 1, Q: 2, H: 3 };
+
+    function ecForLogo(logoSizeRatio, aspectRatio) {
+        var ratio = parseFloat(logoSizeRatio) || 0;
+        if (ratio <= 0) return 'L';
+        var k = parseFloat(aspectRatio);
+        if (!k || k <= 0) k = 1;
+        var thickness = Math.max(k, 1 / k);
+        var needed = (0.81 * ratio) / thickness;
+        if (needed <= EC_RECOVERY.L) return 'L';
+        if (needed <= EC_RECOVERY.M) return 'M';
+        if (needed <= EC_RECOVERY.Q) return 'Q';
+        return 'H';
+    }
+
+    function effectiveEc(ec, data, logoUrl, logoSizeRatio, logoAspect) {
+        var preferred = ec || 'M';
+        if (logoUrl) {
+            var minForLogo = ecForLogo(logoSizeRatio, logoAspect);
+            if ((EC_RANK[minForLogo] || 0) > (EC_RANK[preferred] || 0)) {
+                preferred = minForLogo;
+            }
+        }
+        var bytes = (typeof TextEncoder !== 'undefined')
+            ? new TextEncoder().encode(data || '').length
+            : (data ? data.length : 0);
+        var order = ['H', 'Q', 'M', 'L'];
+        var idx = order.indexOf(preferred);
+        if (idx < 0) idx = 2;
+        while (idx < order.length && bytes > EC_BYTE_CAP_V40[order[idx]]) idx++;
+        return order[Math.min(idx, order.length - 1)];
     }
 
     function readExportSizeFormat() {
@@ -587,7 +665,7 @@
 
     function downloadFromForm() {
         var d = readSpec();
-        openExportModal(d.spec, logoPreviewUrl, d.label);
+        openExportModal(d.spec, logoPreviewUrl, d.label, logoPreviewAspect);
     }
 
     function downloadById(id) {
@@ -605,7 +683,7 @@
                         if (info.encoded) spec.data = info.encoded;
                     } catch (e) {}
                 }
-                openExportModal(spec, row.logo_url || null, row.label || '');
+                openExportModal(spec, row.logo_url || null, row.label || '', 1);
             })
             .catch(function (e) { alert((e && e.message) ? e.message : (cfg.i18n.error || 'Error')); });
     }
@@ -619,7 +697,7 @@
             alert(cfg.i18n.error || 'Error');
             return;
         }
-        var ec = effectiveEc(spec.ecLevel, logoUrl);
+        var ec = effectiveEc(spec.ecLevel, spec.data.toString(), logoUrl, spec.logoSizeRatio, spec.logoAspect);
 
         var size = parseInt(spec.size, 10) || 1024;
         var marginModules = parseInt(spec.margin, 10);
@@ -631,7 +709,7 @@
             data: spec.data.toString(),
             margin: Math.max(0, marginModules) * Math.max(2, Math.floor(size / 50)),
             qrOptions: { errorCorrectionLevel: ec, typeNumber: 0, mode: 'Byte' },
-            dotsOptions: { color: spec.fgColor || '#000000', type: normalizeDotShape(spec.dotShape) },
+            dotsOptions: { color: spec.fgColor || '#000000', type: normalizeDotShape(spec.dotShape), roundSize: false },
             backgroundOptions: { color: spec.bgTransparent ? 'rgba(0,0,0,0)' : (spec.bgColor || '#ffffff') },
             cornersSquareOptions: { color: spec.eyeColor || spec.fgColor || '#000000', type: normalizeEyeShape(spec.eyeShape) },
             cornersDotOptions: {

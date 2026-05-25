@@ -121,6 +121,10 @@ final class Menu
                 'mediaTitle'    => __('Choose a logo image', 'lrob-qrcode-maker'),
                 'mediaButton'   => __('Use this logo', 'lrob-qrcode-maker'),
                 'trackingHint'  => __('Slug allocated on save', 'lrob-qrcode-maker'),
+                'statsTemplate'  => __('QR v%v · %m×%m modules · %b bytes · EC %e', 'lrob-qrcode-maker'),
+                'statsLengthWarn'        => __('Past ~200 bytes, some smartphones may fail to scan the QR. Shorten the content for maximum compatibility.', 'lrob-qrcode-maker'),
+                'statsLengthWarnVcardSuffix' => __('For a contact card, hosting the .vcf file and encoding its URL keeps the QR much shorter.', 'lrob-qrcode-maker'),
+                'statsOverflow'  => __('Content too large to encode as a QR (max 2953 bytes at EC L). Shorten the content.', 'lrob-qrcode-maker'),
             ],
         ]);
         wp_set_script_translations('lrob-qrm-admin', 'lrob-qrcode-maker');

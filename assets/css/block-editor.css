@@ -1,10 +1,12 @@
-/* LRob QR Code Maker — block editor preview. */
+/* LRob QR Code Maker — block editor preview + InspectorControls styling.
+   Colors lean on Gutenberg's --wp-components-color-* CSS variables so the
+   sidebar follows the editor theme (light / dark / admin scheme). */
 
 .lrob-qrm-block-edit {
     padding: 16px;
-    border: 1px dashed #bbb;
+    border: 1px dashed var(--wp-components-color-gray-300, #bbb);
     border-radius: 8px;
-    background: #fafafa;
+    background: color-mix(in srgb, var(--wp-components-color-foreground, #1e1e1e) 4%, transparent);
 }
 
 .lrob-qrm-block-preview {
@@ -34,6 +36,60 @@
 .lrob-qrm-block-preview-caption {
     margin: 0;
     text-align: center;
-    color: #555;
+    color: var(--wp-components-color-foreground-muted, color-mix(in srgb, currentColor 70%, transparent));
     font-size: 0.9em;
+}
+
+/* InspectorControls: flat (no PanelBody), give the wrapper the standard
+   sidebar padding so controls don't sit flush against the edge. */
+.lrob-qrm-block-settings {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* The default BaseControl bottom margin would double-up with the gap above. */
+.lrob-qrm-block-settings .components-base-control {
+    margin-bottom: 0;
+}
+
+/* Color row: native browser swatch + hex text input, side by side. The hex
+   field uses transparent bg + inherited text color so it adopts the
+   sidebar's foreground/background regardless of admin color scheme. */
+.lrob-qrm-block-color-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.lrob-qrm-block-color-swatch {
+    width: 44px;
+    height: 32px;
+    padding: 2px;
+    border: 1px solid var(--wp-components-color-gray-300, rgba(0, 0, 0, 0.18));
+    border-radius: 4px;
+    cursor: pointer;
+    flex-shrink: 0;
+    background: transparent;
+}
+
+.lrob-qrm-block-color-hex {
+    flex: 1;
+    min-width: 0;
+    height: 32px;
+    padding: 4px 8px;
+    border: 1px solid var(--wp-components-color-gray-300, rgba(0, 0, 0, 0.18));
+    border-radius: 4px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+    text-transform: lowercase;
+    background: transparent;
+    color: inherit;
+}
+
+.lrob-qrm-block-color-hex:focus {
+    outline: none;
+    border-color: var(--wp-components-color-accent, var(--wp-admin-theme-color, #2271b1));
+    box-shadow: 0 0 0 1px var(--wp-components-color-accent, var(--wp-admin-theme-color, #2271b1));
 }

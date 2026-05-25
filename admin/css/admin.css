@@ -307,6 +307,29 @@ body.lrob-qrm-modal-open {
     overflow: hidden;
 }
 
+/* Stats footer + contextual notice under the editor preview. Same shape as
+   the frontend version (see maker.css .lrob-qrm-maker-stats*). */
+.lrob-qrm-editor-stats {
+    margin: 6px 0 0;
+    font-size: 0.75em;
+    color: #646970;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.01em;
+}
+
+.lrob-qrm-editor-stats-notice {
+    margin: 6px 0 0;
+    padding: 8px 12px;
+    font-size: 0.82em;
+    color: #1d2327;
+    background: #f0f6fc;
+    border-left: 3px solid #2271b1;
+    border-radius: 4px;
+    line-height: 1.4;
+    max-width: 320px;
+}
+
 .lrob-qrm-editor-preview canvas,
 .lrob-qrm-editor-preview svg {
     max-width: 100%;

@@ -122,8 +122,8 @@ Every other QR generator out there asks you to ship visitor traffic and scan ana
 |---|---|
 | 🧠 **All rendering client-side** | Powered by [qr-code-styling](https://github.com/kozakdenys/qr-code-styling) — no PHP imaging library, no GD pipeline, no REST render endpoint. Preview and export come from the **same** code path, so what you see is what you get. |
 | 🔒 **Privacy-first by design** | Visitors' logos never leave their browser. Tracking stores anonymised IPs (/24 for v4, /48 for v6). No SaaS, no third-party scripts, no callbacks home. |
-| 🎨 **Genuinely customisable** | 6 dot shapes, 5 eye shapes, free colours per element, optional logo with auto-EC-bump, 5 themes (incl. FSE inheritance + fully custom), 3 layouts. |
-| 📇 **Eight content types** | URL · Plain text · vCard · Wi-Fi · Email · SMS · Phone · Geolocation. Compose the payload from typed fields — the encoded MECARD / `WIFI:` / `mailto:` string is built client-side. |
+| 🎨 **Genuinely customisable** | 6 dot shapes, 5 eye shapes, free colours per element, optional logo with **fully automatic error correction** (aspect-aware), 5 themes (incl. FSE inheritance + fully custom), 3 layouts. |
+| 📇 **Eight content types** | URL · Plain text · vCard · Wi-Fi · Email · SMS · Phone · Geolocation. Compose the payload from typed fields — the encoded `BEGIN:VCARD` / `WIFI:` / `mailto:` string is built client-side. |
 | 📤 **Modern export formats** | WebP (default), PNG, JPEG, **AVIF** (auto-detected on browsers that can encode it). Sizes 256 → 8192 px, plus custom for print. |
 | 📈 **Tracked redirects, anonymised** | Optional per QR. `https://yoursite.com/qr/<slug>` → 302 to target + scan log. Default URL prefix configurable. |
 | 🪶 **Lightweight** | ~92 KB zip, no Composer at runtime, no JS build pipeline. One vendored library (~50 KB). |
@@ -228,9 +228,9 @@ Adding a new type is a single-class change — see `src/Support/ContentTypes.php
 
 ### Themes (5)
 
-- **Light** *(default)* — white shell, dark text, blue accent.
+- **Auto** *(default)* — follows the visitor's `prefers-color-scheme` (light or dark, automatic).
+- **Light** — white shell, dark text, blue accent.
 - **Dark** — anthracite shell, light text, same accent.
-- **Auto** — follows the visitor's `prefers-color-scheme`.
 - **Inherit from site theme (FSE)** — maps the maker colours to the site's WordPress block theme palette via `--wp--preset--color--background / --foreground / --primary / --secondary`. Falls back to defaults on classic themes.
 - **Custom** — six colour pickers in the Inspector: surface, soft surface (cards), input background, text, muted text, accent. Injected as inline CSS variables on the shell.
 
@@ -245,14 +245,31 @@ Adding a new type is a single-class change — see `src/Support/ContentTypes.php
 | Element | Options |
 |---|---|
 | **Dot shape** | Square · Rounded · Extra rounded · Dots · Classy · Classy rounded |
-| **Eye shape** | Square · Rounded · Circle · Classy · Classy rounded |
+| **Eye shape** | Square · Extra rounded · Circle · Classy · Classy rounded |
 | **Eye inner dot** | Auto-derived from the outer eye choice |
 
 ### Logo handling
 
 - **Public block**: file picker. Image stays in the browser (FileReader → dataURL → qr-code-styling).
 - **Admin library**: WordPress Media Library picker. The logo persists on the QR row (attachment ID).
-- **EC auto-bump**: when a logo is attached and the user picked EC level L or M, the export silently bumps to H so the QR stays scannable. Explicit Q or H choices are honoured.
+
+### Error correction (fully automatic)
+
+There's no EC knob in the UI — fiddling with it confuses end users and the optimal value is computable. The plugin picks the **minimum EC** that satisfies these constraints, in order:
+
+1. **No logo** → EC `L`. Lowest overhead, biggest modules, most data capacity.
+2. **Logo present** → EC bumped to whatever's needed for the logo to render at its intended size. `qr-code-styling` renders the logo at `coverage = imageSize × ecPercent` of the QR area, so a higher EC is needed for the logo to reach its intended dimension. **The logo's aspect ratio is taken into account** — non-square logos spread their coverage along one axis, so they need less EC than square ones at the same `imageSize`.
+3. **Payload overflows v40** at the chosen EC → walks down `H → Q → M → L` until it fits. The Reed-Solomon margin shrinks, but the data fits.
+
+Mapping for the default `logoSizeRatio = 0.3`:
+
+| Logo aspect | Min EC |
+|---|---|
+| Square (1:1) | Q |
+| Wide 2:1 | M |
+| Wide / tall 4:1 | L |
+
+The effective EC is surfaced in the stats footer under the preview (e.g. *QR v15 · 77×77 modules · 280 bytes · EC L*), along with a one-line scanner-compat notice if the payload exceeds ~200 bytes (the empirical limit for some native phone QR scanners regardless of EC/version).
 
 ### Export formats
 

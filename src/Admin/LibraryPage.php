@@ -188,6 +188,8 @@ final class LibraryPage
                     <div class="lrob-qrm-editor-grid">
                         <div class="lrob-qrm-editor-preview-wrap">
                             <div class="lrob-qrm-editor-preview" data-role="preview"></div>
+                            <p class="lrob-qrm-editor-stats" data-role="stats"></p>
+                            <p class="lrob-qrm-editor-stats-notice" data-role="stats-notice" hidden></p>
                         </div>
                         <form class="lrob-qrm-editor-form" data-role="form">
                             <label class="lrob-qrm-field">
@@ -282,19 +284,6 @@ final class LibraryPage
                                     <?php endforeach; ?>
                                 </fieldset>
 
-                                <label class="lrob-qrm-field">
-                                    <span>
-                                        <?php esc_html_e('Error correction', 'lrob-qrcode-maker'); ?>
-                                        <span class="lrob-qrm-help-tip" tabindex="0"
-                                              title="<?php esc_attr_e('Higher levels stay scannable when partially obscured (e.g. logo overlay), at the cost of denser modules. H is required for large logos.', 'lrob-qrcode-maker'); ?>">?</span>
-                                    </span>
-                                    <select name="ecLevel">
-                                        <option value="L">L — <?php esc_html_e('7% recovery', 'lrob-qrcode-maker'); ?></option>
-                                        <option value="M">M — <?php esc_html_e('15% recovery', 'lrob-qrcode-maker'); ?></option>
-                                        <option value="Q">Q — <?php esc_html_e('25% recovery', 'lrob-qrcode-maker'); ?></option>
-                                        <option value="H" selected>H — <?php esc_html_e('30% recovery', 'lrob-qrcode-maker'); ?></option>
-                                    </select>
-                                </label>
                             </div>
 
                             <h3 class="lrob-qrm-section-title"><?php esc_html_e('Logo', 'lrob-qrcode-maker'); ?></h3>

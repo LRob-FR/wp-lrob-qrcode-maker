@@ -113,10 +113,12 @@
 }
 
 @media (min-width: 720px) {
-    /* Default = preview-right (form left, preview right) per user's first preference. */
+    /* Default = preview-right (form left, preview right) per user's first preference.
+       Preview column cap is 360px (was 320px) so dense vCard/MECARD QRs keep
+       big-enough modules to scan from screen. */
     .lrob-qrm-maker-grid,
     .lrob-qrm-maker-layout-preview-right .lrob-qrm-maker-grid {
-        grid-template-columns: minmax(0, 1fr) minmax(280px, 320px);
+        grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
     }
 
     .lrob-qrm-maker-layout-preview-right .lrob-qrm-maker-preview-col { order: 2; }
@@ -124,7 +126,7 @@
 
     /* Alt: preview on the left, form on the right. */
     .lrob-qrm-maker-layout-preview-left .lrob-qrm-maker-grid {
-        grid-template-columns: minmax(280px, 320px) minmax(0, 1fr);
+        grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
     }
     .lrob-qrm-maker-layout-preview-left .lrob-qrm-maker-preview-col { order: 1; }
     .lrob-qrm-maker-layout-preview-left .lrob-qrm-maker-form-col    { order: 2; }
@@ -166,7 +168,7 @@
 
 .lrob-qrm-maker-preview {
     width: 100%;
-    max-width: 320px;
+    max-width: 360px;
     aspect-ratio: 1 / 1;
     border-radius: 10px;
     background: var(--lrob-qrm-surface-soft);
@@ -193,7 +195,49 @@
     text-align: center;
 }
 
+/* Persistent stats footer under the preview — small, monospaced for the
+   numbers, low-contrast so it's informative without competing for attention. */
+.lrob-qrm-maker-stats {
+    margin: 4px 0 0;
+    font-size: 0.75em;
+    color: var(--lrob-qrm-muted);
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.01em;
+    opacity: 0.85;
+}
+
+/* Contextual notice shown only when EC was auto-lowered, the QR is dense,
+   or the payload overflows. Warmer color so it reads as actionable advice. */
+.lrob-qrm-maker-stats-notice {
+    margin: 6px 0 0;
+    padding: 8px 12px;
+    font-size: 0.82em;
+    color: var(--lrob-qrm-text);
+    background: color-mix(in srgb, var(--lrob-qrm-accent) 8%, transparent);
+    border-left: 3px solid var(--lrob-qrm-accent);
+    border-radius: 4px;
+    line-height: 1.4;
+    max-width: 360px;
+    text-align: left;
+}
+
+/* Layout constraints + interaction — apply regardless of theme so the button
+   always sits full-width below the preview and behaves like a button. */
 .lrob-qrm-maker-download {
+    cursor: pointer;
+    width: 100%;
+    max-width: 360px;
+}
+
+.lrob-qrm-maker-download:active { transform: translateY(1px); }
+.lrob-qrm-maker-download:disabled { opacity: .6; cursor: progress; }
+
+/* Default visual: our own accent-colored pill. Scoped with :not(.wp-element-button)
+   so that when the site-theme code path tags the button with `wp-element-button`,
+   none of our paint applies and theme.json's styles.elements.button rules win
+   on their own (lower specificity than our themed override would otherwise be). */
+.lrob-qrm-maker-download:not(.wp-element-button) {
     padding: 11px 24px;
     border: 0;
     border-radius: 8px;
@@ -201,31 +245,11 @@
     color: var(--lrob-qrm-accent-text);
     font-size: 0.95em;
     font-weight: 600;
-    cursor: pointer;
     transition: background-color .15s, transform .1s;
-    width: 100%;
-    max-width: 320px;
 }
 
-.lrob-qrm-maker-download:hover  { background: var(--lrob-qrm-accent-hover); }
-.lrob-qrm-maker-download:active { transform: translateY(1px); }
-.lrob-qrm-maker-download:disabled { opacity: .6; cursor: progress; }
-
-/* "Site" theme: the export button is tagged with `wp-element-button` so it
-   inherits the WordPress block theme's button styling (theme.json's
-   styles.elements.button). Strip our own visuals so the theme rules win;
-   keep only the sizing constraints so the button stays full-width inside
-   the preview column. */
-.lrob-qrm-maker-theme-site .lrob-qrm-maker-download {
-    background: transparent;
-    color: inherit;
-    padding: revert;
-    border-radius: revert;
-    font-weight: revert;
-    font-size: revert;
-    /* Width + max-width are layout concerns, keep them. */
-    width: 100%;
-    max-width: 320px;
+.lrob-qrm-maker-download:not(.wp-element-button):hover {
+    background: var(--lrob-qrm-accent-hover);
 }
 
 /* ─── Form fields (modern look) ───────────────────────────────────────── */

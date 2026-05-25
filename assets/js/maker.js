@@ -73,14 +73,14 @@
         var t = config.i18n || {};
         var L = function (k) { return t[k] || k; };
 
-        // State must exist before buildUi runs — the content-type renderer
-        // fires its onChange during initial mount and writes to state.data.
+        // State exists before buildUi — content-type renderer's initial onChange writes state.data.
         var state = Object.assign({}, defaults, {
             logoFile: null,
             logoBackground: true,
             logoSizeRatio: 0.3,
             bgTransparent: false,
-            ecLevel: 'H',
+            ecLevel: 'L',
+            logoAspect: 1,
             margin: 4
         });
 
@@ -88,10 +88,6 @@
         var ui = buildUi(config, defaults, L, state);
         root.appendChild(ui.shell);
 
-        // When the block is set to "Inherit from site theme (FSE)", tag the
-        // export button with `wp-element-button` so it picks up theme.json's
-        // button styling (background, border-radius, padding, hover) instead
-        // of our generic .lrob-qrm-maker-download look.
         if (root.classList.contains('lrob-qrm-maker-theme-site')) {
             ui.exportBtn.classList.add('wp-element-button');
         }
@@ -101,23 +97,30 @@
             return;
         }
 
+        var initialData = encodedData(state);
+        var initialEc = effectiveEc(state.ecLevel, initialData, !!state.logoDataUrl, state.logoSizeRatio, state.logoAspect);
+        // SVG + roundSize:false → crisp edges, fills the canvas at any QR version.
         var preview = new window.QRCodeStyling({
-            width: 320, height: 320,
-            data: encodedData(state),
+            type: 'svg',
+            width: 360, height: 360,
+            data: initialData,
             margin: 8,
-            qrOptions: { errorCorrectionLevel: state.ecLevel, typeNumber: 0, mode: 'Byte' },
-            dotsOptions: { color: state.fgColor, type: state.dotShape },
+            qrOptions: { errorCorrectionLevel: initialEc, typeNumber: 0, mode: 'Byte' },
+            dotsOptions: { color: state.fgColor, type: state.dotShape, roundSize: false },
             backgroundOptions: { color: state.bgColor },
             cornersSquareOptions: { color: state.eyeColor, type: state.eyeShape },
             cornersDotOptions: { color: state.eyeColor, type: innerEyeFromOuter(state.eyeShape) }
         });
         preview.append(ui.previewBox);
+        renderStats(ui, initialData, initialEc, L);
 
         function refreshPreview() {
+            var data = encodedData(state);
+            var ec = effectiveEc(state.ecLevel, data, !!state.logoDataUrl, state.logoSizeRatio, state.logoAspect);
             preview.update({
-                data: encodedData(state),
-                qrOptions: { errorCorrectionLevel: state.ecLevel, typeNumber: 0, mode: 'Byte' },
-                dotsOptions: { color: state.fgColor, type: state.dotShape },
+                data: data,
+                qrOptions: { errorCorrectionLevel: ec, typeNumber: 0, mode: 'Byte' },
+                dotsOptions: { color: state.fgColor, type: state.dotShape, roundSize: false },
                 backgroundOptions: { color: state.bgTransparent ? 'rgba(0,0,0,0)' : state.bgColor },
                 cornersSquareOptions: { color: state.eyeColor, type: state.eyeShape },
                 cornersDotOptions: { color: state.eyeColor, type: innerEyeFromOuter(state.eyeShape) },
@@ -129,6 +132,7 @@
                     hideBackgroundDots: !!state.logoBackground
                 }
             });
+            renderStats(ui, data, ec, L);
         }
 
         ui.bind(state, refreshPreview);
@@ -137,9 +141,6 @@
             openExportModal(ui, state, L);
         });
 
-        // Subtle branding — placed INSIDE the shell (so it shares the shell's
-        // background and theme), separated by a thin top rule like a real
-        // footer.
         if (config.showCredit) {
             var credit = document.createElement('p');
             credit.className = 'lrob-qrm-maker-credit';
@@ -173,11 +174,40 @@
         return d || 'https://www.lrob.fr';
     }
 
-    /* ─── Effective EC (auto-bump to H for big logos) ─────────────────── */
+    // Auto-EC pipeline — see README "Error correction (fully automatic)".
+    var EC_BYTE_CAP_V40 = { L: 2953, M: 2331, Q: 1663, H: 1273 };
+    var EC_RECOVERY = { L: 0.07, M: 0.15, Q: 0.25, H: 0.30 };
+    var EC_RANK = { L: 0, M: 1, Q: 2, H: 3 };
 
-    function effectiveEc(ec, hasLogo) {
-        if (hasLogo && (ec === 'L' || ec === 'M')) return 'H';
-        return ec || 'M';
+    function ecForLogo(logoSizeRatio, aspectRatio) {
+        var ratio = parseFloat(logoSizeRatio) || 0;
+        if (ratio <= 0) return 'L';
+        var k = parseFloat(aspectRatio);
+        if (!k || k <= 0) k = 1;
+        var thickness = Math.max(k, 1 / k);
+        var needed = (0.81 * ratio) / thickness;
+        if (needed <= EC_RECOVERY.L) return 'L';
+        if (needed <= EC_RECOVERY.M) return 'M';
+        if (needed <= EC_RECOVERY.Q) return 'Q';
+        return 'H';
+    }
+
+    function effectiveEc(ec, data, hasLogo, logoSizeRatio, logoAspect) {
+        var preferred = ec || 'M';
+        if (hasLogo) {
+            var minForLogo = ecForLogo(logoSizeRatio, logoAspect);
+            if ((EC_RANK[minForLogo] || 0) > (EC_RANK[preferred] || 0)) {
+                preferred = minForLogo;
+            }
+        }
+        var bytes = (typeof TextEncoder !== 'undefined')
+            ? new TextEncoder().encode(data || '').length
+            : (data ? data.length : 0);
+        var order = ['H', 'Q', 'M', 'L'];
+        var idx = order.indexOf(preferred);
+        if (idx < 0) idx = 2;
+        while (idx < order.length && bytes > EC_BYTE_CAP_V40[order[idx]]) idx++;
+        return order[Math.min(idx, order.length - 1)];
     }
 
     /* ─── UI builder ──────────────────────────────────────────────────── */
@@ -216,6 +246,18 @@
         exportBtn.className = 'lrob-qrm-maker-download';
         exportBtn.textContent = L('download') || 'Export QR Code';
         previewWrap.appendChild(exportBtn);
+
+        var stats = document.createElement('p');
+        stats.className = 'lrob-qrm-maker-stats';
+        stats.setAttribute('aria-live', 'polite');
+        previewWrap.appendChild(stats);
+
+        // Contextual notice — only shown when EC was auto-downgraded, payload
+        // overflowed, or the QR is dense enough that lowering EC would help.
+        var statsNotice = document.createElement('p');
+        statsNotice.className = 'lrob-qrm-maker-stats-notice';
+        statsNotice.hidden = true;
+        previewWrap.appendChild(statsNotice);
 
         previewCol.appendChild(previewWrap);
 
@@ -283,39 +325,11 @@
             bgField.input.disabled = transparentField.input.checked;
         });
 
-        // Shape pickers + EC select.
         var dotPicker = shapePicker(L('dotShape'), 'dotShape', DOT_SHAPES, 'filled', defaults.dotShape, L);
         formCol.appendChild(dotPicker.field);
 
         var eyePicker = shapePicker(L('eyeShape'), 'eyeShape', EYE_SHAPES, 'outline', defaults.eyeShape, L);
         formCol.appendChild(eyePicker.field);
-
-        var ecField = field(L('errorCorrection') || 'Error correction');
-        // EC label + tooltip hint
-        var ecLabelSpan = ecField.querySelector('span');
-        var ecHelp = document.createElement('span');
-        ecHelp.className = 'lrob-qrm-maker-help-tip';
-        ecHelp.setAttribute('tabindex', '0');
-        ecHelp.setAttribute('title', L('ecHelp')
-            || 'Higher levels stay scannable when partially obscured (e.g. logo overlay), at the cost of denser modules. H is required for large logos.');
-        ecHelp.textContent = '?';
-        ecLabelSpan.appendChild(document.createTextNode(' '));
-        ecLabelSpan.appendChild(ecHelp);
-
-        var ecSelect = document.createElement('select');
-        [
-            ['L', 'L — ' + (L('ec7') || '7% recovery')],
-            ['M', 'M — ' + (L('ec15') || '15% recovery')],
-            ['Q', 'Q — ' + (L('ec25') || '25% recovery')],
-            ['H', 'H — ' + (L('ec30') || '30% recovery')]
-        ].forEach(function (p) {
-            var o = document.createElement('option');
-            o.value = p[0]; o.textContent = p[1];
-            if (p[0] === 'H') o.selected = true;
-            ecSelect.appendChild(o);
-        });
-        ecField.appendChild(ecSelect);
-        formCol.appendChild(ecField);
 
         /* ── Logo section ── */
         var logoTitle = sectionTitle(L('logo') || 'Logo');
@@ -359,13 +373,24 @@
             transparentField.input.addEventListener('change', function () { state.bgTransparent = transparentField.input.checked; onChange(); });
             dotPicker.bind(function (v) { state.dotShape = v; onChange(); });
             eyePicker.bind(function (v) { state.eyeShape = v; onChange(); });
-            ecSelect.addEventListener('change', function () { state.ecLevel = ecSelect.value; onChange(); });
             fileInput.addEventListener('change', function () {
                 var f = fileInput.files && fileInput.files[0];
                 state.logoFile = f || null;
+                state.logoAspect = 1;
                 if (!f) { state.logoDataUrl = null; onChange(); return; }
                 var reader = new FileReader();
-                reader.onload = function () { state.logoDataUrl = reader.result; onChange(); };
+                reader.onload = function () {
+                    state.logoDataUrl = reader.result;
+                    var img = new Image();
+                    img.onload = function () {
+                        state.logoAspect = (img.naturalWidth > 0)
+                            ? (img.naturalHeight / img.naturalWidth)
+                            : 1;
+                        onChange();
+                    };
+                    img.onerror = function () { onChange(); };
+                    img.src = reader.result;
+                };
                 reader.readAsDataURL(f);
             });
             logoBgField.input.addEventListener('change', function () {
@@ -380,10 +405,46 @@
             shell: shell,
             previewBox: previewBox,
             status: status,
+            stats: stats,
+            statsNotice: statsNotice,
             exportBtn: exportBtn,
             bind: bind,
             getContentValues: function () { return contentRenderer ? contentRenderer.read() : {}; }
         };
+    }
+
+    function computeStats(data, effectiveEc, L) {
+        var line = '', notice = '';
+        if (!window.lrobQrmContent || !window.lrobQrmContent.qrStats) return { line: line, notice: notice };
+        var s = window.lrobQrmContent.qrStats(data, effectiveEc);
+        if (s.overflow) {
+            notice = L('statsOverflow') || 'Content too large to encode as a QR (max 2953 bytes at EC L). Shorten the content.';
+            return { line: line, notice: notice };
+        }
+        if (!s.version) return { line: line, notice: notice };
+        line = (L('statsTemplate') || 'QR v%v · %m×%m modules · %b bytes · EC %e')
+            .replace('%v', s.version)
+            .replace(/%m/g, s.modules)
+            .replace('%b', s.bytes)
+            .replace('%e', s.ec);
+        if (s.bytes > 200) {
+            notice = L('statsLengthWarn') || 'Past ~200 bytes, some smartphones may fail to scan the QR. Shorten the content for maximum compatibility.';
+            var isVcard = window.lrobQrmContent.guessType && window.lrobQrmContent.guessType(data) === 'vcard';
+            if (isVcard) {
+                notice += ' ' + (L('statsLengthWarnVcardSuffix') || 'For a contact card, hosting the .vcf file and encoding its URL keeps the QR much shorter.');
+            }
+        }
+        return { line: line, notice: notice };
+    }
+
+    function renderStats(ui, data, effectiveEc, L) {
+        if (!ui.stats) return;
+        var r = computeStats(data, effectiveEc, L);
+        ui.stats.textContent = r.line;
+        if (ui.statsNotice) {
+            ui.statsNotice.textContent = r.notice;
+            ui.statsNotice.hidden = !r.notice;
+        }
     }
 
     /* ─── UI helpers ──────────────────────────────────────────────────── */
@@ -592,14 +653,14 @@
         ui.exportBtn.disabled = true;
         ui.status.textContent = L('downloading') || 'Generating…';
 
-        var ec = effectiveEc(state.ecLevel, !!state.logoDataUrl);
+        var ec = effectiveEc(state.ecLevel, state.data, !!state.logoDataUrl, state.logoSizeRatio, state.logoAspect);
         var exporter = new window.QRCodeStyling({
             width: state.size,
             height: state.size,
             data: state.data,
             margin: Math.max(0, state.margin) * Math.max(2, Math.floor(state.size / 50)),
             qrOptions: { errorCorrectionLevel: ec, typeNumber: 0, mode: 'Byte' },
-            dotsOptions: { color: state.fgColor, type: state.dotShape },
+            dotsOptions: { color: state.fgColor, type: state.dotShape, roundSize: false },
             backgroundOptions: { color: state.bgTransparent ? 'rgba(0,0,0,0)' : state.bgColor },
             cornersSquareOptions: { color: state.eyeColor, type: state.eyeShape },
             cornersDotOptions: { color: state.eyeColor, type: innerEyeFromOuter(state.eyeShape) },

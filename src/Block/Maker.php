@@ -30,13 +30,11 @@ final class Maker
                 'fgColor'         => ['type' => 'string',  'default' => '#000000'],
                 'bgColor'         => ['type' => 'string',  'default' => '#ffffff'],
                 'eyeColor'        => ['type' => 'string',  'default' => '#000000'],
-                'dotShape'        => ['type' => 'string',  'default' => 'square'],
                 'eyeShape'        => ['type' => 'string',  'default' => 'square'],
                 'defaultData'     => ['type' => 'string',  'default' => ''],
                 'defaultFormat'   => ['type' => 'string',  'default' => 'webp'],
                 'defaultSize'     => ['type' => 'integer', 'default' => 1024],
-                'showLogoUpload'  => ['type' => 'boolean', 'default' => true],
-                'theme'           => ['type' => 'string',  'default' => 'light'],
+                'theme'           => ['type' => 'string',  'default' => 'auto'],
                 'showCredit'      => ['type' => 'boolean', 'default' => true],
                 'layout'          => ['type' => 'string',  'default' => 'preview-right'],
                 'customSurface'     => ['type' => 'string',  'default' => '#ffffff'],
@@ -103,10 +101,8 @@ final class Maker
                 'fgColor'   => (string) ($attributes['fgColor'] ?? '#000000'),
                 'bgColor'   => (string) ($attributes['bgColor'] ?? '#ffffff'),
                 'eyeColor'  => (string) ($attributes['eyeColor'] ?? '#000000'),
-                'dotShape'  => (string) ($attributes['dotShape'] ?? 'square'),
                 'eyeShape'  => (string) ($attributes['eyeShape'] ?? 'square'),
             ],
-            'showLogoUpload' => !empty($attributes['showLogoUpload']),
             'i18n'        => [
                 'data'           => __('URL, text, or contact info', 'lrob-qrcode-maker'),
                 'dataPlaceholder'=> __('https://example.com', 'lrob-qrcode-maker'),
@@ -120,7 +116,6 @@ final class Maker
                 'square'         => __('Square', 'lrob-qrcode-maker'),
                 'rounded'        => __('Rounded', 'lrob-qrcode-maker'),
                 'dots'           => __('Dots', 'lrob-qrcode-maker'),
-                'errorCorrection'=> __('Error correction', 'lrob-qrcode-maker'),
                 'logo'           => __('Logo (optional)', 'lrob-qrcode-maker'),
                 'logoHelp'       => __('PNG, JPEG, or WebP. Stays in your browser, never uploaded.', 'lrob-qrcode-maker'),
                 'logoBackground' => __('Clear QR modules behind logo', 'lrob-qrcode-maker'),
@@ -131,13 +126,6 @@ final class Maker
                 'close'          => __('Close', 'lrob-qrcode-maker'),
                 'size'           => __('Size', 'lrob-qrcode-maker'),
                 'exportTitle'    => __('Export QR Code', 'lrob-qrcode-maker'),
-                'ecHelp'         => __('Higher levels stay scannable when partially obscured (e.g. logo overlay), at the cost of denser modules. H is required for large logos.', 'lrob-qrcode-maker'),
-                'ec7'            => __('7% recovery', 'lrob-qrcode-maker'),
-                'ec15'           => __('15% recovery', 'lrob-qrcode-maker'),
-                'ec25'           => __('25% recovery', 'lrob-qrcode-maker'),
-                'ec30'           => __('30% recovery', 'lrob-qrcode-maker'),
-                /* Shape labels (must mirror the admin set so the JS tile builder
-                   can translate them by passing through L()). */
                 'Square'         => __('Square', 'lrob-qrcode-maker'),
                 'Rounded'        => __('Rounded', 'lrob-qrcode-maker'),
                 'Extra rounded'  => __('Extra rounded', 'lrob-qrcode-maker'),
@@ -155,21 +143,21 @@ final class Maker
                 'errorGeneric'   => __('Sorry, something went wrong. Please retry.', 'lrob-qrcode-maker'),
                 'showAdvanced'   => __('Show advanced options', 'lrob-qrcode-maker'),
                 'hideAdvanced'   => __('Hide advanced options', 'lrob-qrcode-maker'),
-                /* The branding line is "{creditPrefix} <a>{creditLink}</a>".
-                   creditPrefix holds the plain-text intro (incl. the brand
-                   name); creditLink is the anchor on the lrob.fr backlink —
-                   a pure keyword phrase so the link carries SEO weight. */
                 'creditPrefix'   => __('QR Code generator by LRob,', 'lrob-qrcode-maker'),
                 'creditLink'     => __('WordPress web hosting specialist', 'lrob-qrcode-maker'),
+                'statsTemplate'  => __('QR v%v · %m×%m modules · %b bytes · EC %e', 'lrob-qrcode-maker'),
+                'statsLengthWarn'        => __('Past ~200 bytes, some smartphones may fail to scan the QR. Shorten the content for maximum compatibility.', 'lrob-qrcode-maker'),
+                'statsLengthWarnVcardSuffix' => __('For a contact card, hosting the .vcf file and encoding its URL keeps the QR much shorter.', 'lrob-qrcode-maker'),
+                'statsOverflow'  => __('Content too large to encode as a QR (max 2953 bytes at EC L). Shorten the content.', 'lrob-qrcode-maker'),
             ],
         ];
 
         $align = !empty($attributes['align']) ? ' align' . preg_replace('/[^a-z]/', '', (string) $attributes['align']) : '';
         $anchor = !empty($attributes['anchor']) ? ' id="' . esc_attr((string) $attributes['anchor']) . '"' : '';
 
-        $theme = (string) ($attributes['theme'] ?? 'light');
+        $theme = (string) ($attributes['theme'] ?? 'auto');
         if (!in_array($theme, ['light', 'dark', 'auto', 'site', 'custom'], true)) {
-            $theme = 'light';
+            $theme = 'auto';
         }
         $theme_class = ' lrob-qrm-maker-theme-' . $theme;
 
