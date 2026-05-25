@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-05-25T11:30:56+00:00\n"
+"POT-Creation-Date: 2026-05-25T15:04:29+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.4.0\n"
 "X-Domain: lrob-qrcode-maker\n"
@@ -37,16 +37,16 @@ msgstr ""
 #: src/Admin/LibraryPage.php:27
 #: src/Block/Maker.php:120
 #: src/Block/Maker.php:141
-#: assets/js/block-editor.js:110
-#: assets/js/block-editor.js:120
+#: assets/js/block-editor.js:161
+#: assets/js/block-editor.js:171
 msgid "Square"
 msgstr ""
 
 #: src/Admin/LibraryPage.php:28
 #: src/Block/Maker.php:121
 #: src/Block/Maker.php:142
-#: assets/js/block-editor.js:111
-#: assets/js/block-editor.js:121
+#: assets/js/block-editor.js:162
+#: assets/js/block-editor.js:172
 msgid "Rounded"
 msgstr ""
 
@@ -58,8 +58,8 @@ msgstr ""
 #: src/Admin/LibraryPage.php:30
 #: src/Block/Maker.php:122
 #: src/Block/Maker.php:144
-#: assets/js/block-editor.js:112
-#: assets/js/block-editor.js:122
+#: assets/js/block-editor.js:163
+#: assets/js/block-editor.js:173
 msgid "Dots"
 msgstr ""
 
@@ -126,9 +126,9 @@ msgid "Off"
 msgstr ""
 
 #: src/Admin/LibraryPage.php:154
-#: src/Admin/LibraryPage.php:324
-#: src/Admin/LibraryPage.php:341
-#: src/Admin/LibraryPage.php:378
+#: src/Admin/LibraryPage.php:331
+#: src/Admin/LibraryPage.php:348
+#: src/Admin/LibraryPage.php:385
 #: src/Block/Maker.php:133
 #: src/Block/Maker.php:153
 msgid "Export QR Code"
@@ -154,7 +154,7 @@ msgid "Designer"
 msgstr ""
 
 #: src/Admin/LibraryPage.php:186
-#: src/Admin/LibraryPage.php:342
+#: src/Admin/LibraryPage.php:349
 #: src/Block/Maker.php:131
 msgid "Close"
 msgstr ""
@@ -182,126 +182,129 @@ msgstr ""
 msgid "Design"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:237
+#: src/Admin/LibraryPage.php:242
+#: src/Admin/LibraryPage.php:243
 #: src/Block/Maker.php:114
-#: assets/js/block-editor.js:103
+#: assets/js/block-editor.js:154
 msgid "Foreground"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:241
+#: src/Admin/LibraryPage.php:246
+#: src/Admin/LibraryPage.php:247
 #: src/Block/Maker.php:115
-#: assets/js/block-editor.js:104
+#: assets/js/block-editor.js:155
 msgid "Background"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:245
+#: src/Admin/LibraryPage.php:250
+#: src/Admin/LibraryPage.php:251
 #: src/Block/Maker.php:116
-#: assets/js/block-editor.js:105
+#: assets/js/block-editor.js:156
 msgid "Eye color"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:250
+#: src/Admin/LibraryPage.php:255
 #: src/Block/Maker.php:117
 msgid "Transparent background"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:255
+#: src/Admin/LibraryPage.php:260
 #: src/Block/Maker.php:118
-#: assets/js/block-editor.js:107
+#: assets/js/block-editor.js:158
 msgid "Dot shape"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:267
+#: src/Admin/LibraryPage.php:273
 #: src/Block/Maker.php:119
-#: assets/js/block-editor.js:117
+#: assets/js/block-editor.js:168
 msgid "Eye shape"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:280
+#: src/Admin/LibraryPage.php:287
 #: src/Block/Maker.php:123
 msgid "Error correction"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:282
+#: src/Admin/LibraryPage.php:289
 #: src/Block/Maker.php:134
 msgid "Higher levels stay scannable when partially obscured (e.g. logo overlay), at the cost of denser modules. H is required for large logos."
 msgstr ""
 
-#: src/Admin/LibraryPage.php:285
+#: src/Admin/LibraryPage.php:292
 #: src/Block/Maker.php:135
 msgid "7% recovery"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:286
+#: src/Admin/LibraryPage.php:293
 #: src/Block/Maker.php:136
 msgid "15% recovery"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:287
+#: src/Admin/LibraryPage.php:294
 #: src/Block/Maker.php:137
 msgid "25% recovery"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:288
+#: src/Admin/LibraryPage.php:295
 #: src/Block/Maker.php:138
 msgid "30% recovery"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:293
+#: src/Admin/LibraryPage.php:300
 #: src/Block/Maker.php:129
 msgid "Logo"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:299
-#: src/Admin/Menu.php:113
+#: src/Admin/LibraryPage.php:306
+#: src/Admin/Menu.php:118
 msgid "Pick logo from Media Library"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:302
-#: src/Admin/Menu.php:115
+#: src/Admin/LibraryPage.php:309
+#: src/Admin/Menu.php:120
 msgid "Remove logo"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:305
+#: src/Admin/LibraryPage.php:312
 msgid "PNG, JPEG, or WebP from the Media Library. Saved with the QR code."
 msgstr ""
 
-#: src/Admin/LibraryPage.php:308
+#: src/Admin/LibraryPage.php:315
 #: src/Block/Maker.php:126
 msgid "Clear QR modules behind logo"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:312
+#: src/Admin/LibraryPage.php:319
 #: src/Block/Maker.php:127
 msgid "Logo size"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:321
-#: src/Admin/LibraryPage.php:375
+#: src/Admin/LibraryPage.php:328
+#: src/Admin/LibraryPage.php:382
 #: src/Block/Maker.php:130
 msgid "Cancel"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:327
+#: src/Admin/LibraryPage.php:334
 msgid "Save to library"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:350
+#: src/Admin/LibraryPage.php:357
 #: src/Block/Maker.php:132
 msgid "Size"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:357
+#: src/Admin/LibraryPage.php:364
 #: src/Block/Maker.php:151
 msgid "Custom…"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:361
+#: src/Admin/LibraryPage.php:368
 #: src/Block/Maker.php:152
 msgid "Custom size (px)"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:365
+#: src/Admin/LibraryPage.php:372
 #: src/Block/Maker.php:150
 msgid "Format"
 msgstr ""
@@ -324,99 +327,99 @@ msgstr ""
 msgid "Settings"
 msgstr ""
 
-#: src/Admin/Menu.php:109
+#: src/Admin/Menu.php:114
 msgid "Delete this QR code? This cannot be undone."
 msgstr ""
 
-#: src/Admin/Menu.php:110
+#: src/Admin/Menu.php:115
 msgid "Saving…"
 msgstr ""
 
-#: src/Admin/Menu.php:111
+#: src/Admin/Menu.php:116
 msgid "Saved"
 msgstr ""
 
-#: src/Admin/Menu.php:112
+#: src/Admin/Menu.php:117
 msgid "Error"
 msgstr ""
 
-#: src/Admin/Menu.php:114
+#: src/Admin/Menu.php:119
 msgid "Change logo"
 msgstr ""
 
-#: src/Admin/Menu.php:116
+#: src/Admin/Menu.php:121
 msgid "Choose a logo image"
 msgstr ""
 
-#: src/Admin/Menu.php:117
+#: src/Admin/Menu.php:122
 msgid "Use this logo"
 msgstr ""
 
-#: src/Admin/Menu.php:118
+#: src/Admin/Menu.php:123
 msgid "Slug allocated on save"
 msgstr ""
 
-#: src/Admin/Menu.php:137
+#: src/Admin/Menu.php:142
 msgid "Your website is too slow?"
 msgstr ""
 
-#: src/Admin/Menu.php:138
+#: src/Admin/Menu.php:143
 msgid "Get the fastest WordPress hosting"
 msgstr ""
 
-#: src/Admin/Menu.php:142
+#: src/Admin/Menu.php:147
 msgid "Managing multiple websites?"
 msgstr ""
 
-#: src/Admin/Menu.php:143
+#: src/Admin/Menu.php:148
 msgid "Centralized WordPress hosting for agencies"
 msgstr ""
 
-#: src/Admin/Menu.php:147
+#: src/Admin/Menu.php:152
 msgid "Tired of robotic support chatbots?"
 msgstr ""
 
-#: src/Admin/Menu.php:148
+#: src/Admin/Menu.php:153
 msgid "Get human WordPress support by LRob"
 msgstr ""
 
-#: src/Admin/Menu.php:152
+#: src/Admin/Menu.php:157
 msgid "Worried about WordPress attacks?"
 msgstr ""
 
-#: src/Admin/Menu.php:153
+#: src/Admin/Menu.php:158
 msgid "Hardened WordPress hosting with WAF"
 msgstr ""
 
-#: src/Admin/Menu.php:157
+#: src/Admin/Menu.php:162
 msgid "Backups shouldn’t be an extra."
 msgstr ""
 
-#: src/Admin/Menu.php:158
+#: src/Admin/Menu.php:163
 msgid "WordPress hosting with 1-year backups included"
 msgstr ""
 
-#: src/Admin/Menu.php:162
+#: src/Admin/Menu.php:167
 msgid "Going green?"
 msgstr ""
 
-#: src/Admin/Menu.php:163
+#: src/Admin/Menu.php:168
 msgid "Eco-friendly WordPress hosting"
 msgstr ""
 
-#: src/Admin/Menu.php:167
+#: src/Admin/Menu.php:172
 msgid "Need data sovereignty?"
 msgstr ""
 
-#: src/Admin/Menu.php:168
+#: src/Admin/Menu.php:173
 msgid "French WordPress hosting, EU data residency"
 msgstr ""
 
-#: src/Admin/Menu.php:172
+#: src/Admin/Menu.php:177
 msgid "Stuck on a slow host?"
 msgstr ""
 
-#: src/Admin/Menu.php:173
+#: src/Admin/Menu.php:178
 msgid "Switch to LRob — migration included"
 msgstr ""
 
@@ -525,11 +528,11 @@ msgid "Hide advanced options"
 msgstr ""
 
 #: src/Block/Maker.php:162
-msgid "QR Code generator by"
+msgid "QR Code generator by LRob,"
 msgstr ""
 
 #: src/Block/Maker.php:163
-msgid "LRob, WordPress web hosting specialist"
+msgid "WordPress web hosting specialist"
 msgstr ""
 
 #: src/Block/Maker.php:223
@@ -580,7 +583,7 @@ msgid "Plain text"
 msgstr ""
 
 #: src/Support/ContentTypes.php:44
-#: assets/js/block-editor.js:162
+#: assets/js/block-editor.js:213
 msgid "Text"
 msgstr ""
 
@@ -694,138 +697,138 @@ msgstr ""
 msgid "Longitude"
 msgstr ""
 
-#: assets/js/block-editor.js:60
+#: assets/js/block-editor.js:111
 msgid "QR Code Maker — visitors will interact with the live form on the frontend."
 msgstr ""
 
-#: assets/js/block-editor.js:70
+#: assets/js/block-editor.js:121
 msgid "Defaults"
 msgstr ""
 
-#: assets/js/block-editor.js:72
+#: assets/js/block-editor.js:123
 msgid "Default URL or text"
 msgstr ""
 
-#: assets/js/block-editor.js:73
+#: assets/js/block-editor.js:124
 msgid "Pre-fill the input on first load (leave empty for a blank form)."
 msgstr ""
 
-#: assets/js/block-editor.js:78
+#: assets/js/block-editor.js:129
 msgid "Default format"
 msgstr ""
 
-#: assets/js/block-editor.js:88
+#: assets/js/block-editor.js:139
 msgid "Default size (px)"
 msgstr ""
 
-#: assets/js/block-editor.js:102
+#: assets/js/block-editor.js:153
 msgid "Style"
 msgstr ""
 
-#: assets/js/block-editor.js:129
+#: assets/js/block-editor.js:180
 msgid "Layout"
 msgstr ""
 
-#: assets/js/block-editor.js:131
+#: assets/js/block-editor.js:182
 msgid "Maker layout"
 msgstr ""
 
-#: assets/js/block-editor.js:134
+#: assets/js/block-editor.js:185
 msgid "Preview right (default)"
 msgstr ""
 
-#: assets/js/block-editor.js:135
+#: assets/js/block-editor.js:186
 msgid "Preview left"
 msgstr ""
 
-#: assets/js/block-editor.js:136
+#: assets/js/block-editor.js:187
 msgid "Stacked (preview on top)"
 msgstr ""
 
-#: assets/js/block-editor.js:143
+#: assets/js/block-editor.js:194
 msgid "Theme"
 msgstr ""
 
-#: assets/js/block-editor.js:145
+#: assets/js/block-editor.js:196
 msgid "Color scheme"
 msgstr ""
 
-#: assets/js/block-editor.js:148
+#: assets/js/block-editor.js:199
 msgid "Light"
 msgstr ""
 
-#: assets/js/block-editor.js:149
+#: assets/js/block-editor.js:200
 msgid "Dark"
 msgstr ""
 
-#: assets/js/block-editor.js:150
+#: assets/js/block-editor.js:201
 msgid "Auto (follow visitor’s OS preference)"
 msgstr ""
 
-#: assets/js/block-editor.js:151
+#: assets/js/block-editor.js:202
 msgid "Inherit from site theme (FSE)"
 msgstr ""
 
-#: assets/js/block-editor.js:152
+#: assets/js/block-editor.js:203
 msgid "Custom"
 msgstr ""
 
-#: assets/js/block-editor.js:155
+#: assets/js/block-editor.js:206
 msgid "Maps the maker colors to your block theme’s palette (--wp--preset--color--background, --foreground, --primary, --secondary). Falls back to defaults on classic themes."
 msgstr ""
 
-#: assets/js/block-editor.js:159
+#: assets/js/block-editor.js:210
 msgid "Surface (shell background)"
 msgstr ""
 
-#: assets/js/block-editor.js:160
+#: assets/js/block-editor.js:211
 msgid "Soft surface (cards)"
 msgstr ""
 
-#: assets/js/block-editor.js:161
+#: assets/js/block-editor.js:212
 msgid "Select / input background"
 msgstr ""
 
-#: assets/js/block-editor.js:163
+#: assets/js/block-editor.js:214
 msgid "Muted text"
 msgstr ""
 
-#: assets/js/block-editor.js:164
+#: assets/js/block-editor.js:215
 msgid "Accent (download button)"
 msgstr ""
 
-#: assets/js/block-editor.js:168
+#: assets/js/block-editor.js:219
 msgid "What visitors can edit"
 msgstr ""
 
-#: assets/js/block-editor.js:170
+#: assets/js/block-editor.js:221
 msgid "Allow uploading a logo"
 msgstr ""
 
-#: assets/js/block-editor.js:175
+#: assets/js/block-editor.js:226
 msgid "Show \"Powered by LRob\" footer"
 msgstr ""
 
-#: assets/js/block-editor.js:176
+#: assets/js/block-editor.js:227
 msgid "Small credit + backlink at the bottom of the maker."
 msgstr ""
 
-#: assets/js/block-editor.js:188
+#: assets/js/block-editor.js:239
 msgid "QR Code Maker"
 msgstr ""
 
-#: assets/js/block-editor.js:189
+#: assets/js/block-editor.js:240
 msgid "Let visitors design and download their own QR codes."
 msgstr ""
 
-#: assets/js/block-editor.js:192
+#: assets/js/block-editor.js:243
 msgid "qr"
 msgstr ""
 
-#: assets/js/block-editor.js:192
+#: assets/js/block-editor.js:243
 msgid "qrcode"
 msgstr ""
 
-#: assets/js/block-editor.js:192
+#: assets/js/block-editor.js:243
 msgid "barcode"
 msgstr ""

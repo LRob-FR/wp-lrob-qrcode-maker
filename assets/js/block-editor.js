@@ -26,16 +26,67 @@
     var ToggleControl = components.ToggleControl;
     var BaseControl = components.BaseControl;
 
+    var useState = wp.element.useState;
+    var useEffect = wp.element.useEffect;
+
+    /** Color swatch + hex text input, side by side and kept in sync. The
+     *  swatch is the native browser picker (familiar, free); the text field
+     *  accepts pasted hex codes from a brand palette. Three- and six-digit
+     *  hex are accepted, the `#` is auto-prefixed, only valid values are
+     *  pushed to the parent block attribute. */
     function ColorRow(label, value, onChange) {
+        var state = useState(value || '#000000');
+        var local = state[0];
+        var setLocal = state[1];
+        // Sync the local text-input value when the parent attribute changes
+        // (e.g. user picked via the swatch, theme reset, etc.).
+        useEffect(function () { setLocal(value || '#000000'); }, [value]);
+
+        function commit(raw) {
+            setLocal(raw);
+            var v = String(raw).trim();
+            if (v && v[0] !== '#') v = '#' + v;
+            if (/^#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/.test(v)) {
+                // Expand shorthand #abc → #aabbcc for consistency.
+                if (v.length === 4) {
+                    v = '#' + v[1] + v[1] + v[2] + v[2] + v[3] + v[3];
+                }
+                onChange(v.toLowerCase());
+            }
+        }
+
         return el(
             BaseControl,
             { label: label },
-            el('input', {
-                type: 'color',
-                value: value,
-                onChange: function (e) { onChange(e.target.value); },
-                style: { width: '100%', height: '32px', border: '1px solid #ccd0d4', borderRadius: '4px', padding: '2px' }
-            })
+            el('div', { style: { display: 'flex', gap: '6px', alignItems: 'center' } },
+                el('input', {
+                    type: 'color',
+                    value: value || '#000000',
+                    onChange: function (e) { commit(e.target.value); },
+                    style: {
+                        width: '44px', height: '32px', padding: '2px',
+                        border: '1px solid #ccd0d4', borderRadius: '4px',
+                        cursor: 'pointer', flexShrink: 0
+                    },
+                    'aria-label': label
+                }),
+                el('input', {
+                    type: 'text',
+                    value: local,
+                    onChange: function (e) { commit(e.target.value); },
+                    placeholder: '#000000',
+                    spellCheck: false,
+                    maxLength: 7,
+                    style: {
+                        flex: 1, minWidth: 0, height: '32px',
+                        padding: '4px 8px',
+                        border: '1px solid #ccd0d4', borderRadius: '4px',
+                        fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+                        fontSize: '12px',
+                        textTransform: 'lowercase'
+                    }
+                })
+            )
         );
     }
 

@@ -77,7 +77,7 @@
         var spec = {
             data:           (fd.get('data') || '').toString(),
             size:           parseInt(defaults.size, 10) || 1024,
-            ecLevel:        (fd.get('ecLevel') || 'M').toString(),
+            ecLevel:        (fd.get('ecLevel') || 'H').toString(),
             fgColor:        (fd.get('fgColor') || '#000000').toString(),
             bgColor:        (fd.get('bgColor') || '#ffffff').toString(),
             eyeColor:       (fd.get('eyeColor') || '#000000').toString(),
@@ -85,7 +85,7 @@
             dotShape:       (fd.get('dotShape') || 'square').toString(),
             eyeShape:       (fd.get('eyeShape') || 'square').toString(),
             format:         (defaults.format || 'webp').toString(),
-            logoSizeRatio:  parseFloat(fd.get('logoSizeRatio') || '0.2'),
+            logoSizeRatio:  parseFloat(fd.get('logoSizeRatio') || '0.3'),
             logoBackground: !!fd.get('logoBackground'),
             margin:         4
         };
@@ -238,6 +238,19 @@
         if (bgColorInput) bgColorInput.disabled = off;
     }
     if (bgTransparentInput) bgTransparentInput.addEventListener('change', syncBgTransparent);
+
+    /* WordPress core's wpColorPicker — single widget exposing the swatch +
+       a popover with hex / RGB inputs. The underlying text input keeps its
+       `name` attribute, so FormData() picks the chosen value up unchanged.
+       We wire `change` to refreshPreview because wpColorPicker doesn't fire
+       native `input` events on the wrapped text field. */
+    var $form = window.jQuery ? window.jQuery(form) : null;
+    if ($form && $form.wpColorPicker) {
+        $form.find('.lrob-qrm-color-picker').wpColorPicker({
+            change: function () { setTimeout(refreshPreview, 0); },
+            clear:  function () { setTimeout(refreshPreview, 0); }
+        });
+    }
 
     // Size/format moved out to the dedicated export modal (see below) —
     // keeping a no-op syncCustomSize stub so older callers in loadIntoEditor
@@ -427,7 +440,7 @@
                 imageOptions: {
                     crossOrigin: 'anonymous',
                     margin: 2,
-                    imageSize: parseFloat(d.logoSizeRatio) || 0.2,
+                    imageSize: parseFloat(d.logoSizeRatio) || 0.3,
                     hideBackgroundDots: !!d.logoBackground
                 }
             });
@@ -526,7 +539,7 @@
             imageOptions: {
                 crossOrigin: 'anonymous',
                 margin: 4,
-                imageSize: parseFloat(exportSpec.logoSizeRatio) || 0.2,
+                imageSize: parseFloat(exportSpec.logoSizeRatio) || 0.3,
                 hideBackgroundDots: !!exportSpec.logoBackground
             }
         });
@@ -629,7 +642,7 @@
             imageOptions: {
                 crossOrigin: 'anonymous',
                 margin: 4,
-                imageSize: parseFloat(spec.logoSizeRatio) || 0.2,
+                imageSize: parseFloat(spec.logoSizeRatio) || 0.3,
                 hideBackgroundDots: !!spec.logoBackground
             }
         });
@@ -801,6 +814,12 @@
             return;
         }
         nodes[0].value = String(value);
+        // If this is a wpColorPicker-wrapped input, push the value through
+        // its API so the swatch + popover both reflect the change.
+        if (nodes[0].classList.contains('lrob-qrm-color-picker')
+            && window.jQuery && window.jQuery.fn.wpColorPicker) {
+            window.jQuery(nodes[0]).wpColorPicker('color', String(value));
+        }
     }
     function setCheck(name, value) {
         var el = form.querySelector('[name="' + name + '"]');

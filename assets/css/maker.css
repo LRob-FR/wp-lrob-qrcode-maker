@@ -211,6 +211,23 @@
 .lrob-qrm-maker-download:active { transform: translateY(1px); }
 .lrob-qrm-maker-download:disabled { opacity: .6; cursor: progress; }
 
+/* "Site" theme: the export button is tagged with `wp-element-button` so it
+   inherits the WordPress block theme's button styling (theme.json's
+   styles.elements.button). Strip our own visuals so the theme rules win;
+   keep only the sizing constraints so the button stays full-width inside
+   the preview column. */
+.lrob-qrm-maker-theme-site .lrob-qrm-maker-download {
+    background: transparent;
+    color: inherit;
+    padding: revert;
+    border-radius: revert;
+    font-weight: revert;
+    font-size: revert;
+    /* Width + max-width are layout concerns, keep them. */
+    width: 100%;
+    max-width: 320px;
+}
+
 /* ─── Form fields (modern look) ───────────────────────────────────────── */
 
 .lrob-qrm-maker-field {

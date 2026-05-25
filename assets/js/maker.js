@@ -78,15 +78,23 @@
         var state = Object.assign({}, defaults, {
             logoFile: null,
             logoBackground: true,
-            logoSizeRatio: 0.2,
+            logoSizeRatio: 0.3,
             bgTransparent: false,
-            ecLevel: 'M',
+            ecLevel: 'H',
             margin: 4
         });
 
         root.innerHTML = '';
         var ui = buildUi(config, defaults, L, state);
         root.appendChild(ui.shell);
+
+        // When the block is set to "Inherit from site theme (FSE)", tag the
+        // export button with `wp-element-button` so it picks up theme.json's
+        // button styling (background, border-radius, padding, hover) instead
+        // of our generic .lrob-qrm-maker-download look.
+        if (root.classList.contains('lrob-qrm-maker-theme-site')) {
+            ui.exportBtn.classList.add('wp-element-button');
+        }
 
         if (!window.QRCodeStyling) {
             ui.previewBox.textContent = L('errorGeneric');
@@ -303,7 +311,7 @@
         ].forEach(function (p) {
             var o = document.createElement('option');
             o.value = p[0]; o.textContent = p[1];
-            if (p[0] === 'M') o.selected = true;
+            if (p[0] === 'H') o.selected = true;
             ecSelect.appendChild(o);
         });
         ecField.appendChild(ecSelect);
@@ -332,11 +340,11 @@
         var logoSizeField = field(L('logoSize') || 'Logo size');
         var logoSizeValueLabel = document.createElement('span');
         logoSizeValueLabel.className = 'lrob-qrm-maker-range-value';
-        logoSizeValueLabel.textContent = '20%';
+        logoSizeValueLabel.textContent = '30%';
         logoSizeField.querySelector('span').appendChild(logoSizeValueLabel);
         var logoRange = document.createElement('input');
         logoRange.type = 'range';
-        logoRange.min = '0.1'; logoRange.max = '0.3'; logoRange.step = '0.01'; logoRange.value = '0.2';
+        logoRange.min = '0.1'; logoRange.max = '0.3'; logoRange.step = '0.01'; logoRange.value = '0.3';
         logoRange.addEventListener('input', function () {
             logoSizeValueLabel.textContent = Math.round(parseFloat(logoRange.value) * 100) + '%';
         });

@@ -25,11 +25,21 @@
 
 /* ─── Card grid ─────────────────────────────────────────────────────── */
 
+/* Fixed-width cards so they don't resize between breakpoints — just stack
+   or unstack as the viewport changes. 320px is a comfortable target,
+   enough room for the QR preview + actions without feeling cramped. */
 .lrob-qrm-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, 320px);
     gap: 20px;
     margin-top: 24px;
+    justify-content: start;
+}
+
+@media (max-width: 380px) {
+    .lrob-qrm-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 .lrob-qrm-empty {
@@ -336,15 +346,19 @@ body.lrob-qrm-modal-open {
     font-weight: 400;
 }
 
+/* Grey-out for the background color field when "Transparent" is checked.
+   !important guards against wpColorPicker's own CSS bumping opacity back. */
 .lrob-qrm-field-disabled {
-    opacity: 0.45;
-    pointer-events: none;
+    opacity: 0.45 !important;
+    pointer-events: none !important;
 }
 
-.lrob-qrm-field-disabled > span::after {
-    content: " — N/A";
-    color: #646970;
-    font-size: 0.85em;
+/* Ensure the per-color caption text always renders above the wpColorPicker
+   widget. Without this, the swatch button can visually collapse the span
+   on tight column widths. */
+.lrob-qrm-color-field > span {
+    display: block;
+    margin-bottom: 4px;
 }
 
 .lrob-qrm-field input[type="text"],
@@ -553,8 +567,8 @@ body.lrob-qrm-modal-open {
 /* The tiles live directly inside the fieldset — grid the fieldset itself. */
 .lrob-qrm-shape-picker {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
-    gap: 8px;
+    grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+    gap: 6px;
     margin-top: 4px;
 }
 
@@ -566,17 +580,15 @@ body.lrob-qrm-modal-open {
 .lrob-qrm-shape-tile {
     position: relative;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    padding: 10px 4px;
+    padding: 8px;
     border: 2px solid #dcdcde;
     border-radius: 6px;
     cursor: pointer;
-    transition: border-color .12s, background .12s, transform .12s;
-    text-align: center;
+    transition: border-color .12s, background .12s;
     background: #fff;
+    aspect-ratio: 1 / 1;
 }
 
 .lrob-qrm-shape-tile:hover {
@@ -603,11 +615,8 @@ body.lrob-qrm-modal-open {
     outline-offset: 1px;
 }
 
-.lrob-qrm-shape-label {
-    font-size: 0.78em;
-    line-height: 1.1;
-    color: #1d2327;
-}
+/* Shape labels moved into the tile's `title` attribute — shown on hover/
+   focus instead of always-visible text, so the tile picker stays compact. */
 
 /* Shape icons — pure CSS shapes. The "-filled" variant is for dot shapes
    (solid data modules); the "-outline" variant is for eye shapes (finder
@@ -753,3 +762,58 @@ body.lrob-qrm-modal-open {
 }
 
 .lrob-qrm-promo-body a:hover::after { transform: translateX(2px); }
+
+/* wpColorPicker (WP core) — by default EVERYTHING (hex input + Default/Clear
+   buttons + iris picker) appears inline when the swatch is clicked, shoving
+   the form below it. Float every revealed element absolutely so the swatch
+   stays put and the rest of the modal doesn't budge. */
+
+.lrob-qrm-editor-form .wp-picker-container {
+    position: relative;
+    width: 100%;
+}
+
+.lrob-qrm-editor-form .wp-color-result { margin: 0; }
+
+/* The hex input + Default/Clear sit just below the swatch in a thin pill. */
+.lrob-qrm-editor-form .wp-picker-input-wrap {
+    position: absolute !important;
+    top: calc(100% + 4px);
+    left: 0;
+    z-index: 9999;
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 6px 6px 0 0;
+    padding: 6px 8px;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    box-shadow: 0 -1px 0 0 #c3c4c7 inset;
+}
+
+/* The iris colour picker stacks under the input-wrap pill, visually fused. */
+.lrob-qrm-editor-form .wp-picker-holder {
+    position: absolute !important;
+    top: calc(100% + 48px);  /* clears the input-wrap pill above */
+    left: 0;
+    z-index: 9999;
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-top: 0;
+    border-radius: 0 0 6px 6px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+}
+
+/* On wide viewports the modal is split (preview 320 + form ~568) and the
+   3-col color grid leaves only ~180px per cell — narrower than the picker's
+   natural ~250px popup. Anchor the rightmost color field's popup to its right
+   edge so it opens leftward and stays inside the modal (no horizontal
+   scrollbar). Below 800px the form gets the full width and the picker fits at
+   left anchor, so we leave it alone there. */
+@media (min-width: 801px) {
+    .lrob-qrm-editor-form .lrob-qrm-field-grid > div.lrob-qrm-color-field:nth-of-type(3) .wp-picker-input-wrap,
+    .lrob-qrm-editor-form .lrob-qrm-field-grid > div.lrob-qrm-color-field:nth-of-type(3) .wp-picker-holder {
+        left: auto !important;
+        right: 0 !important;
+    }
+}

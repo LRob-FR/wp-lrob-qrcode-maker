@@ -156,11 +156,11 @@ final class Maker
                 'showAdvanced'   => __('Show advanced options', 'lrob-qrcode-maker'),
                 'hideAdvanced'   => __('Hide advanced options', 'lrob-qrcode-maker'),
                 /* The branding line is "{creditPrefix} <a>{creditLink}</a>".
-                   creditPrefix is plain text; creditLink is the anchor text on
-                   the lrob.fr backlink — keep the brand + a relevant keyword in
-                   it so the link carries SEO value. */
-                'creditPrefix'   => __('QR Code generator by', 'lrob-qrcode-maker'),
-                'creditLink'     => __('LRob, WordPress web hosting specialist', 'lrob-qrcode-maker'),
+                   creditPrefix holds the plain-text intro (incl. the brand
+                   name); creditLink is the anchor on the lrob.fr backlink —
+                   a pure keyword phrase so the link carries SEO weight. */
+                'creditPrefix'   => __('QR Code generator by LRob,', 'lrob-qrcode-maker'),
+                'creditLink'     => __('WordPress web hosting specialist', 'lrob-qrcode-maker'),
             ],
         ];
 
@@ -262,9 +262,11 @@ final class Maker
 
     private static function asset_version(string $relative): string
     {
+        // Always append the file's mtime so browser caches drop when the file
+        // changes — even when LROB_QRM_VERSION hasn't been bumped.
         $version = LROB_QRM_VERSION;
         $full = LROB_QRM_PATH . ltrim($relative, '/');
-        if (is_file($full) && defined('WP_DEBUG') && WP_DEBUG) {
+        if (is_file($full)) {
             $version .= '.' . filemtime($full);
         }
         return $version;

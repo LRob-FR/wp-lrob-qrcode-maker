@@ -233,18 +233,23 @@ final class LibraryPage
                             <h3 class="lrob-qrm-section-title"><?php esc_html_e('Design', 'lrob-qrcode-maker'); ?></h3>
                             <div class="lrob-qrm-section">
                                 <div class="lrob-qrm-field-grid">
-                                    <label class="lrob-qrm-field">
+                                    <!-- Color fields use <div> (not <label>) because wpColorPicker
+                                         injects its own DOM around the input — a wrapping <label>
+                                         confuses the picker's click/focus model and can hide the
+                                         caption. The visible caption is a plain <span>, with
+                                         aria-label on the input for accessibility. -->
+                                    <div class="lrob-qrm-field lrob-qrm-color-field">
                                         <span><?php esc_html_e('Foreground', 'lrob-qrcode-maker'); ?></span>
-                                        <input type="color" name="fgColor" value="#000000">
-                                    </label>
-                                    <label class="lrob-qrm-field" data-role="bgcolor-field">
+                                        <input type="text" name="fgColor" value="#000000" class="lrob-qrm-color-picker" data-default-color="#000000" aria-label="<?php esc_attr_e('Foreground', 'lrob-qrcode-maker'); ?>">
+                                    </div>
+                                    <div class="lrob-qrm-field lrob-qrm-color-field" data-role="bgcolor-field">
                                         <span><?php esc_html_e('Background', 'lrob-qrcode-maker'); ?></span>
-                                        <input type="color" name="bgColor" value="#ffffff">
-                                    </label>
-                                    <label class="lrob-qrm-field">
+                                        <input type="text" name="bgColor" value="#ffffff" class="lrob-qrm-color-picker" data-default-color="#ffffff" aria-label="<?php esc_attr_e('Background', 'lrob-qrcode-maker'); ?>">
+                                    </div>
+                                    <div class="lrob-qrm-field lrob-qrm-color-field">
                                         <span><?php esc_html_e('Eye color', 'lrob-qrcode-maker'); ?></span>
-                                        <input type="color" name="eyeColor" value="#000000">
-                                    </label>
+                                        <input type="text" name="eyeColor" value="#000000" class="lrob-qrm-color-picker" data-default-color="#000000" aria-label="<?php esc_attr_e('Eye color', 'lrob-qrcode-maker'); ?>">
+                                    </div>
                                     <label class="lrob-qrm-field lrob-qrm-field-inline">
                                         <input type="checkbox" name="bgTransparent" value="1">
                                         <span><?php esc_html_e('Transparent background', 'lrob-qrcode-maker'); ?></span>
@@ -253,24 +258,26 @@ final class LibraryPage
 
                                 <fieldset class="lrob-qrm-shape-picker">
                                     <legend><?php esc_html_e('Dot shape', 'lrob-qrcode-maker'); ?></legend>
-                                    <?php foreach (self::DOT_SHAPES as $value => $icon) : ?>
-                                        <label class="lrob-qrm-shape-tile">
+                                    <?php foreach (self::DOT_SHAPES as $value => $icon) :
+                                        $label = self::shape_label($value);
+                                    ?>
+                                        <label class="lrob-qrm-shape-tile" title="<?php echo esc_attr($label); ?>" aria-label="<?php echo esc_attr($label); ?>">
                                             <input type="radio" name="dotShape" value="<?php echo esc_attr($value); ?>"
                                                    <?php checked($value, 'square'); ?>>
                                             <span class="lrob-qrm-shape-icon lrob-qrm-shape-icon-<?php echo esc_attr($icon); ?> lrob-qrm-shape-icon-filled"></span>
-                                            <span class="lrob-qrm-shape-label"><?php echo esc_html(self::shape_label($value)); ?></span>
                                         </label>
                                     <?php endforeach; ?>
                                 </fieldset>
 
                                 <fieldset class="lrob-qrm-shape-picker">
                                     <legend><?php esc_html_e('Eye shape', 'lrob-qrcode-maker'); ?></legend>
-                                    <?php foreach (self::EYE_SHAPES as $value => $icon) : ?>
-                                        <label class="lrob-qrm-shape-tile">
+                                    <?php foreach (self::EYE_SHAPES as $value => $icon) :
+                                        $label = self::shape_label($value);
+                                    ?>
+                                        <label class="lrob-qrm-shape-tile" title="<?php echo esc_attr($label); ?>" aria-label="<?php echo esc_attr($label); ?>">
                                             <input type="radio" name="eyeShape" value="<?php echo esc_attr($value); ?>"
                                                    <?php checked($value, 'square'); ?>>
                                             <span class="lrob-qrm-shape-icon lrob-qrm-shape-icon-<?php echo esc_attr($icon); ?> lrob-qrm-shape-icon-outline"></span>
-                                            <span class="lrob-qrm-shape-label"><?php echo esc_html(self::shape_label($value)); ?></span>
                                         </label>
                                     <?php endforeach; ?>
                                 </fieldset>
@@ -283,9 +290,9 @@ final class LibraryPage
                                     </span>
                                     <select name="ecLevel">
                                         <option value="L">L — <?php esc_html_e('7% recovery', 'lrob-qrcode-maker'); ?></option>
-                                        <option value="M" selected>M — <?php esc_html_e('15% recovery', 'lrob-qrcode-maker'); ?></option>
+                                        <option value="M">M — <?php esc_html_e('15% recovery', 'lrob-qrcode-maker'); ?></option>
                                         <option value="Q">Q — <?php esc_html_e('25% recovery', 'lrob-qrcode-maker'); ?></option>
-                                        <option value="H">H — <?php esc_html_e('30% recovery', 'lrob-qrcode-maker'); ?></option>
+                                        <option value="H" selected>H — <?php esc_html_e('30% recovery', 'lrob-qrcode-maker'); ?></option>
                                     </select>
                                 </label>
                             </div>
@@ -310,9 +317,9 @@ final class LibraryPage
                                 <label class="lrob-qrm-field">
                                     <span>
                                         <?php esc_html_e('Logo size', 'lrob-qrcode-maker'); ?>
-                                        <span class="lrob-qrm-range-value" data-role="logo-size-value">20%</span>
+                                        <span class="lrob-qrm-range-value" data-role="logo-size-value">30%</span>
                                     </span>
-                                    <input type="range" name="logoSizeRatio" min="0.1" max="0.3" step="0.01" value="0.2">
+                                    <input type="range" name="logoSizeRatio" min="0.1" max="0.3" step="0.01" value="0.3">
                                 </label>
                             </div>
 

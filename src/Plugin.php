@@ -65,8 +65,32 @@ final class Plugin
         if (is_admin()) {
             add_action('admin_init', [Activator::class, 'ensure_capability']);
             add_action('admin_init', [$this, 'maybe_migrate_schema']);
+            add_action('admin_init', [$this, 'maybe_flush_stale_rewrites']);
             (new Menu())->register();
             SettingsPage::register_handler();
+        }
+    }
+
+    /**
+     * Detect a stale rewrite-rules cache (our /qr/{slug} pattern missing) and
+     * trigger a flush. Cheap O(1) lookup on every admin page load. Catches the
+     * cases where the version-bump migration doesn't fire (e.g. someone
+     * uploads the same version zip again, or the tracking path was changed
+     * by another mechanism).
+     */
+    public function maybe_flush_stale_rewrites(): void
+    {
+        $rules = get_option('rewrite_rules');
+        if (!is_array($rules) || empty($rules)) {
+            // No cache yet — WP will build the rules on the next front-end
+            // request, picking up our add_rewrite_rule() call naturally.
+            return;
+        }
+        $settings = get_option(Activator::OPTION_SETTINGS, []);
+        $path = isset($settings['tracking_path']) ? (string) $settings['tracking_path'] : 'qr';
+        $pattern = '^' . preg_quote($path, '#') . '/([a-z0-9]{1,32})/?$';
+        if (!isset($rules[$pattern])) {
+            flush_rewrite_rules(false);
         }
     }
 

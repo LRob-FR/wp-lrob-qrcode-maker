@@ -71,6 +71,11 @@ final class Menu
             [],
             self::asset_version('admin/css/admin.css')
         );
+        // WP core's color picker (jQuery-based, admin pages). Single widget
+        // exposing both hex and RGB inputs in a compact popover.
+        wp_enqueue_style('wp-color-picker');
+        wp_enqueue_script('wp-color-picker');
+
         wp_enqueue_script(
             'lrob-qrm-content-types',
             LROB_QRM_URL . 'assets/js/content-types.js',
@@ -81,7 +86,7 @@ final class Menu
         wp_enqueue_script(
             'lrob-qrm-admin',
             LROB_QRM_URL . 'admin/js/admin.js',
-            ['wp-i18n', 'media-upload', 'lrob-qrm-content-types'],
+            ['wp-i18n', 'media-upload', 'lrob-qrm-content-types', 'wp-color-picker', 'jquery'],
             self::asset_version('admin/js/admin.js'),
             true
         );
@@ -177,9 +182,12 @@ final class Menu
 
     public static function asset_version(string $relative): string
     {
+        // Always append the file's mtime so browser caches drop when the file
+        // changes — even when LROB_QRM_VERSION hasn't been bumped (which is
+        // the common case during iterative stabilisation).
         $version = LROB_QRM_VERSION;
         $full = LROB_QRM_PATH . ltrim($relative, '/');
-        if (is_file($full) && defined('WP_DEBUG') && WP_DEBUG) {
+        if (is_file($full)) {
             $version .= '.' . filemtime($full);
         }
         return $version;
