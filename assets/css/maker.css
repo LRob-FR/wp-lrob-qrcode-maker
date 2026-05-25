@@ -1,0 +1,665 @@
+/* LRob QR Code Maker — frontend maker UI.
+ *
+ * Themes are explicit: .lrob-qrm-maker-theme-{light|dark|auto|custom}.
+ * Custom theme reads --lrob-qrm-* CSS variables from inline style on the
+ * shell (set by the block server-side from block attributes).
+ *
+ * Layouts: .lrob-qrm-maker-layout-{preview-left|preview-right|stacked}.
+ */
+
+.lrob-qrm-maker {
+    --lrob-qrm-surface:       #ffffff;
+    --lrob-qrm-surface-soft:  #f6f7f7;
+    --lrob-qrm-border:        rgba(0, 0, 0, 0.14);
+    --lrob-qrm-input-bg:      #ffffff;
+    --lrob-qrm-text:          #1d2327;
+    --lrob-qrm-muted:         #646970;
+    --lrob-qrm-accent:        #1a73e8;
+    --lrob-qrm-accent-hover:  #155bb5;
+    --lrob-qrm-accent-text:   #ffffff;
+    --lrob-qrm-hover:         rgba(0, 0, 0, 0.04);
+    --lrob-qrm-focus-ring:    rgba(26, 115, 232, 0.25);
+
+    display: block;
+    margin: 1.5em 0;
+    font-family: inherit;
+    color: var(--lrob-qrm-text);
+    box-sizing: border-box;
+}
+
+.lrob-qrm-maker *,
+.lrob-qrm-maker *::before,
+.lrob-qrm-maker *::after {
+    box-sizing: border-box;
+}
+
+.lrob-qrm-maker [hidden] { display: none !important; }
+
+.lrob-qrm-maker-theme-dark {
+    --lrob-qrm-surface:       #1f1f1f;
+    --lrob-qrm-surface-soft:  #2a2a2a;
+    --lrob-qrm-border:        rgba(255, 255, 255, 0.16);
+    --lrob-qrm-input-bg:      #2a2a2a;
+    --lrob-qrm-text:          #e8e8e8;
+    --lrob-qrm-muted:         #a0a0a0;
+    --lrob-qrm-hover:         rgba(255, 255, 255, 0.06);
+}
+
+@media (prefers-color-scheme: dark) {
+    .lrob-qrm-maker-theme-auto {
+        --lrob-qrm-surface:       #1f1f1f;
+        --lrob-qrm-surface-soft:  #2a2a2a;
+        --lrob-qrm-border:        rgba(255, 255, 255, 0.16);
+        --lrob-qrm-input-bg:      #2a2a2a;
+        --lrob-qrm-text:          #e8e8e8;
+        --lrob-qrm-muted:         #a0a0a0;
+        --lrob-qrm-hover:         rgba(255, 255, 255, 0.06);
+    }
+}
+
+/* "site" theme: pull colours from the site's WordPress block (FSE) theme via
+   the --wp--preset--color--* custom properties. Common slug pairs are
+   tried in fallback chains since theme.json palettes are not standardised.
+   On classic (non-FSE) themes the chain falls through to the light-theme
+   defaults defined above. */
+.lrob-qrm-maker-theme-site {
+    --lrob-qrm-surface: var(--wp--preset--color--background, var(--wp--preset--color--base, #ffffff));
+    --lrob-qrm-text:    var(--wp--preset--color--foreground, var(--wp--preset--color--contrast, #1d2327));
+    --lrob-qrm-accent:  var(--wp--preset--color--primary, var(--wp--preset--color--accent, #1a73e8));
+    --lrob-qrm-muted:   var(--wp--preset--color--secondary, var(--wp--preset--color--tertiary, #646970));
+    /* Derive the in-between surfaces from the resolved text/surface so the
+       palette stays coherent regardless of which slug the theme uses. */
+    --lrob-qrm-surface-soft: color-mix(in srgb, var(--lrob-qrm-text) 6%, var(--lrob-qrm-surface));
+    --lrob-qrm-input-bg:     color-mix(in srgb, var(--lrob-qrm-text) 3%, var(--lrob-qrm-surface));
+    --lrob-qrm-border:       color-mix(in srgb, var(--lrob-qrm-text) 18%, transparent);
+    --lrob-qrm-hover:        color-mix(in srgb, var(--lrob-qrm-text)  6%, transparent);
+    --lrob-qrm-accent-hover: color-mix(in srgb, var(--lrob-qrm-text) 12%, var(--lrob-qrm-accent));
+    --lrob-qrm-focus-ring:   color-mix(in srgb, var(--lrob-qrm-accent) 25%, transparent);
+}
+
+/* ─── Skeleton (before JS hydrates) ──────────────────────────────────── */
+
+.lrob-qrm-maker-skeleton {
+    display: block;
+    width: 280px;
+    height: 280px;
+    margin: 0 auto;
+    border-radius: 8px;
+    background: linear-gradient(90deg, var(--lrob-qrm-surface-soft) 0%, var(--lrob-qrm-surface) 50%, var(--lrob-qrm-surface-soft) 100%);
+    background-size: 200% 100%;
+    animation: lrob-qrm-skel 1.2s linear infinite;
+}
+
+@keyframes lrob-qrm-skel {
+    0%   { background-position: 100% 0; }
+    100% { background-position: -100% 0; }
+}
+
+/* ─── Shell + layout ──────────────────────────────────────────────────── */
+
+.lrob-qrm-maker-shell {
+    border: 1px solid var(--lrob-qrm-border);
+    border-radius: 14px;
+    padding: 24px;
+    background: var(--lrob-qrm-surface);
+    color: var(--lrob-qrm-text);
+}
+
+.lrob-qrm-maker-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 28px;
+    align-items: flex-start;
+}
+
+@media (min-width: 720px) {
+    /* Default = preview-right (form left, preview right) per user's first preference. */
+    .lrob-qrm-maker-grid,
+    .lrob-qrm-maker-layout-preview-right .lrob-qrm-maker-grid {
+        grid-template-columns: minmax(0, 1fr) minmax(280px, 320px);
+    }
+
+    .lrob-qrm-maker-layout-preview-right .lrob-qrm-maker-preview-col { order: 2; }
+    .lrob-qrm-maker-layout-preview-right .lrob-qrm-maker-form-col    { order: 1; }
+
+    /* Alt: preview on the left, form on the right. */
+    .lrob-qrm-maker-layout-preview-left .lrob-qrm-maker-grid {
+        grid-template-columns: minmax(280px, 320px) minmax(0, 1fr);
+    }
+    .lrob-qrm-maker-layout-preview-left .lrob-qrm-maker-preview-col { order: 1; }
+    .lrob-qrm-maker-layout-preview-left .lrob-qrm-maker-form-col    { order: 2; }
+}
+
+/* Stacked layout always stays vertical, preview on top. */
+.lrob-qrm-maker-layout-stacked .lrob-qrm-maker-grid {
+    grid-template-columns: 1fr !important;
+}
+.lrob-qrm-maker-layout-stacked .lrob-qrm-maker-preview-col { order: 1; }
+.lrob-qrm-maker-layout-stacked .lrob-qrm-maker-form-col    { order: 2; }
+
+.lrob-qrm-maker-preview-col {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+    min-width: 0;
+}
+
+.lrob-qrm-maker-form-col {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+}
+
+/* ─── Preview + download ─────────────────────────────────────────────── */
+
+.lrob-qrm-maker-preview-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    position: sticky;
+    top: 16px;
+    width: 100%;
+}
+
+.lrob-qrm-maker-preview {
+    width: 100%;
+    max-width: 320px;
+    aspect-ratio: 1 / 1;
+    border-radius: 10px;
+    background: var(--lrob-qrm-surface-soft);
+    border: 1px solid var(--lrob-qrm-border);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.lrob-qrm-maker-preview canvas,
+.lrob-qrm-maker-preview svg,
+.lrob-qrm-maker-preview img {
+    max-width: 100%;
+    max-height: 100%;
+    display: block;
+}
+
+.lrob-qrm-maker-status {
+    min-height: 1.3em;
+    margin: 0;
+    font-size: 0.85em;
+    color: var(--lrob-qrm-muted);
+    text-align: center;
+}
+
+.lrob-qrm-maker-download {
+    padding: 11px 24px;
+    border: 0;
+    border-radius: 8px;
+    background: var(--lrob-qrm-accent);
+    color: var(--lrob-qrm-accent-text);
+    font-size: 0.95em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color .15s, transform .1s;
+    width: 100%;
+    max-width: 320px;
+}
+
+.lrob-qrm-maker-download:hover  { background: var(--lrob-qrm-accent-hover); }
+.lrob-qrm-maker-download:active { transform: translateY(1px); }
+.lrob-qrm-maker-download:disabled { opacity: .6; cursor: progress; }
+
+/* ─── Form fields (modern look) ───────────────────────────────────────── */
+
+.lrob-qrm-maker-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.9em;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.lrob-qrm-maker-field > span,
+.lrob-qrm-maker-field > legend {
+    font-weight: 500;
+    color: var(--lrob-qrm-text);
+    padding: 0;
+    line-height: 1.2;
+}
+
+/* Text inputs / textareas: inline / underline-only — text just sits on the
+   surface with a subtle bottom rule, no boxed look. Inherits the parent's
+   text color so it reads cleanly on any theme or container bg. */
+.lrob-qrm-maker-field input[type="text"],
+.lrob-qrm-maker-field input[type="number"],
+.lrob-qrm-maker-field input[type="email"],
+.lrob-qrm-maker-field input[type="tel"],
+.lrob-qrm-maker-field input[type="url"],
+.lrob-qrm-maker-field textarea {
+    padding: 6px 2px;
+    border: 0;
+    border-bottom: 1.5px solid var(--lrob-qrm-border);
+    border-radius: 0;
+    font: inherit;
+    font-size: 0.95em;
+    background: transparent;
+    color: inherit;
+    width: 100%;
+    transition: border-color .15s, padding-bottom .15s;
+}
+
+.lrob-qrm-maker-field input::placeholder,
+.lrob-qrm-maker-field textarea::placeholder {
+    color: var(--lrob-qrm-muted);
+    opacity: 0.7;
+}
+
+.lrob-qrm-maker-field input:hover,
+.lrob-qrm-maker-field textarea:hover {
+    border-bottom-color: var(--lrob-qrm-muted);
+}
+
+.lrob-qrm-maker-field input:focus,
+.lrob-qrm-maker-field textarea:focus {
+    outline: none;
+    border-bottom-color: var(--lrob-qrm-accent);
+    border-bottom-width: 2px;
+    padding-bottom: 4.5px;
+}
+
+.lrob-qrm-maker-field textarea {
+    min-height: 56px;
+    resize: vertical;
+    font-family: inherit;
+}
+
+/* Selects: distinct from text inputs because they're dropdowns (clickable
+   surfaces). A subtle filled background also lets the opened option list
+   inherit a readable bg + text color in dark mode — a fully-transparent
+   <select> shows white text on white in the native dropdown popup. */
+.lrob-qrm-maker-field select {
+    appearance: none;
+    -webkit-appearance: none;
+    padding: 7px 28px 7px 10px;
+    border: 1px solid var(--lrob-qrm-border);
+    border-radius: 8px;
+    font: inherit;
+    font-size: 0.95em;
+    background-color: var(--lrob-qrm-input-bg);
+    color: var(--lrob-qrm-text);
+    width: 100%;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='%23646970' d='M2 4l4 4 4-4z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px 12px;
+    transition: border-color .15s, box-shadow .15s;
+}
+
+.lrob-qrm-maker-field select:hover {
+    border-color: var(--lrob-qrm-muted);
+}
+
+.lrob-qrm-maker-field select:focus {
+    outline: none;
+    border-color: var(--lrob-qrm-accent);
+    box-shadow: 0 0 0 3px var(--lrob-qrm-focus-ring);
+}
+
+/* Belt-and-suspenders for the option list: some browsers respect <option>
+   styling, others inherit from <select>. The select bg above covers the
+   inheriting browsers; this covers Firefox + Chromium where option
+   styles do apply. */
+.lrob-qrm-maker-field option {
+    background-color: var(--lrob-qrm-input-bg);
+    color: var(--lrob-qrm-text);
+}
+
+.lrob-qrm-maker-theme-dark .lrob-qrm-maker-field select,
+.lrob-qrm-maker-theme-auto .lrob-qrm-maker-field select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='%23a0a0a0' d='M2 4l4 4 4-4z'/%3E%3C/svg%3E");
+}
+
+.lrob-qrm-maker-field input[type="color"] {
+    width: 100%;
+    height: 42px;
+    padding: 4px;
+    border: 1px solid var(--lrob-qrm-border);
+    border-radius: 8px;
+    background: var(--lrob-qrm-input-bg);
+    cursor: pointer;
+}
+
+/* Styled file input — the native "Choose File" button is rendered via
+   ::file-selector-button so we can give it a proper look. */
+.lrob-qrm-maker-field input[type="file"] {
+    font: inherit;
+    color: var(--lrob-qrm-text);
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+
+.lrob-qrm-maker-field input[type="file"]::file-selector-button {
+    padding: 9px 16px;
+    margin-right: 12px;
+    border: 1px solid var(--lrob-qrm-border);
+    background: var(--lrob-qrm-surface-soft);
+    color: var(--lrob-qrm-text);
+    border-radius: 8px;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 500;
+    transition: background-color .15s, border-color .15s;
+}
+
+.lrob-qrm-maker-field input[type="file"]::file-selector-button:hover {
+    background: var(--lrob-qrm-hover);
+    border-color: var(--lrob-qrm-muted);
+}
+
+.lrob-qrm-maker-field input[type="range"] {
+    width: 100%;
+    accent-color: var(--lrob-qrm-accent);
+}
+
+.lrob-qrm-maker-field small {
+    color: var(--lrob-qrm-muted);
+    font-size: 0.85em;
+    margin-top: 2px;
+}
+
+.lrob-qrm-maker-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.92em;
+    cursor: pointer;
+    padding: 4px 0;
+}
+
+.lrob-qrm-maker-checkbox input[type="checkbox"] {
+    margin: 0;
+    width: 16px;
+    height: 16px;
+    accent-color: var(--lrob-qrm-accent);
+    flex-shrink: 0;
+}
+
+.lrob-qrm-maker-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 14px;
+}
+
+.lrob-qrm-maker-range-value {
+    float: right;
+    color: var(--lrob-qrm-muted);
+    font-variant-numeric: tabular-nums;
+    font-weight: 400;
+    font-size: 0.95em;
+}
+
+.lrob-qrm-maker-field-disabled {
+    opacity: 0.45;
+    pointer-events: none;
+}
+
+/* ─── Section titles ─────────────────────────────────────────────────── */
+
+.lrob-qrm-maker-section-title {
+    margin: 4px 0 0;
+    padding-bottom: 8px;
+    font-size: 0.85em;
+    font-weight: 600;
+    color: var(--lrob-qrm-text);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--lrob-qrm-border);
+}
+
+/* ─── Shape radio tiles ──────────────────────────────────────────────── */
+
+.lrob-qrm-maker-shape-picker {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    /* Icon-only tiles — fits 6 across in a typical form column. The shape
+       name lives in the `title` attribute so it shows on hover/focus. */
+    grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+    gap: 6px;
+}
+
+.lrob-qrm-maker-shape-picker > legend {
+    grid-column: 1 / -1;
+    font-weight: 500;
+    color: var(--lrob-qrm-text);
+    padding: 0;
+    margin-bottom: 4px;
+    float: none;
+}
+
+.lrob-qrm-maker-shape-tile {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    border: 2px solid var(--lrob-qrm-border);
+    border-radius: 8px;
+    cursor: pointer;
+    background: transparent;
+    transition: border-color .12s, background .12s;
+    aspect-ratio: 1 / 1;
+}
+
+.lrob-qrm-maker-shape-tile:hover {
+    border-color: var(--lrob-qrm-muted);
+    background: var(--lrob-qrm-hover);
+}
+
+.lrob-qrm-maker-shape-tile input[type="radio"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    margin: 0;
+    cursor: pointer;
+}
+
+.lrob-qrm-maker-shape-tile:has(input:checked) {
+    border-color: var(--lrob-qrm-accent);
+    background: color-mix(in srgb, var(--lrob-qrm-accent) 10%, transparent);
+}
+
+.lrob-qrm-maker-shape-icon {
+    display: block;
+    width: 22px;
+    height: 22px;
+    box-sizing: border-box;
+    color: var(--lrob-qrm-text);
+}
+
+.lrob-qrm-maker-shape-icon-filled            { background: currentColor; }
+.lrob-qrm-maker-shape-icon-outline           { border: 3px solid currentColor; background: transparent; }
+
+.lrob-qrm-maker-shape-icon-square            { border-radius: 0; }
+.lrob-qrm-maker-shape-icon-rounded           { border-radius: 4px; }
+.lrob-qrm-maker-shape-icon-extra-rounded     { border-radius: 8px; }
+.lrob-qrm-maker-shape-icon-dots              { border-radius: 50%; }
+.lrob-qrm-maker-shape-icon-dot               { border-radius: 50%; }
+.lrob-qrm-maker-shape-icon-classy            { border-radius: 0 9px 0 9px; }
+.lrob-qrm-maker-shape-icon-classy-rounded    { border-radius: 4px 9px 4px 9px; }
+
+/* Shape labels removed from the DOM in maker.js — names live in the
+   `title` attribute on each tile so they show on hover/focus. */
+
+/* ─── Content type dynamic fields ────────────────────────────────────── */
+
+.lrob-qrm-maker-content-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 14px;
+    background: var(--lrob-qrm-surface-soft);
+    border: 1px solid var(--lrob-qrm-border);
+    border-radius: 8px;
+}
+
+/* Content type radio (inline horizontal). */
+.lrob-qrm-maker-content-fields .lrob-qrm-field-inline,
+.lrob-qrm-maker-field-inline {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.lrob-qrm-maker-field-inline > span {
+    font-weight: 400;
+}
+
+/* ─── Export modal ───────────────────────────────────────────────────── */
+
+.lrob-qrm-maker-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.lrob-qrm-maker-modal[hidden] { display: none !important; }
+
+.lrob-qrm-maker-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(2px);
+}
+
+.lrob-qrm-maker-modal-panel {
+    position: relative;
+    background: var(--lrob-qrm-surface);
+    color: var(--lrob-qrm-text);
+    border-radius: 14px;
+    width: min(720px, 100%);
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.lrob-qrm-maker-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--lrob-qrm-border);
+}
+
+.lrob-qrm-maker-modal-header h3 {
+    margin: 0;
+    font-size: 1.1em;
+    font-weight: 600;
+}
+
+.lrob-qrm-maker-modal-close {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 1.5em;
+    line-height: 1;
+    color: var(--lrob-qrm-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.lrob-qrm-maker-modal-close:hover {
+    background: var(--lrob-qrm-hover);
+    color: var(--lrob-qrm-text);
+}
+
+.lrob-qrm-maker-modal-body {
+    padding: 20px 24px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.lrob-qrm-maker-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding-top: 6px;
+    border-top: 1px solid var(--lrob-qrm-border);
+    margin-top: 6px;
+    padding-top: 14px;
+}
+
+.lrob-qrm-maker-button {
+    padding: 9px 18px;
+    border: 1px solid var(--lrob-qrm-border);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--lrob-qrm-text);
+    font: inherit;
+    font-size: 0.92em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color .15s, border-color .15s;
+}
+
+.lrob-qrm-maker-button:hover {
+    background: var(--lrob-qrm-hover);
+    border-color: var(--lrob-qrm-muted);
+}
+
+.lrob-qrm-maker-button-primary {
+    background: var(--lrob-qrm-accent);
+    color: var(--lrob-qrm-accent-text);
+    border-color: var(--lrob-qrm-accent);
+}
+
+.lrob-qrm-maker-button-primary:hover {
+    background: var(--lrob-qrm-accent-hover);
+    border-color: var(--lrob-qrm-accent-hover);
+}
+
+/* ─── Branding footer — inside the shell, centred, with a hairline ──── */
+
+.lrob-qrm-maker-credit {
+    margin: 22px 0 0;
+    padding-top: 12px;
+    border-top: 1px solid var(--lrob-qrm-border);
+    text-align: center;
+    font-size: 0.68em;
+    color: var(--lrob-qrm-muted);
+    opacity: 0.72;
+    line-height: 1.4;
+    letter-spacing: 0.01em;
+}
+
+.lrob-qrm-maker-credit a {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px dotted var(--lrob-qrm-muted);
+}
+
+.lrob-qrm-maker-credit a:hover {
+    color: var(--lrob-qrm-text);
+    border-bottom-color: var(--lrob-qrm-text);
+    opacity: 1;
+}

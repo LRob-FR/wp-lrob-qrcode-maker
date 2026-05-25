@@ -1,0 +1,1 @@
+qr-code-styling@1.9.2 (MIT) - UMD bundle

@@ -1,0 +1,96 @@
+<?php
+
+declare(strict_types=1);
+
+namespace LRob\QRCodeMaker;
+
+use LRob\QRCodeMaker\Admin\Menu;
+use LRob\QRCodeMaker\Admin\SettingsPage;
+use LRob\QRCodeMaker\AutoUpdate\Updater;
+use LRob\QRCodeMaker\Block\Maker as MakerBlock;
+use LRob\QRCodeMaker\REST\LibraryController;
+use LRob\QRCodeMaker\Tracking\Router as TrackingRouter;
+
+/**
+ * Main plugin singleton. Wires up the Gutenberg block, the admin library
+ * CRUD endpoints, the tracking redirect, and the admin menu.
+ *
+ * QR rendering is entirely client-side via the vendored qr-code-styling
+ * JS library — no PHP renderer, no REST /render endpoint. The server only
+ * stores QR metadata (label, target_url, design spec, logo attachment) and
+ * handles the /qr/{slug} tracking redirect.
+ */
+final class Plugin
+{
+    private static ?self $instance = null;
+
+    private Container $container;
+
+    private bool $booted = false;
+
+    private function __construct()
+    {
+        $this->container = new Container();
+    }
+
+    public static function instance(): self
+    {
+        return self::$instance ??= new self();
+    }
+
+    public function container(): Container
+    {
+        return $this->container;
+    }
+
+    public function boot(): void
+    {
+        if ($this->booted) {
+            return;
+        }
+        $this->booted = true;
+
+        add_action('init', [$this, 'load_textdomain']);
+
+        (new MakerBlock())->register();
+        (new LibraryController())->register();
+        (new TrackingRouter())->register();
+
+        // Self-hosted updater runs in every context — wp_update_plugins() can
+        // be triggered by wp-cron from a frontend visitor's request when
+        // DISABLE_WP_CRON is set, and we'd miss the chance to inject our
+        // update entry if we scoped this to is_admin().
+        (new Updater())->register();
+
+        if (is_admin()) {
+            add_action('admin_init', [Activator::class, 'ensure_capability']);
+            add_action('admin_init', [$this, 'maybe_migrate_schema']);
+            (new Menu())->register();
+            SettingsPage::register_handler();
+        }
+    }
+
+    /**
+     * Run dbDelta when the stored db_version doesn't match the plugin version.
+     * Picks up new columns (e.g. logo_attachment_id added in 0.2.0) without
+     * requiring the user to deactivate+reactivate.
+     */
+    public function maybe_migrate_schema(): void
+    {
+        $stored = (string) get_option(Activator::OPTION_DB_VERSION, '');
+        if ($stored === LROB_QRM_VERSION) {
+            return;
+        }
+        \LRob\QRCodeMaker\Library\Schema::install();
+        update_option(Activator::OPTION_DB_VERSION, LROB_QRM_VERSION);
+    }
+
+    public function load_textdomain(): void
+    {
+        load_plugin_textdomain(
+            'lrob-qrcode-maker',
+            false,
+            dirname(LROB_QRM_BASENAME) . '/languages'
+        );
+    }
+}

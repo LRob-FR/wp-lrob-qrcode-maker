@@ -1,0 +1,762 @@
+# Copyright (C) 2026 LRob
+# This file is distributed under the same license as the LRob - QR Code Maker plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: LRob - QR Code Maker 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/lrob-qrcode-maker\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-05-25T10:09:59+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.4.0\n"
+"X-Domain: lrob-qrcode-maker\n"
+
+#. Plugin Name of the plugin
+msgid "LRob - QR Code Maker"
+msgstr ""
+
+#. Plugin URI of the plugin
+msgid "https://www.lrob.fr/wordpress/plugins/lrob-qrcode-maker/"
+msgstr ""
+
+#. Description of the plugin
+msgid "Customizable QR codes for WordPress — public Gutenberg block for visitors to create and download their own, admin library with optional scan tracking. Browser-side rendering, no server round-trip. Logos picked from the Media Library (admin) or kept in the visitor's browser only (public block)."
+msgstr ""
+
+#. Author of the plugin
+msgid "LRob"
+msgstr ""
+
+#. Author URI of the plugin
+msgid "https://www.lrob.fr"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:27
+#: src/Block/Maker.php:120
+#: src/Block/Maker.php:141
+#: assets/js/block-editor.js:110
+#: assets/js/block-editor.js:120
+msgid "Square"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:28
+#: src/Block/Maker.php:121
+#: src/Block/Maker.php:142
+#: assets/js/block-editor.js:111
+#: assets/js/block-editor.js:121
+msgid "Rounded"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:29
+#: src/Block/Maker.php:143
+msgid "Extra rounded"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:30
+#: src/Block/Maker.php:122
+#: src/Block/Maker.php:144
+#: assets/js/block-editor.js:112
+#: assets/js/block-editor.js:122
+msgid "Dots"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:31
+#: src/Block/Maker.php:145
+msgid "Circle"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:32
+#: src/Block/Maker.php:146
+msgid "Classy"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:33
+#: src/Block/Maker.php:147
+msgid "Classy rounded"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:69
+#: src/Admin/SettingsPage.php:20
+#: src/Admin/SettingsPage.php:126
+msgid "Insufficient permissions."
+msgstr ""
+
+#: src/Admin/LibraryPage.php:80
+msgid "QR Code Library"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:82
+msgid "Create new QR code"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:89
+msgid "No QR codes saved yet. Click \"Create new QR code\" to start."
+msgstr ""
+
+#: src/Admin/LibraryPage.php:110
+msgid "Target"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:126
+msgid "Tracking URL"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:132
+msgid "Scans"
+msgstr ""
+
+#. translators: %d: number of scans
+#: src/Admin/LibraryPage.php:137
+msgid "%d scan"
+msgid_plural "%d scans"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Admin/LibraryPage.php:143
+#: src/Admin/LibraryPage.php:209
+#: src/Admin/SettingsPage.php:36
+msgid "Tracking"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:146
+msgid "Off"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:154
+#: src/Admin/LibraryPage.php:320
+#: src/Admin/LibraryPage.php:337
+#: src/Admin/LibraryPage.php:374
+#: src/Block/Maker.php:133
+#: src/Block/Maker.php:153
+msgid "Export QR Code"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:157
+#: src/Admin/LibraryPage.php:158
+msgid "Edit"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:164
+#: src/Admin/LibraryPage.php:165
+msgid "Delete"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:181
+msgid "Designer"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:182
+#: src/Admin/LibraryPage.php:338
+#: src/Block/Maker.php:131
+msgid "Close"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:190
+msgid "Label"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:194
+#: src/Block/Maker.php:113
+msgid "Content type"
+msgstr ""
+
+#. translators: %s: tracking URL prefix, e.g. /qr
+#: src/Admin/LibraryPage.php:217
+msgid "Use a short %s URL and count scans"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:224
+msgid "Will resolve to"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:229
+#: src/Block/Maker.php:128
+msgid "Design"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:233
+#: src/Block/Maker.php:114
+#: assets/js/block-editor.js:103
+msgid "Foreground"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:237
+#: src/Block/Maker.php:115
+#: assets/js/block-editor.js:104
+msgid "Background"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:241
+#: src/Block/Maker.php:116
+#: assets/js/block-editor.js:105
+msgid "Eye color"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:246
+#: src/Block/Maker.php:117
+msgid "Transparent background"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:251
+#: src/Block/Maker.php:118
+#: assets/js/block-editor.js:107
+msgid "Dot shape"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:263
+#: src/Block/Maker.php:119
+#: assets/js/block-editor.js:117
+msgid "Eye shape"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:276
+#: src/Block/Maker.php:123
+msgid "Error correction"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:278
+#: src/Block/Maker.php:134
+msgid "Higher levels stay scannable when partially obscured (e.g. logo overlay), at the cost of denser modules. H is required for large logos."
+msgstr ""
+
+#: src/Admin/LibraryPage.php:281
+#: src/Block/Maker.php:135
+msgid "7% recovery"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:282
+#: src/Block/Maker.php:136
+msgid "15% recovery"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:283
+#: src/Block/Maker.php:137
+msgid "25% recovery"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:284
+#: src/Block/Maker.php:138
+msgid "30% recovery"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:289
+#: src/Block/Maker.php:129
+msgid "Logo"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:295
+#: src/Admin/Menu.php:112
+msgid "Pick logo from Media Library"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:298
+#: src/Admin/Menu.php:114
+msgid "Remove logo"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:301
+msgid "PNG, JPEG, or WebP from the Media Library. Saved with the QR code."
+msgstr ""
+
+#: src/Admin/LibraryPage.php:304
+#: src/Block/Maker.php:126
+msgid "Clear QR modules behind logo"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:308
+#: src/Block/Maker.php:127
+msgid "Logo size"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:317
+#: src/Admin/LibraryPage.php:371
+#: src/Block/Maker.php:130
+msgid "Cancel"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:323
+msgid "Save to library"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:346
+#: src/Block/Maker.php:132
+msgid "Size"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:353
+#: src/Block/Maker.php:151
+msgid "Custom…"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:357
+#: src/Block/Maker.php:152
+msgid "Custom size (px)"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:361
+#: src/Block/Maker.php:150
+msgid "Format"
+msgstr ""
+
+#: src/Admin/Menu.php:31
+#: src/Admin/Menu.php:32
+msgid "QR Codes"
+msgstr ""
+
+#: src/Admin/Menu.php:42
+msgid "QR Library"
+msgstr ""
+
+#: src/Admin/Menu.php:43
+msgid "Library"
+msgstr ""
+
+#: src/Admin/Menu.php:51
+#: src/Admin/Menu.php:52
+msgid "Settings"
+msgstr ""
+
+#: src/Admin/Menu.php:108
+msgid "Delete this QR code? This cannot be undone."
+msgstr ""
+
+#: src/Admin/Menu.php:109
+msgid "Saving…"
+msgstr ""
+
+#: src/Admin/Menu.php:110
+msgid "Saved"
+msgstr ""
+
+#: src/Admin/Menu.php:111
+msgid "Error"
+msgstr ""
+
+#: src/Admin/Menu.php:113
+msgid "Change logo"
+msgstr ""
+
+#: src/Admin/Menu.php:115
+msgid "Choose a logo image"
+msgstr ""
+
+#: src/Admin/Menu.php:116
+msgid "Use this logo"
+msgstr ""
+
+#: src/Admin/Menu.php:117
+msgid "Slug allocated on save"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:28
+msgid "QR Code Maker — Settings"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:30
+msgid "Settings saved."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:38
+msgid "Tracking URL prefix"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:41
+msgid "Used as the first path segment of tracked QR URLs, e.g. /qr/abc123"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:44
+msgid "Export defaults"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:46
+msgid "Pre-fill the Export modal with these values when opened."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:49
+msgid "Default export size (px)"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:64
+msgid "Default export format"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:79
+msgid "Uninstall behaviour"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:81
+msgid "What happens when this plugin is deleted from the WordPress admin."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:84
+msgid "Uninstall mode"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:87
+msgid "Keep everything (recommended)"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:90
+msgid "Drop settings, keep QR codes + scan history"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:93
+msgid "Wipe everything"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:98
+msgid "Save settings"
+msgstr ""
+
+#: src/AutoUpdate/Updater.php:122
+msgid "Customizable QR codes for WordPress — public Gutenberg block for visitors, admin library with optional scan tracking."
+msgstr ""
+
+#: src/Block/Maker.php:111
+msgid "URL, text, or contact info"
+msgstr ""
+
+#: src/Block/Maker.php:112
+msgid "https://example.com"
+msgstr ""
+
+#: src/Block/Maker.php:124
+msgid "Logo (optional)"
+msgstr ""
+
+#: src/Block/Maker.php:125
+msgid "PNG, JPEG, or WebP. Stays in your browser, never uploaded."
+msgstr ""
+
+#: src/Block/Maker.php:148
+msgid "Export"
+msgstr ""
+
+#: src/Block/Maker.php:149
+msgid "Size (px)"
+msgstr ""
+
+#: src/Block/Maker.php:154
+msgid "Generating…"
+msgstr ""
+
+#: src/Block/Maker.php:155
+msgid "Sorry, something went wrong. Please retry."
+msgstr ""
+
+#: src/Block/Maker.php:156
+msgid "Show advanced options"
+msgstr ""
+
+#: src/Block/Maker.php:157
+msgid "Hide advanced options"
+msgstr ""
+
+#: src/Block/Maker.php:162
+msgid "QR Code generator by"
+msgstr ""
+
+#: src/Block/Maker.php:163
+msgid "LRob, WordPress web hosting specialist"
+msgstr ""
+
+#: src/Block/Maker.php:223
+msgid "The QR code maker requires JavaScript to run in your browser."
+msgstr ""
+
+#: src/REST/LibraryController.php:64
+msgid "Forbidden"
+msgstr ""
+
+#: src/REST/LibraryController.php:80
+#: src/REST/LibraryController.php:98
+msgid "Invalid body"
+msgstr ""
+
+#: src/REST/LibraryController.php:88
+msgid "Could not save QR code."
+msgstr ""
+
+#: src/REST/LibraryController.php:106
+msgid "Could not update QR code."
+msgstr ""
+
+#: src/REST/LibraryController.php:115
+msgid "Could not delete QR code."
+msgstr ""
+
+#: src/REST/LibraryController.php:134
+#: src/REST/LibraryController.php:141
+msgid "Target URL or text is required."
+msgstr ""
+
+#: src/REST/LibraryController.php:137
+msgid "Target is too long."
+msgstr ""
+
+#: src/REST/LibraryController.php:161
+msgid "logo_attachment_id does not reference an image attachment."
+msgstr ""
+
+#: src/Support/ContentTypes.php:29
+#: src/Support/ContentTypes.php:33
+msgid "URL"
+msgstr ""
+
+#: src/Support/ContentTypes.php:40
+msgid "Plain text"
+msgstr ""
+
+#: src/Support/ContentTypes.php:44
+#: assets/js/block-editor.js:162
+msgid "Text"
+msgstr ""
+
+#: src/Support/ContentTypes.php:51
+msgid "Contact (vCard)"
+msgstr ""
+
+#: src/Support/ContentTypes.php:53
+msgid "First name"
+msgstr ""
+
+#: src/Support/ContentTypes.php:54
+msgid "Last name"
+msgstr ""
+
+#: src/Support/ContentTypes.php:55
+msgid "Organization"
+msgstr ""
+
+#: src/Support/ContentTypes.php:56
+msgid "Job title"
+msgstr ""
+
+#: src/Support/ContentTypes.php:57
+#: src/Support/ContentTypes.php:86
+msgid "Email"
+msgstr ""
+
+#: src/Support/ContentTypes.php:58
+msgid "Phone"
+msgstr ""
+
+#: src/Support/ContentTypes.php:59
+msgid "Website"
+msgstr ""
+
+#: src/Support/ContentTypes.php:60
+msgid "Address"
+msgstr ""
+
+#: src/Support/ContentTypes.php:64
+msgid "Wi-Fi network"
+msgstr ""
+
+#: src/Support/ContentTypes.php:66
+msgid "Network name (SSID)"
+msgstr ""
+
+#: src/Support/ContentTypes.php:67
+msgid "Password"
+msgstr ""
+
+#: src/Support/ContentTypes.php:70
+msgid "Encryption"
+msgstr ""
+
+#: src/Support/ContentTypes.php:73
+msgid "WPA / WPA2"
+msgstr ""
+
+#: src/Support/ContentTypes.php:74
+msgid "WEP"
+msgstr ""
+
+#: src/Support/ContentTypes.php:75
+msgid "None (open)"
+msgstr ""
+
+#: src/Support/ContentTypes.php:80
+msgid "Hidden network"
+msgstr ""
+
+#: src/Support/ContentTypes.php:88
+msgid "Recipient"
+msgstr ""
+
+#: src/Support/ContentTypes.php:89
+msgid "Subject"
+msgstr ""
+
+#: src/Support/ContentTypes.php:90
+msgid "Body"
+msgstr ""
+
+#: src/Support/ContentTypes.php:94
+msgid "SMS"
+msgstr ""
+
+#: src/Support/ContentTypes.php:96
+#: src/Support/ContentTypes.php:103
+msgid "Phone number"
+msgstr ""
+
+#: src/Support/ContentTypes.php:97
+msgid "Message"
+msgstr ""
+
+#: src/Support/ContentTypes.php:101
+msgid "Phone call"
+msgstr ""
+
+#: src/Support/ContentTypes.php:107
+msgid "Geolocation"
+msgstr ""
+
+#: src/Support/ContentTypes.php:109
+msgid "Latitude"
+msgstr ""
+
+#: src/Support/ContentTypes.php:110
+msgid "Longitude"
+msgstr ""
+
+#: assets/js/block-editor.js:60
+msgid "QR Code Maker — visitors will interact with the live form on the frontend."
+msgstr ""
+
+#: assets/js/block-editor.js:70
+msgid "Defaults"
+msgstr ""
+
+#: assets/js/block-editor.js:72
+msgid "Default URL or text"
+msgstr ""
+
+#: assets/js/block-editor.js:73
+msgid "Pre-fill the input on first load (leave empty for a blank form)."
+msgstr ""
+
+#: assets/js/block-editor.js:78
+msgid "Default format"
+msgstr ""
+
+#: assets/js/block-editor.js:88
+msgid "Default size (px)"
+msgstr ""
+
+#: assets/js/block-editor.js:102
+msgid "Style"
+msgstr ""
+
+#: assets/js/block-editor.js:129
+msgid "Layout"
+msgstr ""
+
+#: assets/js/block-editor.js:131
+msgid "Maker layout"
+msgstr ""
+
+#: assets/js/block-editor.js:134
+msgid "Preview right (default)"
+msgstr ""
+
+#: assets/js/block-editor.js:135
+msgid "Preview left"
+msgstr ""
+
+#: assets/js/block-editor.js:136
+msgid "Stacked (preview on top)"
+msgstr ""
+
+#: assets/js/block-editor.js:143
+msgid "Theme"
+msgstr ""
+
+#: assets/js/block-editor.js:145
+msgid "Color scheme"
+msgstr ""
+
+#: assets/js/block-editor.js:148
+msgid "Light"
+msgstr ""
+
+#: assets/js/block-editor.js:149
+msgid "Dark"
+msgstr ""
+
+#: assets/js/block-editor.js:150
+msgid "Auto (follow visitor’s OS preference)"
+msgstr ""
+
+#: assets/js/block-editor.js:151
+msgid "Inherit from site theme (FSE)"
+msgstr ""
+
+#: assets/js/block-editor.js:152
+msgid "Custom"
+msgstr ""
+
+#: assets/js/block-editor.js:155
+msgid "Maps the maker colors to your block theme’s palette (--wp--preset--color--background, --foreground, --primary, --secondary). Falls back to defaults on classic themes."
+msgstr ""
+
+#: assets/js/block-editor.js:159
+msgid "Surface (shell background)"
+msgstr ""
+
+#: assets/js/block-editor.js:160
+msgid "Soft surface (cards)"
+msgstr ""
+
+#: assets/js/block-editor.js:161
+msgid "Select / input background"
+msgstr ""
+
+#: assets/js/block-editor.js:163
+msgid "Muted text"
+msgstr ""
+
+#: assets/js/block-editor.js:164
+msgid "Accent (download button)"
+msgstr ""
+
+#: assets/js/block-editor.js:168
+msgid "What visitors can edit"
+msgstr ""
+
+#: assets/js/block-editor.js:170
+msgid "Allow uploading a logo"
+msgstr ""
+
+#: assets/js/block-editor.js:175
+msgid "Show \"Powered by LRob\" footer"
+msgstr ""
+
+#: assets/js/block-editor.js:176
+msgid "Small credit + backlink at the bottom of the maker."
+msgstr ""
+
+#: assets/js/block-editor.js:188
+msgid "QR Code Maker"
+msgstr ""
+
+#: assets/js/block-editor.js:189
+msgid "Let visitors design and download their own QR codes."
+msgstr ""
+
+#: assets/js/block-editor.js:192
+msgid "qr"
+msgstr ""
+
+#: assets/js/block-editor.js:192
+msgid "qrcode"
+msgstr ""
+
+#: assets/js/block-editor.js:192
+msgid "barcode"
+msgstr ""

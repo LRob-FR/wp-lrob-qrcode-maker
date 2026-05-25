@@ -1,0 +1,702 @@
+/* LRob QR Code Maker — admin library, settings, diagnostics. */
+
+.lrob-qrm-page {
+    margin: 20px 20px 20px 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* The author-defined .lrob-qrm-field rule sets display:flex, which overrides
+   the [hidden] attribute's UA default of display:none. Bring it back for the
+   whole plugin scope. Same trick as in the modal rule below. */
+.lrob-qrm [hidden] { display: none !important; }
+
+.lrob-qrm-page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.lrob-qrm-page-header h1 {
+    margin: 0;
+    font-size: 1.6em;
+}
+
+/* ─── Card grid ─────────────────────────────────────────────────────── */
+
+.lrob-qrm-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    margin-top: 24px;
+}
+
+.lrob-qrm-empty {
+    grid-column: 1 / -1;
+    padding: 48px 24px;
+    text-align: center;
+    border: 1px dashed #c3c4c7;
+    border-radius: 10px;
+    color: #50575e;
+    background: #fff;
+}
+
+.lrob-qrm-card {
+    background: #fff;
+    border: 1px solid #dcdcde;
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    transition: box-shadow .15s, transform .15s;
+}
+
+.lrob-qrm-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
+}
+
+.lrob-qrm-card-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    background: #f6f7f7;
+    border-bottom: 1px solid #f0f0f1;
+    aspect-ratio: 1 / 1;
+}
+
+/* The card preview QR is rendered by JS at 240×240 (see admin.js
+   renderCardPreviews). Let it size to fit the card while staying square. */
+.lrob-qrm-card-preview canvas,
+.lrob-qrm-card-preview svg {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 4px;
+}
+
+.lrob-qrm-card-body {
+    flex: 1;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.lrob-qrm-card-title {
+    margin: 0 0 4px;
+    font-size: 1em;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.lrob-qrm-card-info {
+    margin: 0;
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 4px 10px;
+    font-size: 0.85em;
+}
+
+.lrob-qrm-card-info dt {
+    color: #646970;
+    font-weight: 500;
+}
+
+.lrob-qrm-card-info dd {
+    margin: 0;
+    color: #1d2327;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.lrob-qrm-card-url {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
+    font-size: 0.95em;
+    padding: 1px 6px;
+    background: #f6f7f7;
+    border-radius: 3px;
+    color: #1d4f8c;
+    text-decoration: none;
+}
+
+a.lrob-qrm-card-url:hover {
+    background: #e7eff7;
+    text-decoration: underline;
+}
+
+.lrob-qrm-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #e7f5ec;
+    color: #2c6e3f;
+    font-size: 0.8em;
+    font-weight: 500;
+}
+
+.lrob-qrm-pill-muted { background: #f0f0f1; color: #646970; }
+
+.lrob-qrm-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 16px;
+    border-top: 1px solid #f0f0f1;
+    background: #fafbfc;
+}
+
+.lrob-qrm-card-export {
+    flex: 1;
+    min-width: 0;
+    justify-content: center;
+    text-align: center;
+}
+
+/* Icon-only buttons for Edit / Delete on cards — Export is the primary
+   action, the others are secondary so they shrink to icons. */
+.lrob-qrm-icon-button {
+    flex: 0 0 auto;
+    width: 32px;
+    height: 32px;
+    padding: 0 !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.lrob-qrm-icon-button-delete {
+    color: #b32d2e !important;
+    border-color: #b32d2e !important;
+}
+
+.lrob-qrm-icon-button-delete:hover {
+    background: #fceaea !important;
+}
+
+/* ─── Modal editor ──────────────────────────────────────────────────── */
+
+.lrob-qrm-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+/* [hidden] sets display:none in the UA stylesheet but our .lrob-qrm-modal
+   rule above re-applies display:flex with higher specificity. !important
+   restores the HTML semantics so toggling the `hidden` attr just works. */
+.lrob-qrm-modal[hidden] { display: none !important; }
+
+body.lrob-qrm-modal-open {
+    overflow: hidden;
+}
+
+.lrob-qrm-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px);
+}
+
+.lrob-qrm-modal-panel {
+    position: relative;
+    background: #fff;
+    border-radius: 12px;
+    width: min(960px, 100%);
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+}
+
+.lrob-qrm-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 1px solid #f0f0f1;
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 1;
+}
+
+.lrob-qrm-modal-header h2 {
+    margin: 0;
+    font-size: 1.2em;
+}
+
+.lrob-qrm-modal-close {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 1.6em;
+    line-height: 1;
+    color: #50575e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.lrob-qrm-modal-close:hover {
+    background: #f0f0f1;
+    color: #1d2327;
+}
+
+/* ─── Editor form layout ────────────────────────────────────────────── */
+
+.lrob-qrm-editor-grid {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 24px;
+    align-items: flex-start;
+    padding: 20px 24px 24px;
+}
+
+@media (max-width: 800px) {
+    .lrob-qrm-editor-grid { grid-template-columns: 1fr; }
+}
+
+.lrob-qrm-editor-preview-wrap {
+    position: sticky;
+    top: 64px;
+}
+
+.lrob-qrm-editor-preview {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    max-width: 320px;
+    background: #f6f7f7;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.lrob-qrm-editor-preview canvas,
+.lrob-qrm-editor-preview svg {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.lrob-qrm-editor-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.lrob-qrm-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.9em;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.lrob-qrm-field > span,
+.lrob-qrm-field > legend {
+    font-weight: 500;
+    color: #1d2327;
+}
+
+.lrob-qrm-field-inline {
+    display: flex;
+    flex-direction: row !important;
+    align-items: center;
+    gap: 8px;
+}
+
+.lrob-qrm-field-inline span {
+    font-weight: 400;
+}
+
+.lrob-qrm-field-disabled {
+    opacity: 0.45;
+    pointer-events: none;
+}
+
+.lrob-qrm-field-disabled > span::after {
+    content: " — N/A";
+    color: #646970;
+    font-size: 0.85em;
+}
+
+.lrob-qrm-field input[type="text"],
+.lrob-qrm-field input[type="number"],
+.lrob-qrm-field select {
+    padding: 6px 8px;
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    font: inherit;
+    background: #fff;
+    color: #1d2327;
+    height: 32px;
+    box-sizing: border-box;
+}
+
+/* Native dropdown arrow space — WP admin's default <select> doesn't account
+   for the arrow, so long labels overlap. Reserve room and draw our own arrow. */
+.lrob-qrm-field select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding-right: 28px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='%23646970' d='M2 4l4 4 4-4z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 12px 12px;
+}
+
+.lrob-qrm-field input[type="color"] {
+    width: 100%;
+    height: 36px;
+    padding: 2px;
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    background: #fff;
+    cursor: pointer;
+}
+
+.lrob-qrm-field input[type="range"] {
+    width: 100%;
+}
+
+.lrob-qrm-field small {
+    color: #646970;
+    font-size: 0.85em;
+}
+
+.lrob-qrm-field-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    align-items: end;
+}
+
+@media (max-width: 640px) {
+    .lrob-qrm-field-grid { grid-template-columns: 1fr 1fr; }
+}
+
+.lrob-qrm-range-value {
+    float: right;
+    color: #646970;
+    font-variant-numeric: tabular-nums;
+    font-weight: 400;
+}
+
+.lrob-qrm-tracking-preview {
+    margin: 6px 0 0;
+    font-size: 0.85em;
+}
+
+.lrob-qrm-tracking-preview code {
+    background: #f6f7f7;
+    padding: 1px 6px;
+    border-radius: 3px;
+    color: #1d4f8c;
+}
+
+.lrob-qrm-field-label {
+    color: #646970;
+    margin-right: 6px;
+}
+
+.lrob-qrm-help-tip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    margin-left: 6px;
+    border-radius: 50%;
+    background: #dcdcde;
+    color: #50575e;
+    font-size: 0.7em;
+    font-weight: 700;
+    cursor: help;
+}
+
+.lrob-qrm-help-tip:hover,
+.lrob-qrm-help-tip:focus {
+    background: #c3c4c7;
+    color: #1d2327;
+}
+
+.lrob-qrm-editor-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 8px;
+    padding-top: 12px;
+    border-top: 1px solid #f0f0f1;
+}
+
+/* ─── Export modal — QR preview LEFT, settings stacked RIGHT ─────────── */
+
+.lrob-qrm-export-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 24px;
+    padding: 24px;
+    align-items: start;
+}
+
+@media (max-width: 720px) {
+    .lrob-qrm-export-grid { grid-template-columns: 1fr; }
+}
+
+.lrob-qrm-export-preview-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f6f7f7;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
+    min-height: 280px;
+}
+
+.lrob-qrm-export-preview {
+    width: 100%;
+    max-width: 320px;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.lrob-qrm-export-preview canvas,
+.lrob-qrm-export-preview svg {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.lrob-qrm-export-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+}
+
+.lrob-qrm-export-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 8px;
+    padding-top: 12px;
+    border-top: 1px solid #f0f0f1;
+}
+
+/* ─── Section subtitles in the editor form ──────────────────────────── */
+
+.lrob-qrm-section-title {
+    margin: 16px 0 8px;
+    padding-bottom: 6px;
+    font-size: 0.95em;
+    font-weight: 600;
+    color: #1d2327;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 1px solid #f0f0f1;
+}
+
+.lrob-qrm-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* ─── Shape radio-tile pickers ───────────────────────────────────────── */
+
+.lrob-qrm-shape-picker {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.lrob-qrm-shape-picker > legend {
+    font-weight: 500;
+    color: #1d2327;
+    margin-bottom: 4px;
+    padding: 0;
+}
+
+/* The tiles live directly inside the fieldset — grid the fieldset itself. */
+.lrob-qrm-shape-picker {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.lrob-qrm-shape-picker > legend {
+    grid-column: 1 / -1;
+    margin-bottom: 0;
+}
+
+.lrob-qrm-shape-tile {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 4px;
+    border: 2px solid #dcdcde;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: border-color .12s, background .12s, transform .12s;
+    text-align: center;
+    background: #fff;
+}
+
+.lrob-qrm-shape-tile:hover {
+    border-color: #8c8f94;
+    background: #fafbfc;
+}
+
+.lrob-qrm-shape-tile input[type="radio"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    margin: 0;
+    cursor: pointer;
+}
+
+.lrob-qrm-shape-tile:has(input:checked) {
+    border-color: #2271b1;
+    background: #f0f6fc;
+    box-shadow: 0 0 0 1px #2271b1;
+}
+
+.lrob-qrm-shape-tile:has(input:focus-visible) {
+    outline: 2px solid #2271b1;
+    outline-offset: 1px;
+}
+
+.lrob-qrm-shape-label {
+    font-size: 0.78em;
+    line-height: 1.1;
+    color: #1d2327;
+}
+
+/* Shape icons — pure CSS shapes. The "-filled" variant is for dot shapes
+   (solid data modules); the "-outline" variant is for eye shapes (finder
+   pattern outlines). border-radius approximates each qr-code-styling type. */
+.lrob-qrm-shape-icon {
+    display: block;
+    width: 26px;
+    height: 26px;
+    box-sizing: border-box;
+    color: #1d2327;
+}
+
+.lrob-qrm-shape-icon-filled               { background: currentColor; }
+.lrob-qrm-shape-icon-outline              { border: 3px solid currentColor; background: transparent; }
+
+.lrob-qrm-shape-icon-square               { border-radius: 0; }
+.lrob-qrm-shape-icon-rounded              { border-radius: 4px; }
+.lrob-qrm-shape-icon-extra-rounded        { border-radius: 8px; }
+.lrob-qrm-shape-icon-dots                 { border-radius: 50%; }
+.lrob-qrm-shape-icon-dot                  { border-radius: 50%; }
+.lrob-qrm-shape-icon-classy               { border-radius: 0 9px 0 9px; }
+.lrob-qrm-shape-icon-classy-rounded       { border-radius: 4px 9px 4px 9px; }
+
+/* ─── Content-type dynamic fields ───────────────────────────────────── */
+
+.lrob-qrm-content-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+    background: #f6f7f7;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+}
+
+.lrob-qrm-content-fields .lrob-qrm-field textarea {
+    padding: 8px 10px;
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    font: inherit;
+    background: #fff;
+    color: #1d2327;
+    min-height: 72px;
+    resize: vertical;
+    box-sizing: border-box;
+}
+
+.lrob-qrm-content-fields .lrob-qrm-field input[type="text"],
+.lrob-qrm-content-fields .lrob-qrm-field input[type="email"],
+.lrob-qrm-content-fields .lrob-qrm-field input[type="tel"],
+.lrob-qrm-content-fields .lrob-qrm-field input[type="number"] {
+    height: auto;
+}
+
+/* ─── Logo picker (Media Library button) ────────────────────────────── */
+
+.lrob-qrm-logo-picker {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.lrob-qrm-logo-thumb {
+    width: 56px;
+    height: 56px;
+    object-fit: contain;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    background: #f6f7f7;
+    padding: 4px;
+}
+
+/* ─── Settings + Diagnostics pages ──────────────────────────────────── */
+
+.lrob-qrm-settings-form {
+    max-width: 640px;
+    background: #fff;
+    padding: 16px 20px;
+    border: 1px solid #dcdcde;
+    border-radius: 8px;
+}
+
+.lrob-qrm-settings-form h2 {
+    margin: 16px 0 8px;
+    font-size: 1.05em;
+}
+
+.lrob-qrm-settings-form .lrob-qrm-field {
+    margin-bottom: 12px;
+}
+
