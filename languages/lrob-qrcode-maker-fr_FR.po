@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: LRob - QR Code Maker 0.1.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/lrob-qrcode-"
 "maker\n"
-"POT-Creation-Date: 2026-05-25T20:24:50+00:00\n"
+"POT-Creation-Date: 2026-05-25T20:42:44+00:00\n"
 "Last-Translator: LRob <claude@lrob.fr>\n"
 "Language-Team: French <claude@lrob.fr>\n"
 "Language: fr_FR\n"
@@ -296,11 +296,12 @@ msgstr "Utiliser ce logo"
 msgid "Slug allocated on save"
 msgstr "slug attribué à la sauvegarde"
 
-#: src/Admin/Menu.php:124 src/Block/Maker.php:148
+#. translators: JS template tokens (not sprintf): %v = QR version (1-40), %m = module side count, %b = encoded byte length, %e = effective EC level (L/M/Q/H).
+#: src/Admin/Menu.php:125 src/Block/Maker.php:149
 msgid "QR v%v · %m×%m modules · %b bytes · EC %e"
 msgstr "QR v%v · %m×%m modules · %b octets · EC %e"
 
-#: src/Admin/Menu.php:125 src/Block/Maker.php:149
+#: src/Admin/Menu.php:126 src/Block/Maker.php:150
 msgid ""
 "Past ~200 bytes, some smartphones may fail to scan the QR. Shorten the "
 "content for maximum compatibility."
@@ -308,7 +309,7 @@ msgstr ""
 "Au-delà de ~200 octets, certains smartphones n’arrivent plus à scanner le "
 "QR. Raccourcissez le contenu pour une compatibilité maximale."
 
-#: src/Admin/Menu.php:126 src/Block/Maker.php:150
+#: src/Admin/Menu.php:127 src/Block/Maker.php:151
 msgid ""
 "For a contact card, hosting the .vcf file and encoding its URL keeps the QR "
 "much shorter."
@@ -316,7 +317,7 @@ msgstr ""
 "Pour une carte de contact, héberger le fichier .vcf et encoder son URL rend "
 "le QR bien plus compact."
 
-#: src/Admin/Menu.php:127 src/Block/Maker.php:151
+#: src/Admin/Menu.php:128 src/Block/Maker.php:152
 msgid ""
 "Content too large to encode as a QR (max 2953 bytes at EC L). Shorten the "
 "content."
@@ -324,67 +325,67 @@ msgstr ""
 "Contenu trop volumineux pour un QR (max 2953 octets en EC L). Raccourcissez "
 "le contenu."
 
-#: src/Admin/Menu.php:146
+#: src/Admin/Menu.php:147
 msgid "Your website is too slow?"
 msgstr "Votre site est trop lent ?"
 
-#: src/Admin/Menu.php:147
+#: src/Admin/Menu.php:148
 msgid "Get the fastest WordPress hosting"
 msgstr "Optez pour l’hébergement WordPress le plus rapide"
 
-#: src/Admin/Menu.php:151
+#: src/Admin/Menu.php:152
 msgid "Managing multiple websites?"
 msgstr "Vous gérez plusieurs sites ?"
 
-#: src/Admin/Menu.php:152
+#: src/Admin/Menu.php:153
 msgid "Centralized WordPress hosting for agencies"
 msgstr "Hébergement WordPress centralisé pour agences"
 
-#: src/Admin/Menu.php:156
+#: src/Admin/Menu.php:157
 msgid "Tired of robotic support chatbots?"
 msgstr "Fatigué du support robotisé ?"
 
-#: src/Admin/Menu.php:157
+#: src/Admin/Menu.php:158
 msgid "Get human WordPress support by LRob"
 msgstr "Support WordPress humain chez LRob"
 
-#: src/Admin/Menu.php:161
+#: src/Admin/Menu.php:162
 msgid "Worried about WordPress attacks?"
 msgstr "Inquiet des attaques WordPress ?"
 
-#: src/Admin/Menu.php:162
+#: src/Admin/Menu.php:163
 msgid "Hardened WordPress hosting with WAF"
 msgstr "Hébergement WordPress sécurisé avec WAF"
 
-#: src/Admin/Menu.php:166
+#: src/Admin/Menu.php:167
 msgid "Backups shouldn’t be an extra."
 msgstr "Les sauvegardes ne devraient pas être en option."
 
-#: src/Admin/Menu.php:167
+#: src/Admin/Menu.php:168
 msgid "WordPress hosting with 1-year backups included"
 msgstr "Hébergement WordPress avec 1 an de sauvegardes inclus"
 
-#: src/Admin/Menu.php:171
+#: src/Admin/Menu.php:172
 msgid "Going green?"
 msgstr "Une démarche éco-responsable ?"
 
-#: src/Admin/Menu.php:172
+#: src/Admin/Menu.php:173
 msgid "Eco-friendly WordPress hosting"
 msgstr "Hébergement WordPress écologique"
 
-#: src/Admin/Menu.php:176
+#: src/Admin/Menu.php:177
 msgid "Need data sovereignty?"
 msgstr "Besoin de souveraineté des données ?"
 
-#: src/Admin/Menu.php:177
+#: src/Admin/Menu.php:178
 msgid "French WordPress hosting, EU data residency"
 msgstr "Hébergement WordPress français, données hébergées en UE"
 
-#: src/Admin/Menu.php:181
+#: src/Admin/Menu.php:182
 msgid "Stuck on a slow host?"
 msgstr "Coincé sur un hébergeur lent ?"
 
-#: src/Admin/Menu.php:182
+#: src/Admin/Menu.php:183
 msgid "Switch to LRob — migration included"
 msgstr "Passez chez LRob — migration incluse"
 
@@ -507,7 +508,7 @@ msgstr "Générateur de QR Code par LRob,"
 msgid "WordPress web hosting specialist"
 msgstr "Hébergeur web spécialiste WordPress"
 
-#: src/Block/Maker.php:211
+#: src/Block/Maker.php:212
 msgid "The QR code maker requires JavaScript to run in your browser."
 msgstr "Le générateur de QR code nécessite JavaScript dans votre navigateur."
 

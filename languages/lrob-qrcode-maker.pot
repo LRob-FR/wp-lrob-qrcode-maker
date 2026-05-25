@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-05-25T20:25:29+00:00\n"
+"POT-Creation-Date: 2026-05-25T20:42:44+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.4.0\n"
 "X-Domain: lrob-qrcode-maker\n"
@@ -325,87 +325,88 @@ msgstr ""
 msgid "Slug allocated on save"
 msgstr ""
 
-#: src/Admin/Menu.php:124
-#: src/Block/Maker.php:148
-msgid "QR v%v · %m×%m modules · %b bytes · EC %e"
-msgstr ""
-
+#. translators: JS template tokens (not sprintf): %v = QR version (1-40), %m = module side count, %b = encoded byte length, %e = effective EC level (L/M/Q/H).
 #: src/Admin/Menu.php:125
 #: src/Block/Maker.php:149
-msgid "Past ~200 bytes, some smartphones may fail to scan the QR. Shorten the content for maximum compatibility."
+msgid "QR v%v · %m×%m modules · %b bytes · EC %e"
 msgstr ""
 
 #: src/Admin/Menu.php:126
 #: src/Block/Maker.php:150
-msgid "For a contact card, hosting the .vcf file and encoding its URL keeps the QR much shorter."
+msgid "Past ~200 bytes, some smartphones may fail to scan the QR. Shorten the content for maximum compatibility."
 msgstr ""
 
 #: src/Admin/Menu.php:127
 #: src/Block/Maker.php:151
+msgid "For a contact card, hosting the .vcf file and encoding its URL keeps the QR much shorter."
+msgstr ""
+
+#: src/Admin/Menu.php:128
+#: src/Block/Maker.php:152
 msgid "Content too large to encode as a QR (max 2953 bytes at EC L). Shorten the content."
 msgstr ""
 
-#: src/Admin/Menu.php:146
+#: src/Admin/Menu.php:147
 msgid "Your website is too slow?"
 msgstr ""
 
-#: src/Admin/Menu.php:147
+#: src/Admin/Menu.php:148
 msgid "Get the fastest WordPress hosting"
 msgstr ""
 
-#: src/Admin/Menu.php:151
+#: src/Admin/Menu.php:152
 msgid "Managing multiple websites?"
 msgstr ""
 
-#: src/Admin/Menu.php:152
+#: src/Admin/Menu.php:153
 msgid "Centralized WordPress hosting for agencies"
 msgstr ""
 
-#: src/Admin/Menu.php:156
+#: src/Admin/Menu.php:157
 msgid "Tired of robotic support chatbots?"
 msgstr ""
 
-#: src/Admin/Menu.php:157
+#: src/Admin/Menu.php:158
 msgid "Get human WordPress support by LRob"
 msgstr ""
 
-#: src/Admin/Menu.php:161
+#: src/Admin/Menu.php:162
 msgid "Worried about WordPress attacks?"
 msgstr ""
 
-#: src/Admin/Menu.php:162
+#: src/Admin/Menu.php:163
 msgid "Hardened WordPress hosting with WAF"
 msgstr ""
 
-#: src/Admin/Menu.php:166
+#: src/Admin/Menu.php:167
 msgid "Backups shouldn’t be an extra."
 msgstr ""
 
-#: src/Admin/Menu.php:167
+#: src/Admin/Menu.php:168
 msgid "WordPress hosting with 1-year backups included"
 msgstr ""
 
-#: src/Admin/Menu.php:171
+#: src/Admin/Menu.php:172
 msgid "Going green?"
 msgstr ""
 
-#: src/Admin/Menu.php:172
+#: src/Admin/Menu.php:173
 msgid "Eco-friendly WordPress hosting"
 msgstr ""
 
-#: src/Admin/Menu.php:176
+#: src/Admin/Menu.php:177
 msgid "Need data sovereignty?"
 msgstr ""
 
-#: src/Admin/Menu.php:177
+#: src/Admin/Menu.php:178
 msgid "French WordPress hosting, EU data residency"
 msgstr ""
 
-#: src/Admin/Menu.php:181
+#: src/Admin/Menu.php:182
 msgid "Stuck on a slow host?"
 msgstr ""
 
-#: src/Admin/Menu.php:182
+#: src/Admin/Menu.php:183
 msgid "Switch to LRob — migration included"
 msgstr ""
 
@@ -521,7 +522,7 @@ msgstr ""
 msgid "WordPress web hosting specialist"
 msgstr ""
 
-#: src/Block/Maker.php:211
+#: src/Block/Maker.php:212
 msgid "The QR code maker requires JavaScript to run in your browser."
 msgstr ""
 
