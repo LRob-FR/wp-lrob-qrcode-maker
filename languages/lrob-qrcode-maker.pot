@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-05-26T12:38:19+00:00\n"
+"POT-Creation-Date: 2026-05-26T12:43:10+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.4.0\n"
 "X-Domain: lrob-qrcode-maker\n"
@@ -75,353 +75,353 @@ msgstr ""
 msgid "Classy rounded"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:75
+#: src/Admin/LibraryPage.php:95
 #: src/Admin/SettingsPage.php:20
 #: src/Admin/SettingsPage.php:134
 msgid "Insufficient permissions."
 msgstr ""
 
-#: src/Admin/LibraryPage.php:87
+#: src/Admin/LibraryPage.php:107
 msgid "QR Code Library"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:91
+#: src/Admin/LibraryPage.php:111
 msgid "Create new QR code"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:98
+#: src/Admin/LibraryPage.php:118
 msgid "No QR codes saved yet. Click \"Create new QR code\" to start."
 msgstr ""
 
-#: src/Admin/LibraryPage.php:119
+#: src/Admin/LibraryPage.php:140
 #: src/Admin/Menu.php:122
 msgid "Target"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:135
+#: src/Admin/LibraryPage.php:156
 #: src/Admin/Menu.php:123
 msgid "Tracking URL"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:141
+#: src/Admin/LibraryPage.php:162
 #: src/Admin/Menu.php:124
 msgid "Scans"
 msgstr ""
 
 #. translators: %d: number of scans
-#: src/Admin/LibraryPage.php:146
+#: src/Admin/LibraryPage.php:167
 #: src/Admin/Menu.php:126
 msgid "%d scan"
 msgid_plural "%d scans"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/Admin/LibraryPage.php:152
-#: src/Admin/LibraryPage.php:223
+#: src/Admin/LibraryPage.php:173
+#: src/Admin/LibraryPage.php:244
 #: src/Admin/Menu.php:129
 #: src/Admin/SettingsPage.php:41
 msgid "Tracking"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:155
+#: src/Admin/LibraryPage.php:176
 #: src/Admin/Menu.php:130
 msgid "Off"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:166
-#: src/Admin/LibraryPage.php:392
-#: src/Admin/LibraryPage.php:407
-#: src/Admin/LibraryPage.php:449
+#: src/Admin/LibraryPage.php:187
+#: src/Admin/LibraryPage.php:413
+#: src/Admin/LibraryPage.php:428
+#: src/Admin/LibraryPage.php:470
 #: src/Admin/Menu.php:131
 #: src/Block/Maker.php:140
 #: src/Block/Maker.php:153
 msgid "Generate image"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:169
-#: src/Admin/LibraryPage.php:173
+#: src/Admin/LibraryPage.php:190
+#: src/Admin/LibraryPage.php:194
 #: src/Admin/Menu.php:132
 msgid "Edit"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:176
-#: src/Admin/LibraryPage.php:177
+#: src/Admin/LibraryPage.php:197
+#: src/Admin/LibraryPage.php:198
 #: src/Admin/Menu.php:133
 msgid "Delete"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:190
+#: src/Admin/LibraryPage.php:211
 #: src/Admin/SettingsPage.php:107
 msgid "Sponsor message"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:195
+#: src/Admin/LibraryPage.php:216
 msgid "Designer"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:197
+#: src/Admin/LibraryPage.php:218
 msgid "Label"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:197
+#: src/Admin/LibraryPage.php:218
 msgid "Your private name for this QR — helps you find it in the library. Never appears on the QR itself."
 msgstr ""
 
-#: src/Admin/LibraryPage.php:199
-#: src/Admin/LibraryPage.php:408
+#: src/Admin/LibraryPage.php:220
+#: src/Admin/LibraryPage.php:429
 #: src/Block/Maker.php:138
 msgid "Close"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:205
+#: src/Admin/LibraryPage.php:226
 #: src/Block/Maker.php:120
 msgid "Content type"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:206
+#: src/Admin/LibraryPage.php:227
 #: src/Block/Maker.php:175
 msgid "What the QR encodes. Each type composes the correct payload format: URL, vCard 3.0 contact, Wi-Fi credentials, mailto:, SMS, tel:, geo:, plain text."
 msgstr ""
 
-#: src/Admin/LibraryPage.php:224
+#: src/Admin/LibraryPage.php:245
 msgid "Replaces the encoded payload with a short /qr/{slug} URL that redirects to your target. Lets you change the destination after the QR has been printed, and counts scans per QR. Recommended for vCards with accents — works around scanner bugs by serving a .vcf file."
 msgstr ""
 
 #. translators: %s: tracking URL prefix, e.g. /qr
-#: src/Admin/LibraryPage.php:233
+#: src/Admin/LibraryPage.php:254
 msgid "Use a short %s URL and count scans"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:240
+#: src/Admin/LibraryPage.php:261
 msgid "Will resolve to"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:244
+#: src/Admin/LibraryPage.php:265
 msgid "Tracking is only available for URL, plain text, and vCard content. Wi-Fi, email, SMS, Tel and Geo encode native schemes that scanners act on directly — an HTTP redirect would break the QR."
 msgstr ""
 
-#: src/Admin/LibraryPage.php:248
+#: src/Admin/LibraryPage.php:269
 #: src/Block/Maker.php:135
 msgid "Design"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:258
-#: src/Admin/LibraryPage.php:261
+#: src/Admin/LibraryPage.php:279
+#: src/Admin/LibraryPage.php:282
 #: src/Block/Maker.php:121
 #: assets/js/block-editor.js:136
 msgid "Foreground"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:259
+#: src/Admin/LibraryPage.php:280
 #: src/Block/Maker.php:176
 msgid "Color of the QR modules (the dark squares that encode data). High contrast vs the background is critical — pure black is the most reliable."
 msgstr ""
 
-#: src/Admin/LibraryPage.php:265
-#: src/Admin/LibraryPage.php:268
+#: src/Admin/LibraryPage.php:286
+#: src/Admin/LibraryPage.php:289
 #: src/Block/Maker.php:122
 #: assets/js/block-editor.js:137
 msgid "Background"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:266
+#: src/Admin/LibraryPage.php:287
 #: src/Block/Maker.php:177
 msgid "Color behind the modules. White or very light is best; coloured backgrounds reduce contrast and can break scanning on cheap phones."
 msgstr ""
 
-#: src/Admin/LibraryPage.php:272
-#: src/Admin/LibraryPage.php:275
+#: src/Admin/LibraryPage.php:293
+#: src/Admin/LibraryPage.php:296
 #: src/Block/Maker.php:123
 #: assets/js/block-editor.js:138
 msgid "Eye color"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:273
+#: src/Admin/LibraryPage.php:294
 #: src/Block/Maker.php:178
 msgid "Color of the three big corner finder patterns. Usually matches the foreground; a different color is decorative but should still contrast strongly with the background."
 msgstr ""
 
-#: src/Admin/LibraryPage.php:280
+#: src/Admin/LibraryPage.php:301
 #: src/Block/Maker.php:124
 msgid "Transparent background"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:281
+#: src/Admin/LibraryPage.php:302
 #: src/Block/Maker.php:179
 msgid "Drops the background fill so the underlying page or photo shows through. The QR scans only if the surface behind it is uniform and light — patterned or dark backgrounds will break it."
 msgstr ""
 
-#: src/Admin/LibraryPage.php:288
+#: src/Admin/LibraryPage.php:309
 #: src/Block/Maker.php:125
 msgid "Dot shape"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:289
+#: src/Admin/LibraryPage.php:310
 #: src/Block/Maker.php:180
 msgid "Visual style of the data modules. Square is the most scannable; rounded and classy shapes look softer but slightly reduce module-edge contrast."
 msgstr ""
 
-#: src/Admin/LibraryPage.php:304
+#: src/Admin/LibraryPage.php:325
 #: src/Block/Maker.php:126
 #: assets/js/block-editor.js:140
 msgid "Eye shape"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:305
+#: src/Admin/LibraryPage.php:326
 #: src/Block/Maker.php:181
 msgid "Visual style of the three big corner patterns. Square is the standard QR look; the others are decorative variations on the same finder geometry."
 msgstr ""
 
-#: src/Admin/LibraryPage.php:321
-#: src/Admin/LibraryPage.php:326
+#: src/Admin/LibraryPage.php:342
+#: src/Admin/LibraryPage.php:347
 #: src/Block/Maker.php:172
 msgid "Error correction"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:322
+#: src/Admin/LibraryPage.php:343
 #: src/Block/Maker.php:173
 msgid "Lets scanners read the QR even if it’s partly damaged or covered by a logo. Higher levels tolerate more damage but make the QR denser. Auto picks the best level for your case."
 msgstr ""
 
-#: src/Admin/LibraryPage.php:328
+#: src/Admin/LibraryPage.php:349
 #: src/Block/Maker.php:184
 msgid "Auto"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:328
+#: src/Admin/LibraryPage.php:349
 msgid "Picks the best level for your case: highest EC that doesn’t enlarge the QR if no logo, biggest possible logo if one is attached."
 msgstr ""
 
-#: src/Admin/LibraryPage.php:329
+#: src/Admin/LibraryPage.php:350
 #: src/Block/Maker.php:185
 msgid "Min"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:329
+#: src/Admin/LibraryPage.php:350
 msgid "Level L · 7% damage recovery. Smallest, densest QR — fragile if printed small or scanned at an angle. Use for short URLs in ideal conditions."
 msgstr ""
 
-#: src/Admin/LibraryPage.php:330
+#: src/Admin/LibraryPage.php:351
 #: src/Block/Maker.php:186
 msgid "Low"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:330
+#: src/Admin/LibraryPage.php:351
 msgid "Level M · 15% damage recovery. Slightly bigger QR. Solid default for screen display and clean prints."
 msgstr ""
 
-#: src/Admin/LibraryPage.php:331
-#: src/Admin/LibraryPage.php:373
+#: src/Admin/LibraryPage.php:352
+#: src/Admin/LibraryPage.php:394
 #: src/Block/Maker.php:170
 #: src/Block/Maker.php:187
 msgid "Medium"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:331
+#: src/Admin/LibraryPage.php:352
 msgid "Level Q · 25% damage recovery. Tolerates moderate dirt, glare or partial logo overlap. Good for print on uncoated paper."
 msgstr ""
 
-#: src/Admin/LibraryPage.php:332
+#: src/Admin/LibraryPage.php:353
 #: src/Block/Maker.php:188
 msgid "High"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:332
+#: src/Admin/LibraryPage.php:353
 msgid "Level H · 30% damage recovery. Biggest QR for the same data, most robust, allows the largest logo. Use for outdoor or rough-environment prints."
 msgstr ""
 
-#: src/Admin/LibraryPage.php:343
+#: src/Admin/LibraryPage.php:364
 #: src/Block/Maker.php:136
 msgid "Logo"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:344
+#: src/Admin/LibraryPage.php:365
 msgid "Overlay an image at the QR’s center — a logo, mascot, etc. The chosen Error correction level determines how much of the QR can be safely covered. The image is stored with the QR card and reused on every export."
 msgstr ""
 
-#: src/Admin/LibraryPage.php:351
+#: src/Admin/LibraryPage.php:372
 #: src/Admin/Menu.php:137
 msgid "Pick logo from Media Library"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:354
+#: src/Admin/LibraryPage.php:375
 #: src/Admin/Menu.php:139
 #: src/Block/Maker.php:133
 msgid "Remove logo"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:357
+#: src/Admin/LibraryPage.php:378
 msgid "PNG, JPEG, or WebP from the Media Library. Saved with the QR code."
 msgstr ""
 
-#: src/Admin/LibraryPage.php:362
+#: src/Admin/LibraryPage.php:383
 #: src/Block/Maker.php:132
 msgid "Clear QR modules behind logo"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:363
+#: src/Admin/LibraryPage.php:384
 #: src/Block/Maker.php:183
 msgid "Erases the QR modules under the logo so it sits cleanly on the background color. Always on for opaque logos; uncheck only for transparent PNGs where you want the modules to show through the empty parts of the image."
 msgstr ""
 
-#: src/Admin/LibraryPage.php:368
+#: src/Admin/LibraryPage.php:389
 #: src/Block/Maker.php:134
 msgid "Logo size"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:369
+#: src/Admin/LibraryPage.php:390
 #: src/Block/Maker.php:174
 msgid "How much of the QR the logo covers. Safe leaves an extra margin for damaged prints; Max uses the full coverage the chosen error correction allows."
 msgstr ""
 
-#: src/Admin/LibraryPage.php:372
+#: src/Admin/LibraryPage.php:393
 #: src/Block/Maker.php:169
 msgid "Safe"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:372
+#: src/Admin/LibraryPage.php:393
 msgid "~50% of the computed safe area. Extra margin for damaged or low-quality prints."
 msgstr ""
 
-#: src/Admin/LibraryPage.php:373
+#: src/Admin/LibraryPage.php:394
 msgid "~80% of the safe area. Mid-point between Safe and Max — clearly visible logo with a bit of scan headroom."
 msgstr ""
 
-#: src/Admin/LibraryPage.php:374
+#: src/Admin/LibraryPage.php:395
 #: src/Block/Maker.php:171
 msgid "Max"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:374
+#: src/Admin/LibraryPage.php:395
 msgid "Full safe area for the chosen error correction. Largest logo the QR can support without losing scannability under good conditions."
 msgstr ""
 
-#: src/Admin/LibraryPage.php:416
+#: src/Admin/LibraryPage.php:437
 #: src/Block/Maker.php:139
 msgid "Size"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:423
+#: src/Admin/LibraryPage.php:444
 #: src/Block/Maker.php:151
 msgid "Custom…"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:427
+#: src/Admin/LibraryPage.php:448
 #: src/Block/Maker.php:152
 msgid "Custom size (px)"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:431
+#: src/Admin/LibraryPage.php:452
 #: src/Block/Maker.php:150
 msgid "Format"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:439
+#: src/Admin/LibraryPage.php:460
 #: src/Block/Maker.php:154
 msgid "Always scan-test the QR with a real phone before printing at scale — colours, logo overlap and print quality can affect readability."
 msgstr ""
 
-#: src/Admin/LibraryPage.php:443
+#: src/Admin/LibraryPage.php:464
 #: src/Block/Maker.php:137
 msgid "Cancel"
 msgstr ""

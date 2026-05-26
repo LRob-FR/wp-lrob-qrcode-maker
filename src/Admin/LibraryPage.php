@@ -69,6 +69,26 @@ final class LibraryPage
         return ' <span class="lrob-qrm-info" tabindex="0" title="' . esc_attr($help) . '">(?)</span>';
     }
 
+    /**
+     * True for content whose native scheme would break under HTTP redirect
+     * (Wi-Fi / mailto / sms / tel / geo). Falls back to a target-prefix
+     * regex for legacy rows that predate the contentType column. Mirrors
+     * `NON_TRACKABLE_TYPES` in admin/js/admin.js — keep them in sync.
+     *
+     * @param array<string, mixed> $code
+     */
+    private static function is_non_trackable(array $code): bool
+    {
+        $type = isset($code['design']['contentType']) ? (string) $code['design']['contentType'] : '';
+        if (in_array($type, ['wifi', 'email', 'sms', 'tel', 'geo'], true)) {
+            return true;
+        }
+        if ($type === '') {
+            return (bool) preg_match('#^(WIFI:|sms:|smsto:|tel:|geo:|mailto:)#i', (string) ($code['target_url'] ?? ''));
+        }
+        return false;
+    }
+
     public static function render(): void
     {
         if (!current_user_can(Activator::CAPABILITY)) {
@@ -109,6 +129,7 @@ final class LibraryPage
                         ];
                         $card_data['encoded'] = $card_data['trackingUrl'] ?? $card_data['target'];
                         $label = $code['label'] !== '' ? $code['label'] : $code['target_url'];
+                        $is_non_trackable = self::is_non_trackable($code);
                     ?>
                         <article class="lrob-qrm-card" data-id="<?php echo (int) $code['id']; ?>"
                                  data-qr="<?php echo esc_attr(wp_json_encode($card_data)); ?>">
@@ -148,7 +169,7 @@ final class LibraryPage
                                             );
                                             ?>
                                         </dd>
-                                    <?php else : ?>
+                                    <?php elseif (!$is_non_trackable) : ?>
                                         <dt><?php esc_html_e('Tracking', 'lrob-qrcode-maker'); ?></dt>
                                         <dd>
                                             <span class="lrob-qrm-pill lrob-qrm-pill-muted">

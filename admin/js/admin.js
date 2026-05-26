@@ -506,7 +506,13 @@
             ? '<a class="lrob-qrm-card-url" href="' + escAttr(row.target_url) + '" target="_blank" rel="noopener">' + escHtml(row.target_url) + '</a>'
             : '<code class="lrob-qrm-card-url">' + escHtml(row.target_url) + '</code>';
 
-        var trackingBlock;
+        // Mirror LibraryPage::is_non_trackable(): hide the "Tracking" row
+        // entirely for content types whose native scheme can't be redirected.
+        var ctype = (row.design && row.design.contentType) || '';
+        var legacyNonTrackable = ctype === '' && /^(WIFI:|sms:|smsto:|tel:|geo:|mailto:)/i.test(row.target_url || '');
+        var isNonTrackable = (['wifi', 'email', 'sms', 'tel', 'geo'].indexOf(ctype) !== -1) || legacyNonTrackable;
+
+        var trackingBlock = '';
         if (trackingUrl) {
             var n = parseInt(row.scan_count, 10) || 0;
             var scanFmt = n === 1
@@ -517,7 +523,7 @@
               + '<dd><a class="lrob-qrm-card-url" href="' + escAttr(trackingUrl) + '" target="_blank" rel="noopener">' + escHtml(trackingUrl) + '</a></dd>'
               + '<dt>' + escHtml(i18n.cardScansLabel || 'Scans') + '</dt>'
               + '<dd>' + escHtml(scanFmt.replace('%d', n)) + '</dd>';
-        } else {
+        } else if (!isNonTrackable) {
             trackingBlock =
                 '<dt>' + escHtml(i18n.cardTracking || 'Tracking') + '</dt>'
               + '<dd><span class="lrob-qrm-pill lrob-qrm-pill-muted">' + escHtml(i18n.cardOff || 'Off') + '</span></dd>';
