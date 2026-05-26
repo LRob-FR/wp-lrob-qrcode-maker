@@ -21,8 +21,8 @@ msgid "LRob - QR Code Maker"
 msgstr "LRob - QR Code Maker"
 
 #. Plugin URI of the plugin
-msgid "https://www.lrob.fr/wordpress/plugins/lrob-qrcode-maker/"
-msgstr "https://www.lrob.fr/wordpress/plugins/lrob-qrcode-maker/"
+msgid "https://www.lrob.fr/wordpress/plugins/qr-code-maker/"
+msgstr "https://www.lrob.fr/wordpress/plugins/qr-code-maker/"
 
 #. Description of the plugin
 msgid ""

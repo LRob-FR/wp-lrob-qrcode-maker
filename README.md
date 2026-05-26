@@ -467,7 +467,7 @@ Upstream notices are preserved verbatim in `vendor/qr-code-styling/LICENSE`.
 
 **[LRob](https://www.lrob.fr)** — WordPress web hosting specialist based in Orléans, France.
 
-- 📦 Plugin home: <https://www.lrob.fr/wordpress/plugins/lrob-qrcode-maker/>
+- 📦 Plugin home: <https://www.lrob.fr/wordpress/plugins/qr-code-maker/>
 - 🐛 Issues: <https://github.com/LRob-FR/wp-lrob-qrcode-maker/issues>
 - 💼 Hosting service: <https://www.lrob.fr>
 
