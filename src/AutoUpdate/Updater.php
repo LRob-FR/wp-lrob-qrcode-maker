@@ -72,7 +72,7 @@ final class Updater
             'url'          => LROB_QRM_GITHUB_URL,
             'package'      => $zip_url,
             'tested'       => $this->tested_wp_version(),
-            'requires_php' => '8.4',
+            'requires_php' => '8.3',
             'icons'        => [],
             'banners'      => [],
         ];
@@ -113,8 +113,8 @@ final class Updater
             'version'       => $remote_version,
             'author'        => '<a href="https://www.lrob.fr">LRob</a>',
             'homepage'      => defined('LROB_QRM_PLUGIN_URL') ? LROB_QRM_PLUGIN_URL : LROB_QRM_GITHUB_URL,
-            'requires'      => '7.0',
-            'requires_php'  => '8.4',
+            'requires'      => '6.0',
+            'requires_php'  => '8.3',
             'tested'        => $this->tested_wp_version(),
             'last_updated'  => (string) ($release['published_at'] ?? ''),
             'download_link' => (string) $zip_url,
@@ -175,6 +175,13 @@ final class Updater
     private function is_force_refresh(): bool
     {
         if (!is_admin()) {
+            return false;
+        }
+        // Cap-gated: any authenticated user can hit /wp-admin/. Without this
+        // check, a subscriber could trigger an uncached GitHub API hit on
+        // every page load they want, burning the public rate limit (60/h)
+        // and breaking real updates until the budget refills.
+        if (!current_user_can('update_plugins')) {
             return false;
         }
         if (isset($_GET['force-check']) && (string) $_GET['force-check'] === '1') {

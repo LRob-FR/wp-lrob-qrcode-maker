@@ -56,10 +56,6 @@ final class Router
 
         $row = (new Repository())->find_by_slug($slug);
         if ($row === null || empty($row['target_url'])) {
-            // Bare `return` here lets WP keep going and serve whatever
-            // template matches — for an unmatched query that's usually the
-            // home archive (= a giant page of unrelated posts). Force a
-            // clean 404 page and bail.
             status_header(404);
             nocache_headers();
             wp_die(
@@ -69,24 +65,16 @@ final class Router
             );
         }
 
-        // Only log the scan when tracking is on for the QR. Bots requesting
-        // the slug while tracking is off would otherwise inflate the table.
         if (!empty($row['tracking_enabled'])) {
-            (new Repository())->log_scan(
-                (int) $row['id'],
-                self::anonymize_ip(self::client_ip()),
-                self::short_ua((string) ($_SERVER['HTTP_USER_AGENT'] ?? '')),
-                self::short_referer((string) ($_SERVER['HTTP_REFERER'] ?? ''))
-            );
+            (new Repository())->bump_scan_count((int) $row['id']);
         }
 
         $target = (string) $row['target_url'];
 
         // vCard payload (BEGIN:VCARD…END:VCARD) → serve as a downloadable .vcf
         // so the phone treats it as a contact file and prompts "Add to
-        // Contacts" instead of rendering raw text in a browser tab. This is
-        // what makes the "enable tracking" workaround actually scannable for
-        // long vCards that wouldn't fit inline.
+        // Contacts" instead of rendering raw text in a browser tab. The
+        // accent-handling fallback that motivated tracking for vCards.
         if (preg_match('#^BEGIN:VCARD#i', $target)) {
             nocache_headers();
             header('Content-Type: text/vcard; charset=utf-8');
@@ -96,19 +84,23 @@ final class Router
             exit;
         }
 
-        // Other bare strings (Wi-Fi, geo, SMS, tel, etc.) — show as plain text
-        // landing page. A tracked QR pointing here isn't typical; the inline
-        // payload is usually short enough to scan natively.
-        if (!preg_match('#^https?://#i', $target)) {
-            status_header(200);
+        // HTTP(S) target → 302 to the destination.
+        if (preg_match('#^https?://#i', $target)) {
             nocache_headers();
-            echo '<!doctype html><meta charset="utf-8"><title>QR target</title><pre>'
-                . esc_html($target) . '</pre>';
+            wp_redirect(esc_url_raw($target), 302);
             exit;
         }
 
+        // Anything else is either a plain-text tracked QR or legacy data
+        // from before we restricted tracking to url/text/vcard. Render a
+        // minimal noindex landing page so search engines don't archive
+        // private contact / Wi-Fi credentials harvested from old QRs.
+        status_header(200);
         nocache_headers();
-        wp_redirect(esc_url_raw($target), 302);
+        echo '<!doctype html><html><head><meta charset="utf-8">'
+            . '<meta name="robots" content="noindex,nofollow">'
+            . '<title>' . esc_html__('QR target', 'lrob-qrcode-maker') . '</title>'
+            . '</head><body><pre>' . esc_html($target) . '</pre></body></html>';
         exit;
     }
 
@@ -120,69 +112,4 @@ final class Router
         return $path;
     }
 
-    private static function client_ip(): string
-    {
-        $candidates = [
-            $_SERVER['HTTP_CF_CONNECTING_IP'] ?? '',
-            $_SERVER['HTTP_X_FORWARDED_FOR'] ?? '',
-            $_SERVER['REMOTE_ADDR']           ?? '',
-        ];
-        foreach ($candidates as $raw) {
-            if (!is_string($raw) || $raw === '') {
-                continue;
-            }
-            $first = trim(explode(',', $raw)[0]);
-            if (filter_var($first, FILTER_VALIDATE_IP)) {
-                return $first;
-            }
-        }
-        return '';
-    }
-
-    /**
-     * Truncate v4 to /24 and v6 to /48 — enough for "rough geography" while
-     * not personally identifiable on its own.
-     */
-    private static function anonymize_ip(string $ip): string
-    {
-        if ($ip === '') {
-            return '';
-        }
-        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
-            $parts = explode('.', $ip);
-            $parts[3] = '0';
-            return implode('.', $parts);
-        }
-        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
-            $expanded = inet_ntop(inet_pton($ip) ?: '');
-            if (!is_string($expanded)) {
-                return '';
-            }
-            $blocks = explode(':', $expanded);
-            // Keep first 3 hextets (/48), zero the rest.
-            for ($i = 3; $i < count($blocks); $i++) {
-                $blocks[$i] = '0';
-            }
-            return implode(':', $blocks);
-        }
-        return '';
-    }
-
-    private static function short_ua(string $ua): string
-    {
-        $ua = trim($ua);
-        return substr($ua, 0, 120);
-    }
-
-    private static function short_referer(string $ref): string
-    {
-        if ($ref === '') {
-            return '';
-        }
-        $parts = wp_parse_url($ref);
-        if (!is_array($parts) || empty($parts['host'])) {
-            return '';
-        }
-        return substr((string) $parts['host'], 0, 255);
-    }
 }

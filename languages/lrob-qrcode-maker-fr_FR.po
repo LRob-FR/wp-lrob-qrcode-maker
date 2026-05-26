@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: LRob - QR Code Maker 0.1.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/lrob-qrcode-"
 "maker\n"
-"POT-Creation-Date: 2026-05-26T12:05:20+00:00\n"
+"POT-Creation-Date: 2026-05-26T12:33:26+00:00\n"
 "Last-Translator: LRob <claude@lrob.fr>\n"
 "Language-Team: French <claude@lrob.fr>\n"
 "Language: fr_FR\n"
@@ -844,7 +844,11 @@ msgstr "L’URL cible ou le texte est obligatoire."
 msgid "Target is too long."
 msgstr "La cible est trop longue."
 
-#: src/REST/LibraryController.php:161
+#: src/REST/LibraryController.php:153
+msgid "Design payload is too large."
+msgstr "Le design est trop volumineux."
+
+#: src/REST/LibraryController.php:167
 msgid "logo_attachment_id does not reference an image attachment."
 msgstr "logo_attachment_id ne référence pas un fichier image."
 
@@ -968,13 +972,17 @@ msgstr "Latitude"
 msgid "Longitude"
 msgstr "Longitude"
 
-#: src/Tracking/Router.php:66
+#: src/Tracking/Router.php:62
 msgid "QR code not found."
 msgstr "QR code introuvable."
 
-#: src/Tracking/Router.php:67
+#: src/Tracking/Router.php:63
 msgid "Not Found"
 msgstr "Introuvable"
+
+#: src/Tracking/Router.php:102
+msgid "QR target"
+msgstr "Cible du QR"
 
 #: assets/js/block-editor.js:97
 msgid ""

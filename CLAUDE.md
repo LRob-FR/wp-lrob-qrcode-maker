@@ -37,7 +37,7 @@ Prefixes must be plugin-specific. Several LRob plugins coexist; `lrob_` alone co
 | PHP namespace | `LRob\QRCodeMaker\` | `LRob\QRCodeMaker\Library\Repository` |
 | Hooks (actions/filters) | `lrob_qrm_` | `lrob_qrm_rendered_bytes` |
 | Constants | `LROB_QRM_` | `LROB_QRM_VERSION`, `LROB_QRM_PATH` |
-| DB tables | `{wpdb->prefix}lrob_qrm_` | `wp_lrob_qrm_codes`, `wp_lrob_qrm_scans` |
+| DB tables | `{wpdb->prefix}lrob_qrm_` | `wp_lrob_qrm_codes` |
 | Options | `lrob_qrm_` | `lrob_qrm_settings`, `lrob_qrm_db_version` |
 | REST namespace | `lrob-qrm/v1` | `/wp-json/lrob-qrm/v1/library` |
 | Capability | `manage_lrob_qrm` | granted to `administrator` on activate |
@@ -187,8 +187,8 @@ src/
   Deactivator.php             Clear cron + flush rewrites
   Plugin.php                  Boot order
   REST/LibraryController.php  Admin CRUD (sole REST surface)
-  Library/Schema.php          dbDelta for codes + scans tables
-  Library/Repository.php      wpdb wrapper, scan logging, slug allocator
+  Library/Schema.php          dbDelta for codes table (drops legacy scans table)
+  Library/Repository.php      wpdb wrapper, scan counter, slug allocator
   Tracking/Router.php         /qr/{slug} rewrite + redirect (+ vCard .vcf serve)
   Block/Maker.php             Gutenberg block registration + render callback
   Admin/Menu.php              Top-level menu + asset enqueue (incl. wp.media)

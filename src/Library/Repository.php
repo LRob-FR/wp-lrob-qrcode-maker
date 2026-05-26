@@ -13,13 +13,10 @@ final class Repository
 {
     private string $codes_table;
 
-    private string $scans_table;
-
     public function __construct()
     {
         global $wpdb;
         $this->codes_table = $wpdb->prefix . Schema::TABLE_CODES;
-        $this->scans_table = $wpdb->prefix . Schema::TABLE_SCANS;
     }
 
     /**
@@ -132,57 +129,22 @@ final class Repository
     public function delete(int $id): bool
     {
         global $wpdb;
-        $wpdb->delete($this->scans_table, ['qr_id' => $id]);
         return (bool) $wpdb->delete($this->codes_table, ['id' => $id]);
     }
 
     /**
-     * Atomically log a scan and bump the parent counter. Called from the
-     * tracking router — keep it lean: no PII beyond anonymised IP, no log
-     * row at all if tracking is disabled.
+     * Bump the scan counter on a hit. No row insertion — high-volume scans
+     * (stadium, public Wi-Fi, etc.) would otherwise inflate a scans table
+     * that nothing actually reads. The counter is all the UI ever shows.
      */
-    public function log_scan(int $qr_id, string $ip_anon, string $ua_short, string $referer): void
+    public function bump_scan_count(int $qr_id): void
     {
         global $wpdb;
-        $wpdb->insert($this->scans_table, [
-            'qr_id'      => $qr_id,
-            'scanned_at' => current_time('mysql', true),
-            'ip_anon'    => substr($ip_anon, 0, 45),
-            'ua_short'   => substr($ua_short, 0, 120),
-            'referer'    => substr($referer, 0, 255),
-        ]);
         $wpdb->query(
             $wpdb->prepare(
                 "UPDATE {$this->codes_table} SET scan_count = scan_count + 1 WHERE id = %d",
                 $qr_id
             )
-        );
-    }
-
-    /**
-     * @return array<int, array{bucket:string,count:int}>
-     */
-    public function scan_buckets(int $qr_id, int $days = 30): array
-    {
-        global $wpdb;
-        $rows = $wpdb->get_results(
-            $wpdb->prepare(
-                "SELECT DATE(scanned_at) AS bucket, COUNT(*) AS count
-                 FROM {$this->scans_table}
-                 WHERE qr_id = %d AND scanned_at >= DATE_SUB(NOW(), INTERVAL %d DAY)
-                 GROUP BY bucket
-                 ORDER BY bucket ASC",
-                $qr_id,
-                $days
-            ),
-            ARRAY_A
-        );
-        if (!is_array($rows)) {
-            return [];
-        }
-        return array_map(
-            static fn (array $r) => ['bucket' => (string) $r['bucket'], 'count' => (int) $r['count']],
-            $rows
         );
     }
 

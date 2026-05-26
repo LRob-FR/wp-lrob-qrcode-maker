@@ -5,24 +5,21 @@ declare(strict_types=1);
 namespace LRob\QRCodeMaker\Library;
 
 /**
- * DB schema for the admin QR library + scan tracking.
+ * DB schema for the admin QR library.
  *
- * Two tables:
+ * One table:
  *   - {prefix}lrob_qrm_codes  — one row per saved QR.
  *       Holds the encoded payload, the design spec (JSON), the optional
- *       tracking slug and counter, label + author for the admin list view.
- *   - {prefix}lrob_qrm_scans  — one row per scan when tracking is enabled.
- *       Anonymised IP (truncated to /24 for v4, /48 for v6) and shortened
- *       user-agent. Not a full analytics product — just enough for a graph.
+ *       tracking slug and a hit counter for tracked QRs.
  *
  * `install()` is idempotent — runs on activation and again any time we bump
- * `OPTION_DB_VERSION` for an additive change.
+ * `OPTION_DB_VERSION` for an additive change. It also drops the legacy
+ * `lrob_qrm_scans` table from earlier versions (the per-scan log was
+ * never surfaced in the UI; we now keep only the counter on the codes row).
  */
 final class Schema
 {
     public const TABLE_CODES = 'lrob_qrm_codes';
-
-    public const TABLE_SCANS = 'lrob_qrm_scans';
 
     public static function install(): void
     {
@@ -31,7 +28,6 @@ final class Schema
 
         $charset_collate = $wpdb->get_charset_collate();
         $codes = $wpdb->prefix . self::TABLE_CODES;
-        $scans = $wpdb->prefix . self::TABLE_SCANS;
 
         // `slug` is the public path component on /qr/{slug}. NULL when
         // tracking is disabled (the QR encodes the target URL directly).
@@ -54,19 +50,9 @@ final class Schema
             KEY logo_attachment_id (logo_attachment_id)
         ) {$charset_collate};";
 
-        $sql_scans = "CREATE TABLE {$scans} (
-            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-            qr_id BIGINT UNSIGNED NOT NULL,
-            scanned_at DATETIME NOT NULL,
-            ip_anon VARCHAR(45) NOT NULL DEFAULT '',
-            ua_short VARCHAR(120) NOT NULL DEFAULT '',
-            referer VARCHAR(255) NOT NULL DEFAULT '',
-            PRIMARY KEY  (id),
-            KEY qr_id (qr_id),
-            KEY scanned_at (scanned_at)
-        ) {$charset_collate};";
-
         dbDelta($sql_codes);
-        dbDelta($sql_scans);
+
+        $legacy_scans = $wpdb->prefix . 'lrob_qrm_scans';
+        $wpdb->query("DROP TABLE IF EXISTS `{$legacy_scans}`");
     }
 }

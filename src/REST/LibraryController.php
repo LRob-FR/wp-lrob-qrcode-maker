@@ -144,9 +144,15 @@ final class LibraryController
             $out['tracking_enabled'] = !empty($body['tracking_enabled']);
         }
         if (array_key_exists('design', $body) && is_array($body['design'])) {
-            // Design JSON is a render hint — we cap its serialized size and
-            // strip non-scalar leaves to avoid nested-object trickery.
-            $out['design'] = self::flatten_design($body['design']);
+            // Design JSON is a render hint — strip non-scalar leaves to avoid
+            // nested-object trickery, then cap the serialized size so a
+            // compromised admin account can't bloat the DB with multi-MB
+            // payloads (16 KB is ~50× more than any real design needs).
+            $design = self::flatten_design($body['design']);
+            if (strlen((string) wp_json_encode($design)) > 16384) {
+                return new WP_Error('lrob_qrm_design_too_large', __('Design payload is too large.', 'lrob-qrcode-maker'), ['status' => 400]);
+            }
+            $out['design'] = $design;
         }
         if (array_key_exists('logo_attachment_id', $body)) {
             $aid = (int) $body['logo_attachment_id'];
