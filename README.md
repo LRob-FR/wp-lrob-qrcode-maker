@@ -5,8 +5,8 @@
 > Drop a Gutenberg block on any page so your visitors design and download their own QR codes — or keep a personal library of trackable QRs in the admin. **Every pixel is rendered in the browser**; the server only stores metadata and handles the optional tracking redirect.
 
 [![License: GPL v2+](https://img.shields.io/badge/License-GPL%20v2%2B-blue.svg)](LICENSE)
-![PHP: 8.4+](https://img.shields.io/badge/PHP-8.4%2B-777BB4)
-![WordPress: 7.0+](https://img.shields.io/badge/WordPress-7.0%2B-21759B)
+![PHP: 8.3+](https://img.shields.io/badge/PHP-8.3%2B-777BB4)
+![WordPress: 6.0+](https://img.shields.io/badge/WordPress-6.0%2B-21759B)
 [![Version: 1.0.0](https://img.shields.io/badge/Version-1.0.0-success)](https://github.com/LRob-FR/wp-lrob-qrcode-maker/releases)
 ![No SaaS](https://img.shields.io/badge/No%20SaaS-✓-success)
 ![No tracking calls](https://img.shields.io/badge/No%20third--party%20calls-✓-success)
@@ -89,8 +89,8 @@ Every other QR generator out there asks you to ship visitor traffic and scan ana
 
 **Plug it in, hook it, move on.**
 
-- PHP 8.4+, WordPress 7.0+. No Composer at runtime, no JS build pipeline.
-- One vendored library ([qr-code-styling](https://github.com/kozakdenys/qr-code-styling), MIT). ~92 KB zip.
+- PHP 8.3+, WordPress 6.0+. No Composer at runtime, no JS build pipeline.
+- One vendored library ([qr-code-styling](https://github.com/kozakdenys/qr-code-styling), MIT).
 - All admin actions go through a single REST namespace (`lrob-qrm/v1/library`). Schema is small (`wp_lrob_qrm_codes` + `wp_lrob_qrm_scans`), `dbDelta`-migrated.
 - Self-hosted auto-update from GitHub releases — no wordpress.org dependency.
 
@@ -122,11 +122,11 @@ Every other QR generator out there asks you to ship visitor traffic and scan ana
 |---|---|
 | 🧠 **All rendering client-side** | Powered by [qr-code-styling](https://github.com/kozakdenys/qr-code-styling) — no PHP imaging library, no GD pipeline, no REST render endpoint. Preview and export come from the **same** code path, so what you see is what you get. |
 | 🔒 **Privacy-first by design** | Visitors' logos never leave their browser. Tracking stores anonymised IPs (/24 for v4, /48 for v6). No SaaS, no third-party scripts, no callbacks home. |
-| 🎨 **Genuinely customisable** | 6 dot shapes, 5 eye shapes, free colours per element, optional logo with **fully automatic error correction** (aspect-aware), 5 themes (incl. FSE inheritance + fully custom), 3 layouts. |
+| 🎨 **Genuinely customisable** | 6 dot shapes, 5 eye shapes, free colours per element, optional logo with **density-aware error correction** (Auto + 4 forced levels, aspect-aware safe-area calc), 5 themes (incl. FSE inheritance + fully custom), 3 layouts. Every form field has a detailed hover-help tooltip. |
 | 📇 **Eight content types** | URL · Plain text · vCard · Wi-Fi · Email · SMS · Phone · Geolocation. Compose the payload from typed fields — the encoded `BEGIN:VCARD` / `WIFI:` / `mailto:` string is built client-side. |
-| 📤 **Modern export formats** | WebP (default), PNG, JPEG, **AVIF** (auto-detected on browsers that can encode it). Sizes 256 → 8192 px, plus custom for print. |
+| 📤 **Export formats** | WebP (default), PNG, JPEG. Sizes 256 → 8192 px, plus custom for print. |
 | 📈 **Tracked redirects, anonymised** | Optional per QR. `https://yoursite.com/qr/<slug>` → 302 to target + scan log. Default URL prefix configurable. |
-| 🪶 **Lightweight** | ~92 KB zip, no Composer at runtime, no JS build pipeline. One vendored library (~50 KB). |
+| 🪶 **Lightweight** | No Composer at runtime, no JS build pipeline. One vendored library. |
 | 🔄 **Self-hosted auto-update** | Plugin updates pulled directly from GitHub releases. No wordpress.org dependency. |
 | 🌍 **Localised** | English source, 🇫🇷 French at 100%. Drop a `.po` next to it for any locale you need. |
 
@@ -166,7 +166,7 @@ cd wp-lrob-qrcode-maker
 
 ### 2. Add the public block
 
-In the block editor, insert **QR Code Maker** (category *Widgets*). Visitors land on a live maker with preview, design controls, and an *Export QR Code* action. Configure defaults (colours, theme, layout, content type) from the Inspector sidebar.
+In the block editor, insert **QR Code Maker** (category *Widgets*). Visitors land on a live maker with preview, design controls, and a *Generate image* action. Configure defaults (colours, theme, layout, content type) from the Inspector sidebar.
 
 ### 3. Build a tracked QR in the admin
 
@@ -192,8 +192,11 @@ A drop-in maker UI visitors interact with directly.
 A card grid of reusable QR codes with a modal editor.
 
 - Card thumbnails are rendered live in the grid (qr-code-styling at 240×240).
-- One-click **Edit / Export / Delete** per card.
+- One-click **Generate image / Edit / Delete** per card.
+- **Autosave** on every form input (1 s debounce, in-modal status indicator) — no save button to forget.
+- **Incremental grid refresh** when the editor closes: only the new/edited card is replaced or appended, no full-page reload.
 - Stored QRs preserve their **content type + raw input values** in the design JSON, so editing later re-opens the original form (vCard fields, Wi-Fi creds, etc.) rather than the composed payload.
+- Modal opens with a quick fade-in animation; on screens ≤ 800 px it goes full-bleed for usable mobile editing.
 
 ### Per-QR scan tracking
 
@@ -201,14 +204,15 @@ Opt-in per QR. When enabled:
 
 - The QR encodes `https://yoursite/<tracking_path>/<slug>` (default `tracking_path = qr`, configurable in Settings).
 - Hitting that URL: anonymises the IP, logs the scan, **302s to the real target**, increments the counter on the card.
-- Non-URL targets (vCard / Wi-Fi / etc.) with tracking on display the raw payload rather than redirect — safe by construction.
+- **vCard payload** (`BEGIN:VCARD…`) is served as a downloadable `.vcf` file (`Content-Type: text/vcard`, `Content-Disposition: attachment`) so the phone prompts *Add to Contacts*. The recommended path for vCard QRs that wouldn't otherwise scan reliably inline — encoding a short `/qr/<slug>` URL fits in any scanner, and serving the contact as a real file works on every phone.
+- Other non-URL payloads (Wi-Fi, geo, SMS, tel) display a plain text landing page.
 
 ### Export modal
 
-Opened by every *Export QR Code* button (cards + designer). Holds:
+Opened by every *Generate image* button (cards + designer). Holds:
 
 - **Size** select with preset standards (256 / 512 / 1024 / 2048 / 4096 — powers of 2) + **Custom** up to 8192 px.
-- **Format** select. WebP default; AVIF appears only when `canvas.toBlob('image/avif')` actually works on the visitor's browser (slow path: PNG → canvas → re-encode AVIF).
+- **Format** select: WebP (default), PNG, JPEG. All three are encoded natively by `qr-code-styling`'s canvas pipeline.
 - Live preview at modal size so big-resolution exports still feel responsive.
 
 ### Content types
@@ -253,32 +257,39 @@ Adding a new type is a single-class change — see `src/Support/ContentTypes.php
 - **Public block**: file picker. Image stays in the browser (FileReader → dataURL → qr-code-styling).
 - **Admin library**: WordPress Media Library picker. The logo persists on the QR row (attachment ID).
 
-### Error correction (fully automatic)
+### Error correction + logo coverage
 
-There's no EC knob in the UI — fiddling with it confuses end users and the optimal value is computable. The plugin picks the **minimum EC** that satisfies these constraints, in order:
+Two pill-row controls on each QR — both with hover-help tooltips that explain the trade-off in plain language.
 
-1. **No logo** → EC `L`. Lowest overhead, biggest modules, most data capacity.
-2. **Logo present** → EC bumped to whatever's needed for the logo to render at its intended size. `qr-code-styling` renders the logo at `coverage = imageSize × ecPercent` of the QR area, so a higher EC is needed for the logo to reach its intended dimension. **The logo's aspect ratio is taken into account** — non-square logos spread their coverage along one axis, so they need less EC than square ones at the same `imageSize`.
-3. **Payload overflows v40** at the chosen EC → walks down `H → Q → M → L` until it fits. The Reed-Solomon margin shrinks, but the data fits.
+**Error correction** (`Auto | Min | Low | Medium | High` → maps to `auto | L | M | Q | H`):
 
-Mapping for the default `logoSizeRatio = 0.3`:
+- **Auto** *(default)* — when no logo is attached, picks the *highest* EC that fits at the same QR version as `L` (so bumping EC doesn't bloat the matrix). When a logo IS attached, picks the EC that maximises the safe logo area for the chosen `Logo size` preset.
+- **Forced levels** — keep the requested level; fall back to the next lower one only if data overflows v40 at the chosen EC.
 
-| Logo aspect | Min EC |
-|---|---|
-| Square (1:1) | Q |
-| Wide 2:1 | M |
-| Wide / tall 4:1 | L |
+**Logo size** (`Safe | Medium | Max` → multiplier on the computed `safeArea`):
 
-The effective EC is surfaced in the stats footer under the preview (e.g. *QR v15 · 77×77 modules · 280 bytes · EC L*), along with a one-line scanner-compat notice if the payload exceeds ~200 bytes (the empirical limit for some native phone QR scanners regardless of EC/version).
+- Multipliers `{safe: 0.5, medium: 0.8, max: 1.0}` applied to the density-aware safe area computed for the chosen EC + payload + logo aspect.
+- `safeArea = ecPct × 0.67 × versionFactor`, clamped by `dimCap = 0.55² × sqrt(ecPct/0.30) / max(aspect, 1/aspect)`.
+- `versionFactor = min(1, 0.5 + version/12)` accounts for the absolute codeword count at small QR versions (v3 EC H only has ~13 RS-recoverable codewords — the nominal 30% area budget is too generous).
+- `dimCap` scales with `sqrt(ecPct/0.30)` so higher EC always permits an at-least-as-large logo for wide or tall (non-square) logos — strictly monotonic across EC levels.
+
+The pipeline lives in `assets/js/qr-engine.js`, shared between admin + front block.
+
+**Stats line** under the preview shows: `{modules}×{modules} modules · {bytes} bytes · EC {level}` plus, when a logo is set, ` · Logo {w}×{h} ({coverage}%)` where `w × h` is the *actually rendered* logo size in QR modules and `coverage` is its real area fraction (mirrors `qr-code-styling`'s odd-module quantization rather than the target the user requested).
+
+A scanner-compat notice appears at two byte thresholds:
+- **> 512 bytes** — "the QR gets dense, print it at ≥ 4 cm for reliable scans".
+- **> 1024 bytes** — "may be unscannable on many phones, shorten the content".
+
+For vCard payloads at either threshold, the notice suggests enabling **Tracking** so the QR encodes a short `/qr/<slug>` URL and the contact card is served as a downloadable `.vcf` when scanned (works on every scanner regardless of byte count or accents).
 
 ### Export formats
 
 | Format | Notes |
 |---|---|
 | **WebP** *(default)* | Best size/quality trade-off. |
-| **PNG** | Lossless, supports transparency. |
+| **PNG** | Lossless, supports transparency — pick this if you set a transparent QR background. |
 | **JPEG** | Smallest for opaque codes, no alpha. |
-| **AVIF** | Only offered when the browser can encode it. PNG → canvas → AVIF re-encode pass (slow but transparent). |
 
 > SVG is intentionally **not** offered. SVG can carry scripts; allowing visitors to host an SVG produced by your site would expand the attack surface for no real benefit.
 
@@ -343,7 +354,7 @@ The `keep` default means a misclick on WP's *Delete* button cannot lose data.
        └───────────────────────────┴───────────────────────────┘
                                    │
                                    ▼
-                          PHP 8.4+ on WP 7.0+
+                          PHP 8.3+ on WP 6.0+
                   (no PHP image library, no Composer)
 ```
 
@@ -362,12 +373,10 @@ Full deep-dive: see [`CLAUDE.md`](./CLAUDE.md).
 
 ## 🛠️ Requirements
 
-- PHP **8.4+**
-- WordPress **7.0+**
+- PHP **8.3+**
+- WordPress **6.0+**
 - Modern browser with JavaScript enabled (for the maker UI)
 - Pretty permalinks (Settings → Permalinks) if you want the `/qr/{slug}` tracking endpoint
-
-AVIF export requires a browser that can encode AVIF on a canvas (Chrome 85+, Safari 16+, Firefox 110+).
 
 ---
 

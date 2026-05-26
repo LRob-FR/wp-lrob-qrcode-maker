@@ -23,6 +23,24 @@
     font-size: 1.6em;
 }
 
+/* "by LRob" credit appended to the page title — small, muted, sits beside
+   the title with a slight baseline offset so it reads as a sub-label. */
+.lrob-qrm-page-credit {
+    font-size: 0.55em;
+    font-weight: 400;
+    color: #646970;
+    margin-left: 8px;
+    vertical-align: middle;
+    letter-spacing: 0.02em;
+}
+.lrob-qrm-page-credit a {
+    color: #2271b1;
+    text-decoration: none;
+}
+.lrob-qrm-page-credit a:hover {
+    text-decoration: underline;
+}
+
 /* ─── Card grid ─────────────────────────────────────────────────────── */
 
 /* Fixed-width cards so they don't resize between breakpoints — just stack
@@ -169,6 +187,18 @@ a.lrob-qrm-card-url:hover {
     background: #fafbfc;
 }
 
+/* Card-action buttons that pair an inline SVG with a text label
+   (Generate image, Edit) — flex-row aligns the two, gap separates them. */
+.lrob-qrm-card-actions .button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.lrob-qrm-card-actions .button svg {
+    flex-shrink: 0;
+}
+
 .lrob-qrm-card-export {
     flex: 1;
     min-width: 0;
@@ -176,15 +206,13 @@ a.lrob-qrm-card-url:hover {
     text-align: center;
 }
 
-/* Icon-only buttons for Edit / Delete on cards — Export is the primary
-   action, the others are secondary so they shrink to icons. */
+/* Icon-only button (Delete) — keeps the compact 32×32 footprint.
+   Edit moved to icon+text (sized by .button defaults). */
 .lrob-qrm-icon-button {
     flex: 0 0 auto;
     width: 32px;
     height: 32px;
     padding: 0 !important;
-    display: inline-flex;
-    align-items: center;
     justify-content: center;
 }
 
@@ -209,10 +237,53 @@ a.lrob-qrm-card-url:hover {
     padding: 24px;
 }
 
+@media (max-width: 800px) {
+    .lrob-qrm-modal { padding: 0; align-items: stretch; }
+    .lrob-qrm-modal-panel { border-radius: 0; max-height: 100vh; }
+    .lrob-qrm-modal-header { padding: 10px 14px; }
+}
+
 /* [hidden] sets display:none in the UA stylesheet but our .lrob-qrm-modal
    rule above re-applies display:flex with higher specificity. !important
    restores the HTML semantics so toggling the `hidden` attr just works. */
 .lrob-qrm-modal[hidden] { display: none !important; }
+
+/* Open animation — fires whenever the modal becomes visible (display goes
+   from none to flex via removing the [hidden] attr). The backdrop fades in
+   and the panel pops up. Close is instant (no CSS-only way to delay an
+   element going display:none); the user feedback was about the opening
+   delay, not the closing one. */
+.lrob-qrm-modal:not([hidden]) .lrob-qrm-modal-backdrop {
+    animation: lrob-qrm-fade-in .18s ease-out;
+}
+
+.lrob-qrm-modal:not([hidden]) .lrob-qrm-modal-panel {
+    animation: lrob-qrm-pop-in .22s cubic-bezier(.2,.7,.3,1.15);
+}
+
+@keyframes lrob-qrm-fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+@keyframes lrob-qrm-pop-in {
+    from { opacity: 0; transform: translateY(8px) scale(0.96); }
+    to   { opacity: 1; transform: none; }
+}
+
+/* When the editor is fetching the row being edited, dim the body content
+   and show a subtle pulse to indicate loading. Triggered by JS via the
+   `is-loading` class on the modal. */
+.lrob-qrm-modal.is-loading .lrob-qrm-editor-grid {
+    opacity: 0.4;
+    transition: opacity .15s;
+    pointer-events: none;
+}
+
+.lrob-qrm-modal:not(.is-loading) .lrob-qrm-editor-grid {
+    opacity: 1;
+    transition: opacity .25s ease-out;
+}
 
 body.lrob-qrm-modal-open {
     overflow: hidden;
@@ -254,6 +325,37 @@ body.lrob-qrm-modal-open {
     font-size: 1.2em;
 }
 
+/* Label input lives in the editor header (saves vertical real estate vs.
+   a dedicated label field). Borderless until focused. */
+.lrob-qrm-editor-label {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    background: transparent;
+    font-size: 1.15em;
+    font-weight: 600;
+    padding: 6px 8px;
+    margin-right: 12px;
+    border-radius: 4px;
+    color: #1d2327;
+}
+.lrob-qrm-editor-label::placeholder { color: #8c8f94; font-weight: 400; }
+.lrob-qrm-editor-label:hover { background: #f6f7f7; }
+.lrob-qrm-editor-label:focus { outline: 2px solid #2271b1; background: #fff; }
+
+/* Auto-save indicator — sticky in the modal header, between title + close. */
+.lrob-qrm-save-status {
+    margin-right: 12px;
+    font-size: 0.85em;
+    min-height: 1em;
+    white-space: nowrap;
+    transition: color .2s;
+}
+.lrob-qrm-save-status.is-dirty  { color: #8b6914; }
+.lrob-qrm-save-status.is-saving { color: #646970; font-style: italic; }
+.lrob-qrm-save-status.is-saved  { color: #2c6e3f; }
+.lrob-qrm-save-status.is-error  { color: #b32d2e; font-weight: 500; }
+
 .lrob-qrm-modal-close {
     appearance: none;
     background: transparent;
@@ -277,27 +379,45 @@ body.lrob-qrm-modal-open {
 
 /* ─── Editor form layout ────────────────────────────────────────────── */
 
+/* Form column on the LEFT, preview on the RIGHT (matches the front block's
+   default layout). Preview column has a fixed-ish width so the form gets
+   the bulk of the modal. */
 .lrob-qrm-editor-grid {
     display: grid;
-    grid-template-columns: 320px 1fr;
+    grid-template-columns: minmax(0, 1fr) 320px;
     gap: 24px;
     align-items: flex-start;
     padding: 20px 24px 24px;
 }
 
 @media (max-width: 800px) {
-    .lrob-qrm-editor-grid { grid-template-columns: 1fr; }
+    .lrob-qrm-editor-grid {
+        grid-template-columns: 1fr;
+        padding: 12px;
+        gap: 12px;
+    }
+    /* On mobile: preview first (visual feedback), form below it. */
+    .lrob-qrm-editor-preview-wrap { order: -1; }
+}
+
+.lrob-qrm-editor-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
 }
 
 .lrob-qrm-editor-preview-wrap {
     position: sticky;
     top: 64px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .lrob-qrm-editor-preview {
     width: 100%;
     aspect-ratio: 1 / 1;
-    max-width: 320px;
     background: #f6f7f7;
     border: 1px solid #e0e0e0;
     border-radius: 8px;
@@ -307,10 +427,23 @@ body.lrob-qrm-modal-open {
     overflow: hidden;
 }
 
-/* Stats footer + contextual notice under the editor preview. Same shape as
-   the frontend version (see maker.css .lrob-qrm-maker-stats*). */
+.lrob-qrm-editor-export {
+    width: 100%;
+    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.lrob-qrm-export-actions .button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
 .lrob-qrm-editor-stats {
-    margin: 6px 0 0;
+    margin: 0;
     font-size: 0.75em;
     color: #646970;
     text-align: center;
@@ -319,7 +452,7 @@ body.lrob-qrm-modal-open {
 }
 
 .lrob-qrm-editor-stats-notice {
-    margin: 6px 0 0;
+    margin: 0;
     padding: 8px 12px;
     font-size: 0.82em;
     color: #1d2327;
@@ -327,19 +460,12 @@ body.lrob-qrm-modal-open {
     border-left: 3px solid #2271b1;
     border-radius: 4px;
     line-height: 1.4;
-    max-width: 320px;
 }
 
 .lrob-qrm-editor-preview canvas,
 .lrob-qrm-editor-preview svg {
-    max-width: 100%;
-    max-height: 100%;
-}
-
-.lrob-qrm-editor-form {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
+    width: 100%;
+    height: 100%;
 }
 
 .lrob-qrm-field {
@@ -420,10 +546,6 @@ body.lrob-qrm-modal-open {
     cursor: pointer;
 }
 
-.lrob-qrm-field input[type="range"] {
-    width: 100%;
-}
-
 .lrob-qrm-field small {
     color: #646970;
     font-size: 0.85em;
@@ -438,13 +560,6 @@ body.lrob-qrm-modal-open {
 
 @media (max-width: 640px) {
     .lrob-qrm-field-grid { grid-template-columns: 1fr 1fr; }
-}
-
-.lrob-qrm-range-value {
-    float: right;
-    color: #646970;
-    font-variant-numeric: tabular-nums;
-    font-weight: 400;
 }
 
 .lrob-qrm-tracking-preview {
@@ -464,43 +579,35 @@ body.lrob-qrm-modal-open {
     margin-right: 6px;
 }
 
-.lrob-qrm-editor-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-    margin-top: 8px;
-    padding-top: 12px;
-    border-top: 1px solid #f0f0f1;
-}
+/* ─── Export modal — QR preview LEFT (grows), settings stacked RIGHT ──── */
 
-/* ─── Export modal — QR preview LEFT, settings stacked RIGHT ─────────── */
-
+/* Preview column grows (square via aspect-ratio on the inner box);
+   form column is fixed at the width of its controls. */
 .lrob-qrm-export-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) 240px;
     gap: 24px;
     padding: 24px;
     align-items: start;
 }
 
 @media (max-width: 720px) {
-    .lrob-qrm-export-grid { grid-template-columns: 1fr; }
+    .lrob-qrm-export-grid {
+        grid-template-columns: 1fr;
+        padding: 12px;
+        gap: 12px;
+    }
 }
 
 .lrob-qrm-export-preview-wrap {
-    display: flex;
-    align-items: center;
-    justify-content: center;
     background: #f6f7f7;
     border: 1px solid #e0e0e0;
     border-radius: 8px;
-    padding: 16px;
-    min-height: 280px;
+    overflow: hidden;
 }
 
 .lrob-qrm-export-preview {
     width: 100%;
-    max-width: 320px;
     aspect-ratio: 1 / 1;
     display: flex;
     align-items: center;
@@ -509,8 +616,8 @@ body.lrob-qrm-modal-open {
 
 .lrob-qrm-export-preview canvas,
 .lrob-qrm-export-preview svg {
-    max-width: 100%;
-    max-height: 100%;
+    width: 100%;
+    height: 100%;
 }
 
 .lrob-qrm-export-form {
@@ -529,11 +636,38 @@ body.lrob-qrm-modal-open {
     border-top: 1px solid #f0f0f1;
 }
 
+/* Hover-help badge — small "(?)" tag with a native title tooltip; sits
+   next to a heading or fieldset legend. Tabindex on the element so the
+   tooltip also appears on keyboard focus. */
+.lrob-qrm-info {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 0 5px;
+    font-size: 0.85em;
+    font-weight: 500;
+    color: #646970;
+    border: 1px solid #c3c4c7;
+    border-radius: 10px;
+    cursor: help;
+    user-select: none;
+    vertical-align: middle;
+    text-transform: none;
+    letter-spacing: 0;
+}
+.lrob-qrm-info:hover, .lrob-qrm-info:focus {
+    color: #1d2327;
+    border-color: #2271b1;
+    outline: none;
+}
+
 /* ─── Section subtitles in the editor form ──────────────────────────── */
 
 .lrob-qrm-section-title {
-    margin: 16px 0 8px;
-    padding-bottom: 6px;
+    /* Negative bottom margin counters the form-col flex gap (14px) so the
+       title sits visually closer to its section content. Inter-section gap
+       stays = form-col gap + title's positive top margin. */
+    margin: 14px 0 -10px;
+    padding-bottom: 3px;
     font-size: 0.95em;
     font-weight: 600;
     color: #1d2327;
@@ -545,7 +679,7 @@ body.lrob-qrm-modal-open {
 .lrob-qrm-section {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
 }
 
 /* ─── Shape radio-tile pickers ───────────────────────────────────────── */
@@ -613,6 +747,67 @@ body.lrob-qrm-modal-open {
 }
 
 .lrob-qrm-shape-tile:has(input:focus-visible) {
+    outline: 2px solid #2271b1;
+    outline-offset: 1px;
+}
+
+/* Text pill group — radios rendered as horizontal toggle buttons, used for
+   EC level + logo-size presets. Same selection look as shape-tile but text
+   instead of icons, and flex (not square) sizing so labels fit. */
+.lrob-qrm-toggle-picker {
+    border: 0;
+    padding: 0;
+    margin: 0 0 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.lrob-qrm-toggle-picker > legend {
+    flex-basis: 100%;
+    font-weight: 500;
+    color: #1d2327;
+    padding: 0;
+    margin-bottom: 4px;
+}
+
+.lrob-qrm-toggle-tile {
+    position: relative;
+    flex: 1 1 0;
+    min-width: 56px;
+    text-align: center;
+    padding: 8px 10px;
+    border: 2px solid #dcdcde;
+    border-radius: 6px;
+    cursor: pointer;
+    background: #fff;
+    transition: border-color .12s, background .12s;
+    font-size: 0.92em;
+    color: #1d2327;
+    user-select: none;
+}
+
+.lrob-qrm-toggle-tile:hover {
+    border-color: #8c8f94;
+    background: #fafbfc;
+}
+
+.lrob-qrm-toggle-tile input[type="radio"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    margin: 0;
+    cursor: pointer;
+}
+
+.lrob-qrm-toggle-tile:has(input:checked) {
+    border-color: #2271b1;
+    background: #f0f6fc;
+    box-shadow: 0 0 0 1px #2271b1;
+    font-weight: 500;
+}
+
+.lrob-qrm-toggle-tile:has(input:focus-visible) {
     outline: 2px solid #2271b1;
     outline-offset: 1px;
 }
@@ -770,15 +965,15 @@ body.lrob-qrm-modal-open {
    the form below it. Float every revealed element absolutely so the swatch
    stays put and the rest of the modal doesn't budge. */
 
-.lrob-qrm-editor-form .wp-picker-container {
+.lrob-qrm-editor-fields .wp-picker-container {
     position: relative;
     width: 100%;
 }
 
-.lrob-qrm-editor-form .wp-color-result { margin: 0; }
+.lrob-qrm-editor-fields .wp-color-result { margin: 0; }
 
 /* The hex input + Default/Clear sit just below the swatch in a thin pill. */
-.lrob-qrm-editor-form .wp-picker-input-wrap {
+.lrob-qrm-editor-fields .wp-picker-input-wrap {
     position: absolute !important;
     top: calc(100% + 4px);
     left: 0;
@@ -794,7 +989,7 @@ body.lrob-qrm-modal-open {
 }
 
 /* The iris colour picker stacks under the input-wrap pill, visually fused. */
-.lrob-qrm-editor-form .wp-picker-holder {
+.lrob-qrm-editor-fields .wp-picker-holder {
     position: absolute !important;
     top: calc(100% + 48px);  /* clears the input-wrap pill above */
     left: 0;
@@ -813,8 +1008,8 @@ body.lrob-qrm-modal-open {
    scrollbar). Below 800px the form gets the full width and the picker fits at
    left anchor, so we leave it alone there. */
 @media (min-width: 801px) {
-    .lrob-qrm-editor-form .lrob-qrm-field-grid > div.lrob-qrm-color-field:nth-of-type(3) .wp-picker-input-wrap,
-    .lrob-qrm-editor-form .lrob-qrm-field-grid > div.lrob-qrm-color-field:nth-of-type(3) .wp-picker-holder {
+    .lrob-qrm-editor-fields .lrob-qrm-field-grid > div.lrob-qrm-color-field:nth-of-type(3) .wp-picker-input-wrap,
+    .lrob-qrm-editor-fields .lrob-qrm-field-grid > div.lrob-qrm-color-field:nth-of-type(3) .wp-picker-holder {
         left: auto !important;
         right: 0 !important;
     }

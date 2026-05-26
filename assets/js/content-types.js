@@ -140,11 +140,6 @@
             case 'text':
                 return v.text || '';
             case 'vcard':
-                // vCard 3.0 (RFC 2426) — the universal contact format. iPhone
-                // Camera, Android Google Lens, Outlook and Gmail all decode it.
-                // MECARD is more compact but its iOS Camera support is unreliable
-                // for non-standard ORG / TITLE extensions, which most professional
-                // cards need. We trade ~50% extra payload for guaranteed scan.
                 var lines = ['BEGIN:VCARD', 'VERSION:3.0'];
                 var fn = (clean(v.firstName) + ' ' + clean(v.lastName)).trim();
                 if (fn) lines.push('FN:' + escapeVcard(fn));

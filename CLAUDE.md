@@ -1,76 +1,57 @@
 # CLAUDE.md
 
-Guidance for Claude Code sessions working in this repository.
+Guidance for Claude Code sessions working in this repository. End-user-facing docs live in `README.md` — keep this file for operational + code-level notes that don't belong there.
 
 ## Project
 
-WordPress plugin **LRob - QR Code Maker** (slug `lrob-qrcode-maker`). Customizable QR code generator with a public Gutenberg block (visitors design and download their own) and an admin library with optional per-QR scan tracking. Requires PHP 8.4+ and WordPress 7.0+.
+WordPress plugin **LRob - QR Code Maker** (slug `lrob-qrcode-maker`). Public Gutenberg block + admin library with optional per-QR scan tracking. Requires PHP 8.3+ and WordPress 6.0+.
 
-**Rendering architecture: fully client-side.** Both the preview and the downloaded file are produced by the vendored `qr-code-styling` JS library (Denys Kozak / kozakdenys, MIT, `vendor/qr-code-styling/`). The PHP side stores QR metadata + handles the `/qr/{slug}` tracking redirect — it does not render images. There is no `RenderController`, no `QRRenderer`, no GD pipeline, no PHP QR library. Previous server-side rendering was ripped out in favour of "preview == export" via the same JS engine. **Credit qr-code-styling whenever the rendering pipeline is discussed publicly.**
+**Rendering is fully client-side** via the vendored `qr-code-styling` JS lib (Denys Kozak, MIT, `vendor/qr-code-styling/`). The PHP side stores QR metadata + handles `/qr/{slug}` redirects — it does **not** render images. No GD, no Imagick, no PHP QR lib. **Credit qr-code-styling whenever the rendering pipeline is discussed publicly.**
 
 ## Build / lint / release
 
-`./release.sh` is the single build entry point. **Run it yourself whenever needed.** Output is captured in one go — `./release.sh 2>&1 | tail -40` shows everything that matters. Steps:
+`./release.sh` is the single build entry point. **Run it yourself whenever needed.** Output is captured in one go — `./release.sh 2>&1 | tail -40` shows everything that matters.
 
-- Lints every PHP file (`php -l`) and every JS file (`node --check`, skipped if no node).
-- Scans CSS for unreferenced `.lrob-qrm-*` selectors (peel-once + 3-hyphen-min heuristic).
-- Regenerates `languages/lrob-qrcode-maker.pot` via `wp i18n make-pot` (when wp-cli present).
-- `msgmerge`s POT into every `.po`, `msgattrib --no-obsolete` strips orphans.
-- Compiles `.po` → `.mo` + `.json`; `msgfmt --statistics` per language.
-- Prints file-type + LoC stats.
-- Zips into `../releases/lrob-qrcode-maker-<version>.zip`.
+Steps: lint every PHP (`php -l`) + every JS (`node --check`) → dead-CSS scan → regen `.pot` → `msgmerge` POs → compile `.mo` + `.json` → stats → zip into `../releases/lrob-qrcode-maker-<version>.zip`.
 
-**Vendor refresh:** `./release.sh --refresh-vendors` re-downloads the pinned version of `qr-code-styling` (version pin at the top of `release.sh`). The lib's vendor directory is wiped clean before extraction so renamed/dropped upstream files don't linger. Skipped by default so day-to-day builds don't hit the network. Bump the version constant in `release.sh`, run with the flag, commit the diff.
+Every build pings the npm registry for the latest qr-code-styling tag and WARNs if it's newer than the pinned `VENDOR_QR_CODE_STYLING_VERSION` constant (network-best-effort, silent if offline).
+
+`./release.sh --refresh-vendors` re-downloads the pinned version. Skipped by default so day-to-day builds don't hit the network for the actual download. **Before bumping the version constant**: read the upstream changelog at <https://github.com/kozakdenys/qr-code-styling/releases>. The 1.9.2 we pin has a known SVG bug on classy/classy-rounded eyes — `qr-engine.js`'s `safeEyeOuter()` works around it. Verify the bump fixes that bug before dropping the workaround.
+
+Note: `node --check` validates syntax only, not `ReferenceError`. After moving shared helpers between files, manually grep for orphan callers.
 
 ## Versioning
 
 Two cadences:
-- **+0.0.1 (patch)** — small adjustments. Multiple iterations stack at the same version while testing; bump only on the user's explicit ship cue. **Ask the user for the version number — don't decide it yourself.** Do NOT bump during iterative debug — the user has been explicit about this (see memory `feedback-no-version-bumps-while-unstable`).
+- **+0.0.1 (patch)** — small adjustments. Multiple iterations stack at the same version while testing; bump only on the user's explicit ship cue. **Ask the user for the version number — don't decide it yourself.** Do NOT bump during iterative debug (see memory `feedback-no-version-bumps-while-unstable`).
 - **+0.1.0 (minor)** — a feature shipped.
 
 Single source of truth: `lrob-qrcode-maker.php` has both the `Version:` header and `LROB_QRM_VERSION` constant — bump them together.
 
 ## Naming convention — **MANDATORY**
 
-Prefixes must be plugin-specific. Several LRob plugins coexist; "lrob_" alone collides. This plugin uses `qrm` (= "qr maker") everywhere a runtime identifier appears.
+Prefixes must be plugin-specific. Several LRob plugins coexist; `lrob_` alone collides. This plugin uses `qrm` (= "qr maker") everywhere a runtime identifier appears.
 
 | Layer | Prefix | Examples |
 |---|---|---|
-| PHP namespace | `LRob\QRCodeMaker\` | `LRob\QRCodeMaker\Support\QRRenderer` |
+| PHP namespace | `LRob\QRCodeMaker\` | `LRob\QRCodeMaker\Library\Repository` |
 | Hooks (actions/filters) | `lrob_qrm_` | `lrob_qrm_rendered_bytes` |
 | Constants | `LROB_QRM_` | `LROB_QRM_VERSION`, `LROB_QRM_PATH` |
 | DB tables | `{wpdb->prefix}lrob_qrm_` | `wp_lrob_qrm_codes`, `wp_lrob_qrm_scans` |
 | Options | `lrob_qrm_` | `lrob_qrm_settings`, `lrob_qrm_db_version` |
-| REST namespace | `lrob-qrm/v1` | `/wp-json/lrob-qrm/v1/render` |
+| REST namespace | `lrob-qrm/v1` | `/wp-json/lrob-qrm/v1/library` |
 | Capability | `manage_lrob_qrm` | granted to `administrator` on activate |
 | Text domain | `lrob-qrcode-maker` | unchanged (human-readable slug) |
-| CSS classes / JS globals | `lrob-qrm-` / `lrobQrm` | `lrob-qrm-maker`, `window.lrobQrmAdmin` |
+| CSS / JS globals | `lrob-qrm-` / `lrobQrm` | `lrob-qrm-maker`, `window.lrobQrmAdmin` |
 | Block name | `lrob-qrm/maker` | the only block today |
 
-Anything Claude adds — new option, table, hook, CSS class — **must** follow these prefixes.
+Anything new — option, table, hook, CSS class — **must** follow these prefixes.
 
-## Architecture
-
-**Entry point** (`lrob-qrcode-maker.php`): defines constants, registers a hand-rolled PSR-4 autoloader for plugin code (`LRob\QRCodeMaker\Foo\Bar` → `src/Foo/Bar.php`). Boots `Plugin::instance()->boot()` on `plugins_loaded`. **No Composer at runtime, no PHP vendor dependencies** — the only vendored lib is the JS bundle `vendor/qr-code-styling/qr-code-styling.js`, enqueued by the block + admin pages.
-
-**Lifecycle**: `Activator::activate()` grants `manage_lrob_qrm` to administrator, seeds settings + uninstall-mode options, runs `Schema::install()` (dbDelta idempotent) for `wp_lrob_qrm_codes` + `wp_lrob_qrm_scans`, flushes rewrite rules so `/qr/{slug}` resolves on the next request. `Deactivator::deactivate()` clears any `lrob_qrm_*` cron events and flushes rewrites. `uninstall.php` honours `lrob_qrm_uninstall_mode` (keep / archive / wipe) — `keep` is default so a misclick doesn't lose data.
-
-**Container** (`src/Container.php`): tiny `set()`/`get()`/`has()` service locator. Not actively used — most subsystems are instantiated directly in `Plugin::boot()`. Kept for future cross-subsystem service registration.
-
-**Subsystems** (all wired in `Plugin::boot()`):
-- `Block\Maker` — registers the `lrob-qrm/maker` Gutenberg block, server-renders the shell, enqueues `assets/js/maker.js` only on pages containing the block (block-scoped registration).
-- `REST\LibraryController` — `GET/POST/PUT/DELETE /lrob-qrm/v1/library`. Admin-only (`manage_lrob_qrm` + `X-WP-Nonce`). The only REST surface this plugin exposes.
-- `Tracking\Router` — `init` rewrite rule + `template_redirect` lookup → log scan + 302 to target.
-- `AutoUpdate\Updater` — runs in every context (front + admin), filters `pre_set_site_transient_update_plugins` and `plugins_api`.
-- `Admin\Menu` (admin only) — top-level "QR Codes" with submenus Library / Settings.
-
-**Trust boundary**: admin writes pass `LibraryController::sanitize_payload()` (target_url length cap, design JSON flattened to scalars, logo_attachment_id verified against the attachment + MIME). Tracking redirects clamp the slug to `[a-z0-9]{1,32}` via the rewrite regex. No QR-rendering payload validation needed — there is no PHP renderer.
-
-## Conventions to follow
+## Conventions
 
 - **Strict types**: every PHP file in `src/` starts with `declare(strict_types=1);`.
 - **Final classes** unless explicitly meant for subclassing.
-- **Constructor property promotion** + readonly + `match` + named args freely — PHP 8.4+ minimum.
+- **Constructor property promotion + readonly + `match` + named args + typed class constants** — PHP 8.3+. No 8.4-only features (no property hooks, no asymmetric visibility).
 - **No mock/stub/fallback code paths for things that can't happen.** Internal code trusts callers; validate only at WP REST / admin / form boundaries.
 - **One-line doc comments only where the WHY is non-obvious.** Don't narrate WHAT — names already do that.
 - **No backwards-compat shims** while version < 1.0.0. Schema can change freely between minor versions.
@@ -78,64 +59,148 @@ Anything Claude adds — new option, table, hook, CSS class — **must** follow 
 
 ## Don't run the plugin locally
 
-The user tests on his server, not on this machine. **Do not** run `php -r` smoke tests, do not spin up a wp-cli stub, do not try to install a missing PHP extension. Linters (`php -l`, `node --check`) are fine — they don't execute anything.
+The user tests on his server, not on this machine. **Do not** run `php -r` smoke tests, do not spin up a wp-cli stub, do not install missing PHP extensions. Linters are fine — they don't execute.
 
-QR rendering is fully client-side (qr-code-styling), so the runtime surface is tiny: PHP version + WP version + pretty permalinks for the `/qr/{slug}` redirect. No GD / Imagick / fileinfo dependencies. If something genuinely needs server-side verification later, surface it inline on the Library page rather than re-introducing a dedicated diagnostics page.
+If something genuinely needs server-side verification later, surface it inline on the Library page rather than re-introducing a dedicated diagnostics page.
 
 ## Deployment workflow — read before claiming a fix is live
 
 The user runs the plugin from the release zip, not the working tree. **Every PHP change must be followed by `./release.sh`**. Treat "edit done" as "not deployed" until rebuild has run. CSS/JS pick up a `filemtime`-based cache-bust query when `WP_DEBUG` is on; in production they use plugin version, so a CSS-only fix in a release still needs a version bump or a hard refresh.
 
-## Render architecture (client-side only)
+## Architecture
 
-Both preview and download go through the same `qr-code-styling` instance. Preview is a small (≈280×280) instance attached to a DOM node; download builds a fresh instance at the user's chosen pixel size and calls its `.download({ name, extension })` method. There is no PHP rendering. Preview == export, guaranteed.
+**Entry point** (`lrob-qrcode-maker.php`): defines constants, registers a hand-rolled PSR-4 autoloader (`LRob\QRCodeMaker\Foo\Bar` → `src/Foo/Bar.php`). Boots `Plugin::instance()->boot()` on `plugins_loaded`. **No Composer at runtime.** The only vendored lib is `vendor/qr-code-styling/qr-code-styling.js`.
 
-**Auto-bump for logos.** When a logo is attached AND the user picked EC level L or M, the export instance is rebuilt with EC H. Logos can cover up to ~9% of the data area and would push past L's 7% budget. Explicit Q/H choices are honoured. This logic lives in `assets/js/maker.js::doDownload()` and `admin/js/admin.js::exportQr()`.
+**Lifecycle**: `Activator::activate()` grants `manage_lrob_qrm`, seeds settings + uninstall-mode, runs `Schema::install()` (dbDelta), flushes rewrite rules. `Deactivator::deactivate()` clears `lrob_qrm_*` cron + flushes rewrites. `uninstall.php` honours `lrob_qrm_uninstall_mode` (keep / archive / wipe) — `keep` default.
 
-**Logo source.**
-- Public block: `FileReader` → dataURL → passed as `image:` to qr-code-styling. The bytes never leave the browser.
-- Admin library: WP Media Library attachment URL → fetched by qr-code-styling cross-origin (same site → no CORS issue). The attachment ID + URL come back from `LibraryController::list` via `Repository::inflate()`.
+**Subsystems** (wired in `Plugin::boot()`):
+- `Block\Maker` — registers `lrob-qrm/maker`, server-renders the shell, enqueues `assets/js/maker.js` only on pages containing the block.
+- `REST\LibraryController` — `GET/POST/PUT/DELETE /lrob-qrm/v1/library`. Admin-only (`manage_lrob_qrm` + `X-WP-Nonce`). Sole REST surface.
+- `Tracking\Router` — `init` rewrite + `template_redirect` lookup → log scan + 302 to target. Special-cases vCard payloads → serves `text/vcard` attachment.
+- `AutoUpdate\Updater` — filters `pre_set_site_transient_update_plugins` + `plugins_api` to surface GitHub releases as WP updates.
+- `Admin\Menu` — top-level "QR Codes" with Library + Settings submenus.
 
-## Adding a new shape / format
+**Trust boundary**: admin writes pass `LibraryController::sanitize_payload()` (URL length cap, design JSON flattened to scalars, `logo_attachment_id` verified against attachment + MIME). Tracking redirects clamp the slug to `[a-z0-9]{1,32}` via the rewrite regex. No QR-rendering validation needed — no PHP renderer exists.
 
-- **Dot or eye shape:** add the option in `maker.js` and `admin.js` UI (label + value), map the value in their `shapeToDotType()` / `shapeToEyeType()` helpers (or `jsType()` / `jsEyeType()` in admin.js), and add a Gutenberg `SelectControl` entry in `block-editor.js` for the per-block defaults. qr-code-styling supports `square`, `rounded`, `dots`, `classy`, `classy-rounded`, `extra-rounded` for dots, plus matching corner types.
-- **Output format:** add to the `<select name="format">` options in `LibraryPage.php` and to the `selectField` in `maker.js`. qr-code-styling's `extension` accepts `png` / `jpeg` / `webp` (we deliberately don't expose `svg`).
+## Admin editor modal
+
+The `<form data-role="form">` wraps the **entire** `lrob-qrm-modal-panel` (header + body), so the `<input name="label">` in the header bar is picked up by `FormData(form)` along with the body fields. Body is a 2-col grid: `lrob-qrm-editor-fields` LEFT, `lrob-qrm-editor-preview-wrap` RIGHT (sticky preview + Generate-image button + stats + notice).
+
+- **Form submit listener** does `preventDefault()` so Enter in the label input doesn't reload the page.
+- **Mobile (≤800px)**: modal goes full-bleed (border-radius 0, padding 0 on backdrop); preview wrap floats above the fields via `order: -1`.
+- **Open animation**: pure CSS — `@keyframes lrob-qrm-fade-in` on the backdrop + `lrob-qrm-pop-in` on the panel, fired by toggling the `[hidden]` attribute. Close is instant (no CSS-only way to delay `display: none`).
+- **Edit flow**: modal opens FIRST (synchronous `openEditor()`), THEN `loadIntoEditor()` fetches `/library` in the background. `.is-loading` class dims `.lrob-qrm-editor-grid` until the row is applied — feels responsive even on slow connections.
+- **Post-save grid refresh**: when the editor closes after a successful save, `refreshGridCard(id)` re-fetches `/library`, finds the saved row, and replaces the matching `[data-id]` card with a freshly-built one (`buildCardDom`) or appends it if it's the first save. Empty-state placeholder removed automatically. **No full page reload.** `buildCardDom` mirrors the PHP template in `LibraryPage::render()` — keep them in sync.
+- **Card actions** (download / edit / delete) are delegated on the grid via a single click listener, so dynamically-added cards work without re-binding.
+
+## Autosave
+
+The editor autosaves on every form input with a **1s debounce**. No "Save to library" button. Closing the modal flushes any pending save.
+
+- **State machine** (`saveState`): `idle | dirty | saving | saved | error`. Sticky indicator in the modal header.
+- **Race conditions**: only one save in flight; `dirtyDuringFlight` re-fires the next save after the current resolves. `suppressAutoSave` counter blocks autosave during programmatic form mutations (`form.reset()`, `loadIntoEditor`, `wpColorPicker` reinit, `setLogo` from existing-QR load).
+- **Slug arrival**: when a fresh save returns a slug, we update `data-current-slug` + `syncTrackingPreview()` text BUT intentionally skip `refreshPreview()` — calling `.update()` re-loads the logo image which causes a visible flash. Preview keeps encoding the `preview` placeholder slug until the next user input fires `refreshPreview()`; saved row + card grid already use the real slug.
+- **Close flow**: Cancel/backdrop/X/Escape → `requestCloseEditor()` → `flushSave()` → if `saveState === 'error'`, `confirm()` before closing.
+
+## EC + logo coverage pipeline (qr-engine.js)
+
+`assets/js/qr-engine.js` is the single source of truth for the EC + logo pipeline (`window.lrobQrmEngine`). Both `admin/js/admin.js` and `assets/js/maker.js` delegate to `resolveQrParams(data, logoSize, aspect, ecMode, hasLogo)` and `computeStatsText(data, params, i18n)` (returns `{line, notice}` to paint into each consumer's DOM). Depends on `window.lrobQrmContent.qrStats` (in `content-types.js`).
+
+**UI controls** (both as `.lrob-qrm-toggle-picker` radio-pill groups):
+- `Error correction`: Auto | Min | Low | Medium | High → `auto | L | M | Q | H`.
+  - `auto` no-logo: highest EC at L's QR version (no module bloat).
+  - `auto` with logo: EC with largest `safeArea` for the chosen `logoSize`.
+  - Forced levels step DOWN if data overflows v40 at the chosen EC.
+- `Logo size`: Safe | Medium | Max → multipliers `{0.5, 0.8, 1.0}` on `safeArea`.
+
+**Formula**:
+```
+versionFactor = min(1, 0.5 + version/12)       // small-QR codeword safety
+dimCap        = 0.55² × sqrt(ecPct / 0.30) / max(k, 1/k)
+safeArea      = min(ecPct × 0.67 × versionFactor, dimCap)
+coverage      = LOGO_SIZE_MULT[preset] × safeArea
+{w, h, actual} = actualLogoLayout(coverage, modules, aspect)
+imageSize     = coverage / ecPct               // what we pass to qr-code-styling
+```
+
+Key design choices encoded in the formula:
+- `dimCap` scales with `sqrt(ecPct/0.30)` so higher EC always permits an at-least-as-large logo (monotonic across EC levels, even for wide/tall logos).
+- `versionFactor` accounts for the absolute codeword count at small versions (v3 EC H only has ~13 RS-recoverable codewords).
+- `coverage` returned by `resolveQrParams` is the **actual rendered fraction** post qr-code-styling's odd-module quantization, not the theoretical target. Stats line shows `Logo {w}×{h} ({lp}%)` so the displayed % matches what the user actually sees.
+- No scanner-reliability sigmoid — it saturated to 1.0 for any QR rendered above ~3 px/module (every realistic case).
+
+**Constants** (all in `qr-engine.js`):
+- `EC_RECOVERY = { L: 0.07, M: 0.15, Q: 0.25, H: 0.30 }`
+- `EC_BYTE_CAP_V40 = { L: 2953, M: 2331, Q: 1663, H: 1273 }`
+- `EC_DIM_CAP_BASE = 0.3025` (= 0.55², longest-dim cap at EC H reference)
+- `EC_H_REF = 0.30`, `EC_BUDGET_FRAC = 0.67`
+- `LOGO_SIZE_MULT = { safe: 0.5, medium: 0.8, max: 1.0 }`
+
+**Legacy migration** (in `normalizeEcMode` / `normalizeLogoSize` / `legacyLogoSize`):
+- `ecMode === 'reliability'` → `'H'`; `'readable'` → `'auto'`.
+- Numeric `logoCoveragePct` → preset by threshold: `≤10 → safe`, `≤18 → medium`, else `max`.
+- Old `logoSizeRatio` + `ecLevel` fields are dropped from the form-apply skip list.
+
+**Stats line** (`data-role="stats"`): `{m}×{m} modules · {b} bytes · EC {e}` + when a logo is present, ` · Logo {lw}×{lh} ({lp}%)`.
+
+**Notice** (`data-role="stats-notice"`):
+- `> 1024 bytes` — "may be unscannable on many phones, shorten the content".
+- `> 512 bytes` — "QR is getting dense, print large (≥ 4 cm) for reliable scans".
+- vCard payloads at either threshold → suffix suggesting Tracking + .vcf endpoint.
+- `> 2953 bytes` (overflow at L) — "content too large to encode".
+
+## qr-code-styling quirks
+
+The lib is vendored at `vendor/qr-code-styling/qr-code-styling.js` (minified, v1.9.2). Key behaviours that bite:
+
+- **`dotsOptions.roundSize: false`** is required on previews. Otherwise canvas rounds module size to integer pixels, leaving empty margin around the QR matrix as version increases.
+- **All preview render paths share `buildQrConfig({...})`** (in `qr-engine.js`) — same width (240), same margin (0), same options. Editor preview reuses one instance via `.update()`; card grid + export modal each create a fresh instance. The download path uses `{type: 'canvas'}` override.
+- **classy / classy-rounded eye + bottom-left finder at EC H** is a SVG-renderer bug. `cornersSquare.type ∉ {dot, square, extra-rounded}` falls back to the dots-drawer class whose `_drawClassyRounded` has asymmetric corner-neighbor logic, dropping part of the bottom-left frame outline. Canvas renders fine (download unaffected). **Workaround**: `safeEyeOuter()` substitutes classy/classy-rounded → extra-rounded for `cornersSquareOptions.type` only; the inner `cornersDotOptions` keeps the original (renders fine through the `l` class). Long-term: bump qr-code-styling and remove `safeEyeOuter`.
+- **`imageOptions.imageSize` is a COVERAGE BUDGET, not the logo width.** Rendered coverage = `imageSize × ecPercent` of QR area, aspect-preserved. Our formula handles this — we pass `imageSize = coverage / ecPercent` directly.
+- **`imageOptions.margin = 0`** everywhere. The lib's margin is px padding around the logo box where modules get cleared with `hideBackgroundDots`; `margin > 0` produces inconsistent rendering across canvas sizes.
+
+## Content type composer (content-types.js)
+
+`assets/js/content-types.js` exposes `window.lrobQrmContent` with:
+- `render(container, typeKey, defs, values, onChange, opts)` — build the content-type's form fields, wire `onChange` on every input.
+- `compose(typeKey, values)` — produce the encoded payload (URL, `BEGIN:VCARD` vCard 3.0, `WIFI:`, `mailto:`, etc.).
+- `guessType(raw)` — best-effort detection from an encoded string. Used when loading legacy QRs.
+- `qrStats(data, ec)` → `{bytes, version, modules, ec, overflow}`. Backed by the `QR_BYTE_CAP` table (byte capacity per EC × version). Used by `qr-engine.js`.
+- `qrByteLen(data)` — UTF-8 byte length via `TextEncoder`.
+
+Format choices baked in:
+- **vCard 3.0** (not MECARD). MECARD's ORG/TITLE aren't reliably supported on iOS Camera. `;CHARSET=UTF-8` parameter doesn't help strict Android scanners — the reliable workaround for accented vCards is Tracking + .vcf endpoint.
+- **Wi-Fi** `WIFI:T:WPA;S:<ssid>;P:<pwd>;;`. Pure-hex passwords (e.g. "1234abcd") get wrapped in quotes per ZXing spec — without quotes, scanners decode them as raw hex bytes and auth fails.
 
 ## Where things live
 
 ```
-lrob-qrcode-maker.php        Entry, constants, plugin autoloader, lifecycle hooks
+lrob-qrcode-maker.php         Entry, constants, autoloader, lifecycle hooks
 uninstall.php                 keep/archive/wipe gated by lrob_qrm_uninstall_mode
 src/
   Activator.php               Capability + options + schema seed
   Deactivator.php             Clear cron + flush rewrites
   Plugin.php                  Boot order
-  Container.php               Tiny service locator (unused in current build)
-  REST/
-    LibraryController.php     Admin CRUD (sole REST surface)
-  Library/
-    Schema.php                dbDelta for codes + scans tables
-    Repository.php            wpdb wrapper, scan logging, slug allocator
-  Tracking/
-    Router.php                /qr/{slug} rewrite + redirect + scan log
-  Block/
-    Maker.php                 Gutenberg block registration + render callback
-  Admin/
-    Menu.php                  Top-level menu + asset enqueue (incl. wp.media)
-    LibraryPage.php           Card grid + editor panel
-    SettingsPage.php          Tracking path + uninstall mode
-  AutoUpdate/
-    Updater.php               GitHub-release self-updater
-assets/                       Frontend assets (block-scoped enqueue)
+  REST/LibraryController.php  Admin CRUD (sole REST surface)
+  Library/Schema.php          dbDelta for codes + scans tables
+  Library/Repository.php      wpdb wrapper, scan logging, slug allocator
+  Tracking/Router.php         /qr/{slug} rewrite + redirect (+ vCard .vcf serve)
+  Block/Maker.php             Gutenberg block registration + render callback
+  Admin/Menu.php              Top-level menu + asset enqueue (incl. wp.media)
+  Admin/LibraryPage.php       Card grid + editor modal + autosave UI
+  Admin/SettingsPage.php      Tracking path + uninstall mode
+  AutoUpdate/Updater.php      GitHub-release self-updater
+assets/                       Front block + shared assets (block-scoped enqueue)
   js/block-editor.js          Gutenberg editor: InspectorControls + preview
-  js/maker.js                 Frontend: hydrate, live preview, download (qr-code-styling)
+  js/maker.js                 Front block runtime: hydrate, live preview, download
+  js/content-types.js         Shared: render + compose + qrStats + guessType
+  js/qr-engine.js             Shared EC + logo coverage pipeline + buildQrConfig
   css/block-editor.css
   css/maker.css
-admin/                        Admin assets
-  js/admin.js                 Editor preview + download (qr-code-styling), wp.media picker
+admin/                        Admin-only assets
+  js/admin.js                 Editor modal + autosave + card grid + export modal
   css/admin.css
-vendor/
-  qr-code-styling/            The only vendored upstream — Denys Kozak, MIT
+vendor/qr-code-styling/       The only vendored upstream — Denys Kozak, MIT
 languages/                    .pot + .po (gitignored: .mo, .json)
 release.sh                    Lints + vendor refresh + translations + zip
 ```

@@ -24,23 +24,13 @@ final class Plugin
 {
     private static ?self $instance = null;
 
-    private Container $container;
-
     private bool $booted = false;
 
-    private function __construct()
-    {
-        $this->container = new Container();
-    }
+    private function __construct() {}
 
     public static function instance(): self
     {
         return self::$instance ??= new self();
-    }
-
-    public function container(): Container
-    {
-        return $this->container;
     }
 
     public function boot(): void

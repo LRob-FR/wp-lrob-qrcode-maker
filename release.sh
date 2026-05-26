@@ -57,6 +57,27 @@ get_version() {
     grep -oP "Version:\s*\K[\d.]+" "$PLUGIN_FILE"
 }
 
+# Check the npm registry for a newer qr-code-styling release without
+# downloading it. WARN-only; build keeps going. Skipped silently when curl
+# is unavailable or the network is unreachable (e.g. offline build).
+# On update, READ the upstream CHANGELOG before bumping — qr-code-styling
+# 1.9.2 has a known SVG bug on classy/classy-rounded eyes that our
+# qr-engine.js workaround compensates for; verify the bump fixes it
+# before dropping safeEyeOuter().
+check_vendor_versions() {
+    step "vendor check"
+    command -v curl >/dev/null 2>&1 || { warn "curl missing — skipping upstream version check"; return 0; }
+    local latest
+    latest=$(curl -sL --max-time 5 "https://registry.npmjs.org/qr-code-styling/latest" 2>/dev/null \
+        | sed -nE 's/.*"version":"([^"]+)".*/\1/p' | head -1)
+    [ -n "$latest" ] || { warn "qr-code-styling: could not reach registry"; return 0; }
+    if [ "$latest" != "$VENDOR_QR_CODE_STYLING_VERSION" ]; then
+        warn "qr-code-styling: pinned ${VENDOR_QR_CODE_STYLING_VERSION}, upstream ${latest} — check changelog before bumping (https://github.com/kozakdenys/qr-code-styling/releases)"
+    else
+        ok "qr-code-styling ${VENDOR_QR_CODE_STYLING_VERSION} (up to date)"
+    fi
+}
+
 # Re-download vendored upstream libraries to the pinned tag.
 # Skipped unless --refresh-vendors is passed.
 #
@@ -306,6 +327,7 @@ main() {
     check_deps
     VERSION=$(get_version)
     step "version $VERSION"
+    check_vendor_versions
     refresh_vendors
     lint_php
     lint_js

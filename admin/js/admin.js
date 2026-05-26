@@ -7,9 +7,6 @@
  * Rendering: the same qr-code-styling instance handles preview and export
  * (export instance is built fresh at the requested size). No server-side
  * rendering. Server only stores QR metadata + handles /qr/{slug} redirect.
- *
- * AVIF support: detected once at boot via canvas.toBlob; the option is added
- * to the format select only on browsers that can actually encode it.
  */
 (function () {
     'use strict';
@@ -35,38 +32,25 @@
     var qrPreview = null;
     var logoPreviewUrl = null;
     var logoPreviewAspect = 1;
+    var logoPreviewW = 0;
+    var logoPreviewH = 0;
     var mediaFrame = null;
 
-    /* ─── AVIF capability detection ──────────────────────────────────── */
-
-    var avifEncodingPromise = (function () {
-        return new Promise(function (resolve) {
-            try {
-                var c = document.createElement('canvas');
-                c.width = c.height = 1;
-                c.toBlob(function (b) { resolve(!!b); }, 'image/avif');
-            } catch (e) { resolve(false); }
-        });
-    })();
-
-    // (AVIF option added in openExportModal init below — the export controls
-    // moved out of the main editor form into the dedicated export modal.)
-
     /* ─── Editor preview (qr-code-styling) ───────────────────────────── */
+    /* Lazily-initialised single instance — .update() does in-place SVG mutation
+     * so consecutive refreshes (including the post-save tracking-slug refresh)
+     * don't tear the preview down and re-flash it. Editor preview canvas is
+     * 240×240 to match the export modal (the 280px size triggered a corner-
+     * pattern rendering bug in qr-code-styling for the classy-rounded eye). */
 
     function ensurePreview() {
         if (!window.QRCodeStyling) return null;
         if (qrPreview) return qrPreview;
-        qrPreview = new window.QRCodeStyling({
-            type: 'svg',
-            width: 280, height: 280, data: ' ',
-            margin: 8,
-            qrOptions: { errorCorrectionLevel: 'M' },
-            dotsOptions: { color: '#000', type: 'square', roundSize: false },
-            backgroundOptions: { color: '#fff' },
-            cornersSquareOptions: { color: '#000', type: 'square' },
-            cornersDotOptions: { color: '#000', type: 'square' }
-        });
+        qrPreview = new window.QRCodeStyling(buildQrConfig({
+            width: 240, ec: 'M',
+            fgColor: '#000', bgColor: '#fff', eyeColor: '#000',
+            dotShape: 'square', eyeShape: 'square'
+        }));
         qrPreview.append(preview);
         return qrPreview;
     }
@@ -77,19 +61,20 @@
         // carries the design data. Default size/format come from settings.
         var defaults = (cfg && cfg.exportDefaults) || {};
         var spec = {
-            data:           (fd.get('data') || '').toString(),
-            size:           parseInt(defaults.size, 10) || 1024,
-            ecLevel:        'L',
-            fgColor:        (fd.get('fgColor') || '#000000').toString(),
-            bgColor:        (fd.get('bgColor') || '#ffffff').toString(),
-            eyeColor:       (fd.get('eyeColor') || '#000000').toString(),
-            bgTransparent:  !!fd.get('bgTransparent'),
-            dotShape:       (fd.get('dotShape') || 'square').toString(),
-            eyeShape:       (fd.get('eyeShape') || 'square').toString(),
-            format:         (defaults.format || 'webp').toString(),
-            logoSizeRatio:  parseFloat(fd.get('logoSizeRatio') || '0.3'),
-            logoBackground: !!fd.get('logoBackground'),
-            margin:         4
+            data:            (fd.get('data') || '').toString(),
+            size:            parseInt(defaults.size, 10) || 1024,
+            ecLevel:         'L', // legacy; effective EC now computed by resolveQrParams
+            ecMode:          normalizeEcMode(fd.get('ecMode')),
+            fgColor:         (fd.get('fgColor') || '#000000').toString(),
+            bgColor:         (fd.get('bgColor') || '#ffffff').toString(),
+            eyeColor:        (fd.get('eyeColor') || '#000000').toString(),
+            bgTransparent:   !!fd.get('bgTransparent'),
+            dotShape:        (fd.get('dotShape') || 'square').toString(),
+            eyeShape:        (fd.get('eyeShape') || 'square').toString(),
+            format:          (defaults.format || 'webp').toString(),
+            logoSize:        normalizeLogoSize(fd.get('logoSize')),
+            logoBackground:  !!fd.get('logoBackground'),
+            margin:          4
         };
         return {
             spec: spec,
@@ -112,54 +97,29 @@
             var savedSlug = (trackingUrlEl && trackingUrlEl.getAttribute('data-current-slug')) || '';
             encoded = (cfg.trackingBase || '/') + (savedSlug || 'preview');
         }
-        var ec = effectiveEc(d.spec.ecLevel, encoded, logoPreviewUrl, d.spec.logoSizeRatio, logoPreviewAspect);
-        qp.update({
-            data: encoded,
-            qrOptions: { errorCorrectionLevel: ec, typeNumber: 0, mode: 'Byte' },
-            dotsOptions: { color: d.spec.fgColor, type: normalizeDotShape(d.spec.dotShape), roundSize: false },
-            backgroundOptions: { color: d.spec.bgTransparent ? 'rgba(0,0,0,0)' : d.spec.bgColor },
-            cornersSquareOptions: { color: d.spec.eyeColor, type: normalizeEyeShape(d.spec.eyeShape) },
-            cornersDotOptions: {
-                color: d.spec.eyeColor,
-                type: innerEyeFromOuter(d.spec.eyeShape)
-            },
-            image: logoPreviewUrl || undefined,
-            imageOptions: {
-                crossOrigin: 'anonymous',
-                margin: 4,
-                imageSize: d.spec.logoSizeRatio,
-                hideBackgroundDots: !!d.spec.logoBackground
-            }
-        });
-        renderStats(encoded, ec);
+        var hasLogo = !!logoPreviewUrl;
+        var params = resolveQrParams(encoded, d.spec.logoSize, logoPreviewAspect, d.spec.ecMode, hasLogo);
+        qp.update(buildQrConfig({
+            width: 240, data: encoded, ec: params.ec,
+            fgColor: d.spec.fgColor, bgColor: d.spec.bgColor, eyeColor: d.spec.eyeColor,
+            bgTransparent: d.spec.bgTransparent,
+            dotShape: d.spec.dotShape, eyeShape: d.spec.eyeShape,
+            logoUrl: logoPreviewUrl, logoBackground: d.spec.logoBackground,
+            imageSize: params.imageSize
+        }));
+        renderStats(encoded, params);
     }
 
-    var statsEl = form ? form.parentNode.querySelector('[data-role="stats"]') : null;
-    var statsNoticeEl = form ? form.parentNode.querySelector('[data-role="stats-notice"]') : null;
-    var statsI18n = (cfg && cfg.i18n) || {};
+    var statsEl       = editor ? editor.querySelector('[data-role="stats"]') : null;
+    var statsNoticeEl = editor ? editor.querySelector('[data-role="stats-notice"]') : null;
+    var statsI18n     = (cfg && cfg.i18n) || {};
 
-    function renderStats(data, effEc) {
-        if (!statsEl || !window.lrobQrmContent || !window.lrobQrmContent.qrStats) return;
-        var s = window.lrobQrmContent.qrStats(data, effEc);
-        var line = '', notice = '';
-        if (s.overflow) {
-            notice = statsI18n.statsOverflow || 'Content too large to encode as a QR.';
-        } else if (s.version) {
-            line = (statsI18n.statsTemplate || 'QR v%v · %m×%m modules · %b bytes · EC %e')
-                .replace('%v', s.version).replace(/%m/g, s.modules)
-                .replace('%b', s.bytes).replace('%e', s.ec);
-            if (s.bytes > 200) {
-                notice = statsI18n.statsLengthWarn || 'Past ~200 bytes, some smartphones may fail to scan the QR.';
-                var isVcard = window.lrobQrmContent.guessType && window.lrobQrmContent.guessType(data) === 'vcard';
-                if (isVcard) {
-                    notice += ' ' + (statsI18n.statsLengthWarnVcardSuffix || 'For a contact card, hosting the .vcf file and encoding its URL keeps the QR much shorter.');
-                }
-            }
-        }
-        statsEl.textContent = line;
+    function renderStats(data, params) {
+        var r = window.lrobQrmEngine.computeStatsText(data, params, statsI18n);
+        if (statsEl) statsEl.textContent = r.line;
         if (statsNoticeEl) {
-            statsNoticeEl.textContent = notice;
-            statsNoticeEl.hidden = !notice;
+            statsNoticeEl.textContent = r.notice;
+            statsNoticeEl.hidden = !r.notice;
         }
     }
 
@@ -169,64 +129,41 @@
     // qr-code-styling itself accepts: dotsOptions.type ∈ {square, dots, rounded,
     // extra-rounded, classy, classy-rounded}; cornersSquareOptions.type ∈
     // {square, dot, extra-rounded, classy, classy-rounded}.
-    function normalizeDotShape(shape) {
-        var s = String(shape || 'square');
-        var allowed = ['square', 'rounded', 'extra-rounded', 'dots', 'classy', 'classy-rounded'];
-        return allowed.indexOf(s) >= 0 ? s : 'square';
-    }
-    function normalizeEyeShape(shape) {
-        var s = String(shape || 'square');
-        // Legacy aliases from earlier plugin versions:
-        if (s === 'dots')    return 'dot';            // we renamed Dot → Circle
-        if (s === 'rounded') return 'extra-rounded';  // old "rounded" was the lib's extra-rounded
-        var allowed = ['square', 'dot', 'extra-rounded', 'classy', 'classy-rounded'];
-        return allowed.indexOf(s) >= 0 ? s : 'square';
-    }
-    // The inner eye dot follows the outer choice: a circle eye gets a circle
-    // dot, a classy eye gets a classy dot. qr-code-styling cornersDotOptions
-    // supports {square, dot, rounded, classy, classy-rounded, extra-rounded}.
-    function innerEyeFromOuter(eye) {
-        var s = normalizeEyeShape(eye);
-        if (s === 'dot') return 'dot';
-        if (s === 'extra-rounded') return 'rounded';
-        if (s === 'classy') return 'classy';
-        if (s === 'classy-rounded') return 'classy-rounded';
-        return 'square';
-    }
+    // Shape normalisation + qr-code-styling config builder live in qr-engine.js.
+    var buildQrConfig = window.lrobQrmEngine.buildQrConfig;
 
     /* ─── Logo picker (WP Media Library) ─────────────────────────────── */
 
-    var logoIdInput = form.querySelector('input[name="logo_attachment_id"]');
-    var logoThumb = form.querySelector('[data-role="logo-thumb"]');
-    var pickLogoBtn = form.querySelector('[data-action="pick-logo"]');
+    var logoIdInput   = form.querySelector('input[name="logo_attachment_id"]');
+    var logoThumb     = form.querySelector('[data-role="logo-thumb"]');
+    var pickLogoBtn   = form.querySelector('[data-action="pick-logo"]');
     var removeLogoBtn = form.querySelector('[data-action="remove-logo"]');
+    var logoSettings  = form.querySelector('[data-role="logo-settings"]');
 
-    function setLogo(attachmentId, previewUrl, aspect) {
+    function setLogo(attachmentId, previewUrl, width, height) {
         if (logoIdInput) logoIdInput.value = String(attachmentId || 0);
         logoPreviewUrl = previewUrl || null;
-        if (typeof aspect === 'number' && aspect > 0) {
-            logoPreviewAspect = aspect;
-        } else if (previewUrl) {
-            logoPreviewAspect = 1;
+        logoPreviewW = (typeof width === 'number' && width > 0) ? width : 0;
+        logoPreviewH = (typeof height === 'number' && height > 0) ? height : 0;
+        logoPreviewAspect = (logoPreviewW > 0 && logoPreviewH > 0)
+            ? (logoPreviewH / logoPreviewW)
+            : 1;
+        if (previewUrl && (!logoPreviewW || !logoPreviewH)) {
+            // Dimensions not supplied (e.g. loading an existing QR) → probe.
             var probe = new Image();
             probe.onload = function () {
                 if (probe.naturalWidth > 0) {
+                    logoPreviewW = probe.naturalWidth;
+                    logoPreviewH = probe.naturalHeight;
                     logoPreviewAspect = probe.naturalHeight / probe.naturalWidth;
                     refreshPreview();
                 }
             };
             probe.src = previewUrl;
-        } else {
-            logoPreviewAspect = 1;
         }
         if (logoThumb) {
-            if (previewUrl) {
-                logoThumb.src = previewUrl;
-                logoThumb.hidden = false;
-            } else {
-                logoThumb.removeAttribute('src');
-                logoThumb.hidden = true;
-            }
+            if (previewUrl) { logoThumb.src = previewUrl; logoThumb.hidden = false; }
+            else            { logoThumb.removeAttribute('src'); logoThumb.hidden = true; }
         }
         if (removeLogoBtn) removeLogoBtn.hidden = !attachmentId;
         if (pickLogoBtn) {
@@ -234,7 +171,15 @@
                 ? (cfg.i18n.changeLogo || 'Change logo')
                 : (cfg.i18n.pickLogo || 'Pick logo from Media Library');
         }
+        if (logoSettings) logoSettings.hidden = !attachmentId;
+        // Reset logo-size preset to "max" only on a fresh user pick — not when
+        // loadIntoEditor / form.reset reapplies a saved logo (suppressed).
+        if (attachmentId && suppressAutoSave === 0) {
+            var maxRadio = form.querySelector('input[name="logoSize"][value="max"]');
+            if (maxRadio) maxRadio.checked = true;
+        }
         refreshPreview();
+        scheduleAutoSave();
     }
 
     function openMediaPicker() {
@@ -258,9 +203,7 @@
                 } else if (att.sizes && att.sizes.thumbnail && att.sizes.thumbnail.url) {
                     thumbUrl = att.sizes.thumbnail.url;
                 }
-                var aspect = (att.width && att.height && att.width > 0)
-                    ? (att.height / att.width) : 1;
-                setLogo(att.id, thumbUrl, aspect);
+                setLogo(att.id, thumbUrl, att.width || 0, att.height || 0);
             });
         }
         mediaFrame.open();
@@ -292,24 +235,13 @@
        native `input` events on the wrapped text field. */
     var $form = window.jQuery ? window.jQuery(form) : null;
     if ($form && $form.wpColorPicker) {
+        // wpColorPicker fires its `change` callback on every hex digit + on every
+        // colour-slider drag step — debounce the QR refresh so dragging stays smooth.
         $form.find('.lrob-qrm-color-picker').wpColorPicker({
-            change: function () { setTimeout(refreshPreview, 0); },
-            clear:  function () { setTimeout(refreshPreview, 0); }
+            change: function () { setTimeout(function () { refreshPreviewSoon(); scheduleAutoSave(); }, 0); },
+            clear:  function () { setTimeout(function () { refreshPreviewNow();  scheduleAutoSave(); }, 0); }
         });
     }
-
-    // Size/format moved out to the dedicated export modal (see below) —
-    // keeping a no-op syncCustomSize stub so older callers in loadIntoEditor
-    // continue to work without an undefined-function error.
-    function syncCustomSize() { /* no-op since export controls are in the export modal */ }
-
-    var logoSizeRange = form.querySelector('input[name="logoSizeRatio"]');
-    var logoSizeValue = form.querySelector('[data-role="logo-size-value"]');
-    function syncLogoSizeValue() {
-        if (!logoSizeRange || !logoSizeValue) return;
-        logoSizeValue.textContent = Math.round(parseFloat(logoSizeRange.value) * 100) + '%';
-    }
-    if (logoSizeRange) logoSizeRange.addEventListener('input', syncLogoSizeValue);
 
     /* ─── Content type renderer ──────────────────────────────────────── */
 
@@ -328,7 +260,11 @@
             values || {},
             function (encoded /*, fieldVals */) {
                 if (dataEncodedInput) dataEncodedInput.value = encoded;
-                refreshPreview();
+                // Setting dataEncodedInput.value above is programmatic so it
+                // doesn't dispatch an input event the form-level listener
+                // would catch — call refresh ourselves, debounced because
+                // the upstream content-type fires this on every keystroke.
+                refreshPreviewSoon();
             }
         );
     }
@@ -362,13 +298,35 @@
 
     /* ─── Form event wiring ──────────────────────────────────────────── */
 
+    // The form now wraps the whole panel; Enter on the label input would
+    // otherwise reload the page since no submit handler exists.
+    form.addEventListener('submit', function (e) { e.preventDefault(); });
+
+    // Continuous events ('input': typing, color-picker drag) debounce the QR
+    // refresh — re-rendering qr-code-styling on every keystroke chokes the
+    // browser on long payloads. Discrete events ('change': radio, select,
+    // checkbox, file) refresh immediately so clicks feel instant; they also
+    // cancel any pending input-debounce to avoid a redundant trailing render.
+    var REFRESH_DEBOUNCE_MS = 500;
+    var refreshTimer = null;
+    function refreshPreviewSoon() {
+        if (refreshTimer) clearTimeout(refreshTimer);
+        refreshTimer = setTimeout(function () {
+            refreshTimer = null;
+            refreshPreview();
+        }, REFRESH_DEBOUNCE_MS);
+    }
+    function refreshPreviewNow() {
+        if (refreshTimer) { clearTimeout(refreshTimer); refreshTimer = null; }
+        refreshPreview();
+    }
     form.addEventListener('input', function (e) {
         if (e.target && e.target.name === 'logo_attachment_id') return;
-        refreshPreview();
+        refreshPreviewSoon();
     });
     form.addEventListener('change', function (e) {
         if (e.target && e.target.name === 'logo_attachment_id') return;
-        refreshPreview();
+        refreshPreviewNow();
     });
 
     /* ─── Modal open / close ─────────────────────────────────────────── */
@@ -385,75 +343,193 @@
     function closeEditor() {
         editor.hidden = true;
         document.body.classList.remove('lrob-qrm-modal-open');
+        var savedId = currentId;
         currentId = 0;
         setLogo(0, null);
         if (trackingUrlEl) trackingUrlEl.removeAttribute('data-current-slug');
+        var didSave = hasSavedThisSession;
+        resetSaveState();
+        // Refresh the matching grid card in place instead of reloading the
+        // whole page — much less jarring than the full reload it replaced.
+        if (didSave && savedId) refreshGridCard(savedId);
+    }
+
+    // Wrap close: flush pending save, prompt if last save errored.
+    function requestCloseEditor() {
+        flushSave().then(function () {
+            if (saveState === 'error') {
+                var msg = (cfg && cfg.i18n && cfg.i18n.saveErrorOnExit)
+                    || 'The QR code could not be saved. Exit anyway?';
+                if (!confirm(msg)) return;
+            }
+            closeEditor();
+        });
     }
 
     document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && !editor.hidden) closeEditor();
+        if (e.key === 'Escape' && !editor.hidden) requestCloseEditor();
     });
 
     document.querySelectorAll('[data-action="new-qr"]').forEach(function (b) {
         b.addEventListener('click', function () {
             currentId = 0;
+            suppressAutoSave++;
             form.reset();
             setLogo(0, null);
             if (contentTypeSelect) contentTypeSelect.value = 'url';
             renderContentType('url', {});
-            syncCustomSize();
             syncBgTransparent();
-            syncLogoSizeValue();
             syncTrackingPreview();
             openEditor();
             refreshPreview();
+            resetSaveState();
+            // Release the suppression after the current event loop tick so any
+            // async change events from wpColorPicker/etc. don't false-trigger.
+            setTimeout(function () { suppressAutoSave--; }, 0);
         });
     });
 
     document.querySelectorAll('[data-action="cancel"]').forEach(function (b) {
-        b.addEventListener('click', closeEditor);
+        b.addEventListener('click', requestCloseEditor);
     });
 
-    document.querySelectorAll('[data-action="download"]').forEach(function (b) {
-        b.addEventListener('click', function (e) {
+    // Editor "Export QR Code" button (inside the modal, not a card).
+    var editorExportBtn = editor.querySelector('[data-action="download"]');
+    if (editorExportBtn) {
+        editorExportBtn.addEventListener('click', function (e) {
             e.preventDefault();
-            var card = b.closest('[data-id]');
-            if (card) {
-                var id = parseInt(card.getAttribute('data-id'), 10);
-                downloadById(id);
-            } else {
-                downloadFromForm();
-            }
+            downloadFromForm();
         });
-    });
+    }
 
-    document.querySelectorAll('[data-action="save"]').forEach(function (b) {
-        b.addEventListener('click', function () { saveFromForm(); });
-    });
-
-    document.querySelectorAll('[data-action="edit"]').forEach(function (b) {
-        b.addEventListener('click', function () {
-            var card = b.closest('[data-id]');
-            if (!card) return;
-            loadIntoEditor(parseInt(card.getAttribute('data-id'), 10));
-        });
-    });
-
-    document.querySelectorAll('[data-action="delete"]').forEach(function (b) {
-        b.addEventListener('click', function () {
-            if (!confirm(cfg.i18n.confirmDelete || 'Delete?')) return;
-            var card = b.closest('[data-id]');
+    // Card actions (download / edit / delete) are delegated on the grid so
+    // dynamically-added cards work without rebinding.
+    if (grid) {
+        grid.addEventListener('click', function (e) {
+            var btn = e.target.closest('[data-action]');
+            if (!btn) return;
+            var card = btn.closest('[data-id]');
             if (!card) return;
             var id = parseInt(card.getAttribute('data-id'), 10);
-            fetch(cfg.restLibrary + '/' + id, {
-                method: 'DELETE',
-                headers: { 'X-WP-Nonce': cfg.nonce },
-                credentials: 'same-origin'
-            }).then(function (r) {
-                if (r.ok) card.remove();
-            });
+            var action = btn.getAttribute('data-action');
+            if (action === 'download') {
+                e.preventDefault();
+                downloadById(id);
+            } else if (action === 'edit') {
+                loadIntoEditor(id);
+            } else if (action === 'delete') {
+                if (!confirm(cfg.i18n.confirmDelete || 'Delete?')) return;
+                fetch(cfg.restLibrary + '/' + id, {
+                    method: 'DELETE',
+                    headers: { 'X-WP-Nonce': cfg.nonce },
+                    credentials: 'same-origin'
+                }).then(function (r) { if (r.ok) card.remove(); });
+            }
         });
-    });
+    }
+
+    /* ─── Incremental grid refresh after save ──────────────────────────── */
+
+    function escAttr(s) {
+        return String(s == null ? '' : s)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+    function escHtml(s) {
+        return String(s == null ? '' : s)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    /* Build a card DOM mirroring LibraryPage.php's PHP template — invoked
+     * post-save to add the new card (or replace the edited one) without a
+     * full page reload. Keep in sync with LibraryPage::render(). */
+    function buildCardDom(row) {
+        var i18n = (cfg && cfg.i18n) || {};
+        var trackingUrl = (row.tracking_enabled && row.slug)
+            ? ((cfg.trackingBase || '/') + row.slug) : null;
+        var encoded = trackingUrl || row.target_url || '';
+        var cardData = {
+            target: row.target_url || '',
+            design: row.design || {},
+            logoUrl: row.logo_url || null,
+            trackingUrl: trackingUrl,
+            encoded: encoded
+        };
+        var label = row.label && row.label.length ? row.label : (row.target_url || '');
+        var isUrl = /^https?:\/\//i.test(row.target_url || '');
+        var targetHtml = isUrl
+            ? '<a class="lrob-qrm-card-url" href="' + escAttr(row.target_url) + '" target="_blank" rel="noopener">' + escHtml(row.target_url) + '</a>'
+            : '<code class="lrob-qrm-card-url">' + escHtml(row.target_url) + '</code>';
+
+        var trackingBlock;
+        if (trackingUrl) {
+            var n = parseInt(row.scan_count, 10) || 0;
+            var scanFmt = n === 1
+                ? (i18n.cardScanSingular || '%d scan')
+                : (i18n.cardScansPlural || '%d scans');
+            trackingBlock =
+                '<dt>' + escHtml(i18n.cardTrackingUrl || 'Tracking URL') + '</dt>'
+              + '<dd><a class="lrob-qrm-card-url" href="' + escAttr(trackingUrl) + '" target="_blank" rel="noopener">' + escHtml(trackingUrl) + '</a></dd>'
+              + '<dt>' + escHtml(i18n.cardScansLabel || 'Scans') + '</dt>'
+              + '<dd>' + escHtml(scanFmt.replace('%d', n)) + '</dd>';
+        } else {
+            trackingBlock =
+                '<dt>' + escHtml(i18n.cardTracking || 'Tracking') + '</dt>'
+              + '<dd><span class="lrob-qrm-pill lrob-qrm-pill-muted">' + escHtml(i18n.cardOff || 'Off') + '</span></dd>';
+        }
+
+        var article = document.createElement('article');
+        article.className = 'lrob-qrm-card';
+        article.setAttribute('data-id', String(row.id));
+        article.setAttribute('data-qr', JSON.stringify(cardData));
+        article.innerHTML =
+            '<div class="lrob-qrm-card-preview" data-role="card-preview"></div>'
+          + '<div class="lrob-qrm-card-body">'
+          +   '<h3 class="lrob-qrm-card-title">' + escHtml(label) + '</h3>'
+          +   '<dl class="lrob-qrm-card-info">'
+          +     '<dt>' + escHtml(i18n.cardTarget || 'Target') + '</dt>'
+          +     '<dd>' + targetHtml + '</dd>'
+          +     trackingBlock
+          +   '</dl>'
+          + '</div>'
+          + '<footer class="lrob-qrm-card-actions">'
+          +   '<button type="button" class="button button-primary lrob-qrm-card-export" data-action="download">'
+          +     '<svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true" focusable="false"><path fill="currentColor" d="M10 3a1 1 0 0 1 1 1v6.6l1.3-1.3a1 1 0 1 1 1.4 1.4l-3 3a1 1 0 0 1-1.4 0l-3-3a1 1 0 1 1 1.4-1.4L9 10.6V4a1 1 0 0 1 1-1zM4 15a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-1a1 1 0 0 0-1-1H4z"/></svg>'
+          +     escHtml(i18n.cardExport || 'Generate image')
+          +   '</button>'
+          +   '<button type="button" class="button" data-action="edit" title="' + escAttr(i18n.cardEdit || 'Edit') + '">'
+          +     '<svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true" focusable="false"><path fill="currentColor" d="M14.7 3.3a1 1 0 0 1 1.4 0l.6.6a1 1 0 0 1 0 1.4L7.4 15H4v-3.4l9.3-9.3.4-.3.6.3.4.3zM4 17h12v1H4v-1z"/></svg>'
+          +     escHtml(i18n.cardEdit || 'Edit')
+          +   '</button>'
+          +   '<button type="button" class="button lrob-qrm-icon-button lrob-qrm-icon-button-delete" data-action="delete" aria-label="' + escAttr(i18n.cardDelete || 'Delete') + '" title="' + escAttr(i18n.cardDelete || 'Delete') + '">'
+          +     '<svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M7 3h6l1 2h3v1H3V5h3l1-2zm-2 4h10l-1 11H6L5 7zm3 2v7h1V9H8zm3 0v7h1V9h-1z"/></svg>'
+          +   '</button>'
+          + '</footer>';
+        return article;
+    }
+
+    /* Fetch the saved row + reflect it in the grid (replace if existing, add
+     * if new). No flicker — preview is rendered into the placeholder via
+     * renderCardPreviews(). */
+    function refreshGridCard(id) {
+        if (!grid) return;
+        fetch(cfg.restLibrary, { credentials: 'same-origin', headers: { 'X-WP-Nonce': cfg.nonce } })
+            .then(function (r) { return r.json(); })
+            .then(function (list) {
+                var row = (list || []).find(function (x) { return x.id === id; });
+                if (!row) return;
+                var newCard = buildCardDom(row);
+                var existing = grid.querySelector('.lrob-qrm-card[data-id="' + id + '"]');
+                if (existing) {
+                    existing.replaceWith(newCard);
+                } else {
+                    var emptyState = grid.querySelector('.lrob-qrm-empty');
+                    if (emptyState) emptyState.remove();
+                    grid.appendChild(newCard);
+                }
+                renderCardPreviews();
+            });
+    }
 
     /* ─── Card previews (qr-code-styling on each card) ───────────────── */
 
@@ -468,28 +544,15 @@
             var info;
             try { info = JSON.parse(raw); } catch (e) { return; }
             var d = info.design || {};
-            var ec = effectiveEc('L', info.encoded, info.logoUrl, d.logoSizeRatio, info.logoAspect);
-            var qp = new window.QRCodeStyling({
-                type: 'svg',
-                width: 240, height: 240,
-                data: (info.encoded || ' '),
-                margin: 6,
-                qrOptions: { errorCorrectionLevel: ec, typeNumber: 0, mode: 'Byte' },
-                dotsOptions: { color: d.fgColor || '#000000', type: normalizeDotShape(d.dotShape), roundSize: false },
-                backgroundOptions: { color: d.bgTransparent ? 'rgba(0,0,0,0)' : (d.bgColor || '#ffffff') },
-                cornersSquareOptions: { color: d.eyeColor || d.fgColor || '#000000', type: normalizeEyeShape(d.eyeShape) },
-                cornersDotOptions: {
-                    color: d.eyeColor || d.fgColor || '#000000',
-                    type: innerEyeFromOuter(d.eyeShape)
-                },
-                image: info.logoUrl || undefined,
-                imageOptions: {
-                    crossOrigin: 'anonymous',
-                    margin: 2,
-                    imageSize: parseFloat(d.logoSizeRatio) || 0.3,
-                    hideBackgroundDots: !!d.logoBackground
-                }
-            });
+            var params = resolveQrParams(info.encoded, legacyLogoSizeFromDesign(d), info.logoAspect, d.ecMode, !!info.logoUrl);
+            var qp = new window.QRCodeStyling(buildQrConfig({
+                width: 240, data: info.encoded, ec: params.ec,
+                fgColor: d.fgColor, bgColor: d.bgColor, eyeColor: d.eyeColor,
+                bgTransparent: d.bgTransparent,
+                dotShape: d.dotShape, eyeShape: d.eyeShape,
+                logoUrl: info.logoUrl, logoBackground: d.logoBackground,
+                imageSize: params.imageSize
+            }));
             qp.append(holder);
             card.setAttribute('data-preview-rendered', '1');
         });
@@ -513,16 +576,6 @@
             if (exportCustomSizeField) exportCustomSizeField.hidden = exportSizeSelect.value !== 'custom';
         });
     }
-
-    // AVIF option added dynamically when the browser actually supports it.
-    avifEncodingPromise.then(function (supported) {
-        if (!supported || !exportFormatSelect) return;
-        if (exportFormatSelect.querySelector('option[value="avif"]')) return;
-        var opt = document.createElement('option');
-        opt.value = 'avif';
-        opt.textContent = 'AVIF';
-        exportFormatSelect.appendChild(opt);
-    });
 
     function applyExportDefaults() {
         var defaults = (cfg && cfg.exportDefaults) || {};
@@ -574,61 +627,27 @@
     function renderExportPreview() {
         if (!exportPreview || !exportSpec || !window.QRCodeStyling) return;
         exportPreview.innerHTML = '';
-        exportPreviewQr = new window.QRCodeStyling({
-            type: 'svg',
-            width: 240, height: 240,
-            data: exportSpec.data,
-            margin: 8,
-            qrOptions: { errorCorrectionLevel: effectiveEc(exportSpec.ecLevel, exportSpec.data, exportLogoUrl, exportSpec.logoSizeRatio, exportLogoAspect), typeNumber: 0, mode: 'Byte' },
-            dotsOptions: { color: exportSpec.fgColor || '#000000', type: normalizeDotShape(exportSpec.dotShape), roundSize: false },
-            backgroundOptions: { color: exportSpec.bgTransparent ? 'rgba(0,0,0,0)' : (exportSpec.bgColor || '#ffffff') },
-            cornersSquareOptions: { color: exportSpec.eyeColor || exportSpec.fgColor || '#000000', type: normalizeEyeShape(exportSpec.eyeShape) },
-            cornersDotOptions: { color: exportSpec.eyeColor || exportSpec.fgColor || '#000000', type: innerEyeFromOuter(exportSpec.eyeShape) },
-            image: exportLogoUrl || undefined,
-            imageOptions: {
-                crossOrigin: 'anonymous',
-                margin: 4,
-                imageSize: parseFloat(exportSpec.logoSizeRatio) || 0.3,
-                hideBackgroundDots: !!exportSpec.logoBackground
-            }
-        });
+        var params = resolveQrParams(exportSpec.data, legacyLogoSizeFromDesign(exportSpec), exportLogoAspect, exportSpec.ecMode, !!exportLogoUrl);
+        exportPreviewQr = new window.QRCodeStyling(buildQrConfig({
+            width: 240, data: exportSpec.data, ec: params.ec,
+            fgColor: exportSpec.fgColor, bgColor: exportSpec.bgColor, eyeColor: exportSpec.eyeColor,
+            bgTransparent: exportSpec.bgTransparent,
+            dotShape: exportSpec.dotShape, eyeShape: exportSpec.eyeShape,
+            logoUrl: exportLogoUrl, logoBackground: exportSpec.logoBackground,
+            imageSize: params.imageSize
+        }));
         exportPreviewQr.append(exportPreview);
     }
 
-    var EC_BYTE_CAP_V40 = { L: 2953, M: 2331, Q: 1663, H: 1273 };
-    var EC_RECOVERY    = { L: 0.07, M: 0.15, Q: 0.25, H: 0.30 };
-    var EC_RANK        = { L: 0, M: 1, Q: 2, H: 3 };
-
-    function ecForLogo(logoSizeRatio, aspectRatio) {
-        var ratio = parseFloat(logoSizeRatio) || 0;
-        if (ratio <= 0) return 'L';
-        var k = parseFloat(aspectRatio);
-        if (!k || k <= 0) k = 1;
-        var thickness = Math.max(k, 1 / k);
-        var needed = (0.81 * ratio) / thickness;
-        if (needed <= EC_RECOVERY.L) return 'L';
-        if (needed <= EC_RECOVERY.M) return 'M';
-        if (needed <= EC_RECOVERY.Q) return 'Q';
-        return 'H';
+    /* EC + logo coverage pipeline lives in assets/js/qr-engine.js (shared with
+     * the front block). These thin shims keep the existing call sites in this
+     * file readable without leaking the engine's window namespace everywhere. */
+    function resolveQrParams(data, logoSize, aspect, ecMode, hasLogo) {
+        return window.lrobQrmEngine.resolveQrParams(data, logoSize, aspect, ecMode, hasLogo);
     }
-
-    function effectiveEc(ec, data, logoUrl, logoSizeRatio, logoAspect) {
-        var preferred = ec || 'M';
-        if (logoUrl) {
-            var minForLogo = ecForLogo(logoSizeRatio, logoAspect);
-            if ((EC_RANK[minForLogo] || 0) > (EC_RANK[preferred] || 0)) {
-                preferred = minForLogo;
-            }
-        }
-        var bytes = (typeof TextEncoder !== 'undefined')
-            ? new TextEncoder().encode(data || '').length
-            : (data ? data.length : 0);
-        var order = ['H', 'Q', 'M', 'L'];
-        var idx = order.indexOf(preferred);
-        if (idx < 0) idx = 2;
-        while (idx < order.length && bytes > EC_BYTE_CAP_V40[order[idx]]) idx++;
-        return order[Math.min(idx, order.length - 1)];
-    }
+    function normalizeEcMode(raw)     { return window.lrobQrmEngine.normalizeEcMode(raw); }
+    function normalizeLogoSize(raw)   { return window.lrobQrmEngine.normalizeLogoSize(raw); }
+    function legacyLogoSizeFromDesign(d) { return window.lrobQrmEngine.legacyLogoSize(d); }
 
     function readExportSizeFormat() {
         var sizeVal = exportSizeSelect ? exportSizeSelect.value : '1024';
@@ -697,115 +716,107 @@
             alert(cfg.i18n.error || 'Error');
             return;
         }
-        var ec = effectiveEc(spec.ecLevel, spec.data.toString(), logoUrl, spec.logoSizeRatio, spec.logoAspect);
+        var params = resolveQrParams(spec.data.toString(), legacyLogoSizeFromDesign(spec), exportLogoAspect, spec.ecMode, !!logoUrl);
 
         var size = parseInt(spec.size, 10) || 1024;
         var marginModules = parseInt(spec.margin, 10);
         if (isNaN(marginModules)) marginModules = 4;
 
-        var exporter = new window.QRCodeStyling({
-            width: size,
-            height: size,
-            data: spec.data.toString(),
-            margin: Math.max(0, marginModules) * Math.max(2, Math.floor(size / 50)),
-            qrOptions: { errorCorrectionLevel: ec, typeNumber: 0, mode: 'Byte' },
-            dotsOptions: { color: spec.fgColor || '#000000', type: normalizeDotShape(spec.dotShape), roundSize: false },
-            backgroundOptions: { color: spec.bgTransparent ? 'rgba(0,0,0,0)' : (spec.bgColor || '#ffffff') },
-            cornersSquareOptions: { color: spec.eyeColor || spec.fgColor || '#000000', type: normalizeEyeShape(spec.eyeShape) },
-            cornersDotOptions: {
-                color: spec.eyeColor || spec.fgColor || '#000000',
-                type: innerEyeFromOuter(spec.eyeShape)
-            },
-            image: logoUrl || undefined,
-            imageOptions: {
-                crossOrigin: 'anonymous',
-                margin: 4,
-                imageSize: parseFloat(spec.logoSizeRatio) || 0.3,
-                hideBackgroundDots: !!spec.logoBackground
-            }
-        });
+        var exporter = new window.QRCodeStyling(Object.assign(
+            buildQrConfig({
+                width: size, data: spec.data.toString(), ec: params.ec,
+                fgColor: spec.fgColor, bgColor: spec.bgColor, eyeColor: spec.eyeColor,
+                bgTransparent: spec.bgTransparent,
+                dotShape: spec.dotShape, eyeShape: spec.eyeShape,
+                logoUrl: logoUrl, logoBackground: spec.logoBackground,
+                imageSize: params.imageSize,
+                margin: Math.max(0, marginModules) * Math.max(2, Math.floor(size / 50))
+            }),
+            // Override: download path uses canvas (raster export).
+            { type: 'canvas' }
+        ));
 
         var format = (spec.format || 'webp').toString();
         if (format === 'svg') format = 'png'; // SVG not surfaced (script-admitting format).
         var baseName = (label && label.trim()) ? label.trim().replace(/[^a-z0-9-]+/gi, '-').toLowerCase() : 'qrcode';
         var filename = baseName + '-' + Date.now();
 
-        if (format === 'avif') {
-            exportAsAvif(exporter, filename).catch(function (e) {
-                alert((e && e.message) ? e.message : (cfg.i18n.error || 'Error'));
-            });
-        } else {
-            Promise.resolve(exporter.download({
-                name: filename,
-                extension: format === 'jpeg' ? 'jpeg' : format
-            })).catch(function (e) {
-                alert((e && e.message) ? e.message : (cfg.i18n.error || 'Error'));
-            });
-        }
-    }
-
-    // AVIF path: qr-code-styling doesn't support 'avif' natively. We get a
-    // PNG blob from the library, decode it to a canvas, then re-encode with
-    // canvas.toBlob('image/avif'). Slower (one round-trip) but only on click.
-    function exportAsAvif(exporter, filename) {
-        return exporter.getRawData('png').then(function (pngBlob) {
-            return new Promise(function (resolve, reject) {
-                var url = URL.createObjectURL(pngBlob);
-                var img = new Image();
-                img.onload = function () {
-                    var c = document.createElement('canvas');
-                    c.width = img.width;
-                    c.height = img.height;
-                    c.getContext('2d').drawImage(img, 0, 0);
-                    c.toBlob(function (avifBlob) {
-                        URL.revokeObjectURL(url);
-                        if (!avifBlob) {
-                            reject(new Error('AVIF encoding failed'));
-                            return;
-                        }
-                        triggerBlobDownload(avifBlob, filename + '.avif');
-                        resolve();
-                    }, 'image/avif', 0.92);
-                };
-                img.onerror = function () {
-                    URL.revokeObjectURL(url);
-                    reject(new Error('Could not decode intermediate PNG'));
-                };
-                img.src = url;
-            });
+        Promise.resolve(exporter.download({
+            name: filename,
+            extension: format === 'jpeg' ? 'jpeg' : format
+        })).catch(function (e) {
+            alert((e && e.message) ? e.message : (cfg.i18n.error || 'Error'));
         });
     }
 
-    function triggerBlobDownload(blob, filename) {
-        var url = URL.createObjectURL(blob);
-        var a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click(); a.remove();
-        setTimeout(function () { URL.revokeObjectURL(url); }, 5000);
+    /* ─── Auto-save state machine ─────────────────────────────────────── */
+
+    var SAVE_DEBOUNCE_MS = 1000;
+    var saveState        = 'idle';   // idle | dirty | saving | saved | error
+    var saveTimer        = null;     // pending debounce
+    var saveInFlight     = null;     // Promise for current fetch
+    var dirtyDuringFlight = false;   // re-fire after current save resolves
+    var lastSavedAt      = null;
+    var lastSaveError    = null;
+    var hasSavedThisSession = false; // controls the close-time reload
+    // Suppresses scheduleAutoSave during programmatic form mutations (reset,
+    // loadIntoEditor, setVal, wpColorPicker reinit) which fire change events.
+    var suppressAutoSave = 0;
+
+    var saveStatusEl = null;
+    function getSaveStatusEl() {
+        if (saveStatusEl === null) {
+            saveStatusEl = document.querySelector('[data-role="save-status"]') || false;
+        }
+        return saveStatusEl || null;
     }
 
-    function saveFromForm() {
+    function buildSaveBody() {
         var d = readSpec();
         var typeKey = contentTypeSelect ? contentTypeSelect.value : 'url';
         var ctValues = contentRenderer ? contentRenderer.read() : {};
-        // The composed encoded payload IS the target_url. The raw field values
-        // + the chosen type are persisted in design so editing later restores
-        // the original input shape.
         var design = Object.assign({}, d.spec, {
             contentType:   typeKey,
             contentValues: ctValues
         });
-        var body = {
+        return {
             label: d.label,
             target_url: d.spec.data,
             tracking_enabled: d.tracking_enabled,
             design: design,
             logo_attachment_id: d.logo_attachment_id || 0
         };
+    }
+
+    function canAutoSave() {
+        // Defer creating a row until there's an encoded payload to save —
+        // avoids spawning empty rows when the user opens "New" then closes.
+        if (!dataEncodedInput) return false;
+        return dataEncodedInput.value && dataEncodedInput.value.trim().length > 0;
+    }
+
+    function scheduleAutoSave() {
+        if (suppressAutoSave > 0) return;
+        if (editor && editor.hidden) return;
+        if (!canAutoSave()) return;
+        setSaveState('dirty');
+        if (saveTimer) clearTimeout(saveTimer);
+        saveTimer = setTimeout(function () {
+            saveTimer = null;
+            performAutoSave();
+        }, SAVE_DEBOUNCE_MS);
+    }
+
+    function performAutoSave() {
+        if (saveInFlight) {
+            dirtyDuringFlight = true;
+            return saveInFlight;
+        }
+        if (!canAutoSave()) return Promise.resolve();
+        setSaveState('saving');
+        var body = buildSaveBody();
         var url = cfg.restLibrary + (currentId ? '/' + currentId : '');
-        fetch(url, {
+        saveInFlight = fetch(url, {
             method: currentId ? 'PUT' : 'POST',
             headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': cfg.nonce },
             body: JSON.stringify(body),
@@ -817,22 +828,122 @@
                 });
             }
             return r.json();
-        }).then(function () {
-            window.location.reload();
+        }).then(function (saved) {
+            saveInFlight = null;
+            hasSavedThisSession = true;
+            lastSavedAt = Date.now();
+            lastSaveError = null;
+            if (saved && saved.id && !currentId) currentId = saved.id;
+            if (saved && saved.slug && trackingUrlEl) {
+                trackingUrlEl.setAttribute('data-current-slug', saved.slug);
+                syncTrackingPreview();
+                // Intentionally NOT calling refreshPreview() here. With a logo
+                // attached, the .update() re-loads the image which causes a
+                // visible flash. The QR preview keeps encoding the "preview"
+                // placeholder slug until the next user input fires refresh;
+                // by then the save has happened so the next refresh uses the
+                // real slug. Saved row + card grid both already use the real
+                // slug — only the in-modal preview lags briefly.
+            }
+            setSaveState('saved');
+            if (dirtyDuringFlight) {
+                dirtyDuringFlight = false;
+                scheduleAutoSave();
+            }
         }).catch(function (e) {
-            alert((e && e.message) ? e.message : (cfg.i18n.error || 'Error'));
+            saveInFlight = null;
+            lastSaveError = (e && e.message) ? e.message : (cfg.i18n.error || 'Error');
+            setSaveState('error');
         });
+        return saveInFlight;
+    }
+
+    // Flush any pending debounce + return a promise resolving when no save is in flight.
+    function flushSave() {
+        if (saveTimer) {
+            clearTimeout(saveTimer);
+            saveTimer = null;
+            performAutoSave();
+        }
+        return saveInFlight || Promise.resolve();
+    }
+
+    function setSaveState(s) {
+        saveState = s;
+        renderSaveStatus();
+    }
+
+    function renderSaveStatus() {
+        var el = getSaveStatusEl();
+        if (!el) return;
+        var t = (cfg && cfg.i18n) || {};
+        var className = 'lrob-qrm-save-status';
+        var text = '';
+        switch (saveState) {
+            case 'idle':
+                break;
+            case 'dirty':
+                text = t.saveDirty || 'Unsaved changes';
+                className += ' is-dirty';
+                break;
+            case 'saving':
+                text = t.saveSaving || 'Saving…';
+                className += ' is-saving';
+                break;
+            case 'saved':
+                var seconds = lastSavedAt ? Math.round((Date.now() - lastSavedAt) / 1000) : 0;
+                if (seconds < 2) {
+                    text = t.saveSavedNow || 'Saved just now';
+                } else {
+                    text = (t.saveSaved || 'Saved %ds ago').replace('%d', seconds);
+                }
+                className += ' is-saved';
+                break;
+            case 'error':
+                text = (t.saveError || 'Save failed') + (lastSaveError ? ' — ' + lastSaveError : '');
+                className += ' is-error';
+                break;
+        }
+        el.textContent = text;
+        el.className = className;
+    }
+
+    // Tick the relative "Saved Xs ago" label every second while it's visible.
+    setInterval(function () {
+        if (saveState === 'saved') renderSaveStatus();
+    }, 1000);
+
+    function resetSaveState() {
+        if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
+        saveState = 'idle';
+        saveInFlight = null;
+        dirtyDuringFlight = false;
+        lastSavedAt = null;
+        lastSaveError = null;
+        hasSavedThisSession = false;
+        renderSaveStatus();
+    }
+
+    // Any input or change inside the editor form triggers an auto-save debounce.
+    if (form) {
+        form.addEventListener('input', scheduleAutoSave);
+        form.addEventListener('change', scheduleAutoSave);
     }
 
     function loadIntoEditor(id) {
+        // Show the modal frame immediately so the open animation runs while
+        // the fetch is in flight; populate the fields when the row arrives.
+        currentId = id;
+        suppressAutoSave++;
+        form.reset();
+        setLogo(0, null);
+        openEditor();
+        editor.classList.add('is-loading');
         fetch(cfg.restLibrary, { credentials: 'same-origin', headers: { 'X-WP-Nonce': cfg.nonce } })
             .then(function (r) { return r.json(); })
             .then(function (list) {
                 var row = (list || []).find(function (x) { return x.id === id; });
-                if (!row) return;
-                currentId = id;
-                form.reset();
-                setLogo(0, null);
+                if (!row) { editor.classList.remove('is-loading'); return; }
                 setVal('label', row.label);
                 if (dataEncodedInput) dataEncodedInput.value = row.target_url || '';
                 setCheck('tracking_enabled', row.tracking_enabled);
@@ -854,11 +965,14 @@
                 renderContentType(typeKey, ctValues);
 
                 if (row.design) {
+                    // Migrate legacy fields into the new shape before applying.
+                    row.design.logoSize = legacyLogoSizeFromDesign(row.design);
+                    row.design.ecMode   = normalizeEcMode(row.design.ecMode);
                     Object.keys(row.design).forEach(function (k) {
-                        // size / format are export-time (in the export modal), and
-                        // contentType / contentValues are handled above.
                         if (k === 'size' || k === 'format' || k === 'customSize'
-                            || k === 'contentType' || k === 'contentValues') return;
+                            || k === 'contentType' || k === 'contentValues'
+                            || k === 'logoSizeRatio' || k === 'ecLevel'
+                            || k === 'logoCoveragePct') return;
                         var v = row.design[k];
                         if (typeof v === 'boolean') setCheck(k, v);
                         else setVal(k, v);
@@ -867,12 +981,12 @@
                 if (row.logo_attachment_id && row.logo_url) {
                     setLogo(row.logo_attachment_id, row.logo_url);
                 }
-                syncCustomSize();
                 syncBgTransparent();
-                syncLogoSizeValue();
                 syncTrackingPreview();
-                openEditor();
                 refreshPreview();
+                resetSaveState();
+                editor.classList.remove('is-loading');
+                setTimeout(function () { suppressAutoSave--; }, 0);
             });
     }
 

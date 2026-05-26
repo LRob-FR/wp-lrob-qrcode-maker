@@ -70,16 +70,25 @@ final class Maker
             true
         );
         wp_register_script(
+            'lrob-qrm-engine',
+            LROB_QRM_URL . 'assets/js/qr-engine.js',
+            ['lrob-qrm-content-types'],
+            self::asset_version('assets/js/qr-engine.js'),
+            true
+        );
+        // wp-color-picker pulls in jQuery + Iris automatically. Same widget
+        // as the admin library editor so visitors get a consistent picker.
+        wp_register_script(
             'lrob-qrm-maker',
             LROB_QRM_URL . 'assets/js/maker.js',
-            ['qr-code-styling', 'wp-i18n', 'lrob-qrm-content-types'],
+            ['qr-code-styling', 'wp-i18n', 'lrob-qrm-content-types', 'lrob-qrm-engine', 'wp-color-picker'],
             self::asset_version('assets/js/maker.js'),
             true
         );
         wp_register_style(
             'lrob-qrm-maker',
             LROB_QRM_URL . 'assets/css/maker.css',
-            [],
+            ['wp-color-picker'],
             self::asset_version('assets/css/maker.css')
         );
         wp_set_script_translations('lrob-qrm-maker', 'lrob-qrcode-maker');
@@ -119,13 +128,14 @@ final class Maker
                 'logo'           => __('Logo (optional)', 'lrob-qrcode-maker'),
                 'logoHelp'       => __('PNG, JPEG, or WebP. Stays in your browser, never uploaded.', 'lrob-qrcode-maker'),
                 'logoBackground' => __('Clear QR modules behind logo', 'lrob-qrcode-maker'),
+                'removeLogo'     => __('Remove logo', 'lrob-qrcode-maker'),
                 'logoSize'       => __('Logo size', 'lrob-qrcode-maker'),
                 'design'         => __('Design', 'lrob-qrcode-maker'),
                 'logo'           => __('Logo', 'lrob-qrcode-maker'),
                 'cancel'         => __('Cancel', 'lrob-qrcode-maker'),
                 'close'          => __('Close', 'lrob-qrcode-maker'),
                 'size'           => __('Size', 'lrob-qrcode-maker'),
-                'exportTitle'    => __('Export QR Code', 'lrob-qrcode-maker'),
+                'exportTitle'    => __('Generate image', 'lrob-qrcode-maker'),
                 'Square'         => __('Square', 'lrob-qrcode-maker'),
                 'Rounded'        => __('Rounded', 'lrob-qrcode-maker'),
                 'Extra rounded'  => __('Extra rounded', 'lrob-qrcode-maker'),
@@ -138,18 +148,41 @@ final class Maker
                 'format'         => __('Format', 'lrob-qrcode-maker'),
                 'custom'         => __('Custom…', 'lrob-qrcode-maker'),
                 'customSize'     => __('Custom size (px)', 'lrob-qrcode-maker'),
-                'download'       => __('Export QR Code', 'lrob-qrcode-maker'),
+                'download'       => __('Generate image', 'lrob-qrcode-maker'),
                 'downloading'    => __('Generating…', 'lrob-qrcode-maker'),
                 'errorGeneric'   => __('Sorry, something went wrong. Please retry.', 'lrob-qrcode-maker'),
                 'showAdvanced'   => __('Show advanced options', 'lrob-qrcode-maker'),
                 'hideAdvanced'   => __('Hide advanced options', 'lrob-qrcode-maker'),
                 'creditPrefix'   => __('QR Code generator by LRob,', 'lrob-qrcode-maker'),
                 'creditLink'     => __('WordPress web hosting specialist', 'lrob-qrcode-maker'),
-                /* translators: JS template tokens (not sprintf): %v = QR version (1-40), %m = module side count, %b = encoded byte length, %e = effective EC level (L/M/Q/H). */
-                'statsTemplate'  => __('QR v%v · %m×%m modules · %b bytes · EC %e', 'lrob-qrcode-maker'),
-                'statsLengthWarn'        => __('Past ~200 bytes, some smartphones may fail to scan the QR. Shorten the content for maximum compatibility.', 'lrob-qrcode-maker'),
+                /* translators: JS template tokens (not sprintf): {m} = module side count, {b} = encoded byte length, {e} = effective EC level (L/M/Q/H). */
+                'statsTemplate'  => __('{m}×{m} modules · {b} bytes · EC {e}', 'lrob-qrcode-maker'),
+                /* translators: JS template tokens: {lw}×{lh} = logo size in QR modules, {lp} = actual coverage % of QR area. Leading separator part of the format. */
+                'statsLogoSuffix' => __(' · Logo {lw}×{lh} ({lp}%)', 'lrob-qrcode-maker'),
+                'statsDensityWarn'       => __('Past ~512 bytes the QR gets dense — print it large (≥ 4 cm) for reliable scans, especially at high error correction.', 'lrob-qrcode-maker'),
+                'statsLengthWarn'        => __('Past ~1024 bytes the QR may be unscannable on many phones — shorten the content for reliable scans.', 'lrob-qrcode-maker'),
                 'statsLengthWarnVcardSuffix' => __('For a contact card, hosting the .vcf file and encoding its URL keeps the QR much shorter.', 'lrob-qrcode-maker'),
                 'statsOverflow'  => __('Content too large to encode as a QR (max 2953 bytes at EC L). Shorten the content.', 'lrob-qrcode-maker'),
+                'logoSizeSafe'      => __('Safe', 'lrob-qrcode-maker'),
+                'logoSizeMedium'    => __('Medium', 'lrob-qrcode-maker'),
+                'logoSizeMax'       => __('Max', 'lrob-qrcode-maker'),
+                'ecMode'            => __('Error correction', 'lrob-qrcode-maker'),
+                'ecHelp'            => __('Lets scanners read the QR even if it’s partly damaged or covered by a logo. Higher levels tolerate more damage but make the QR denser. Auto picks the best level for your case.', 'lrob-qrcode-maker'),
+                'logoSizeHelp'      => __('How much of the QR the logo covers. Safe leaves an extra margin for damaged prints; Max uses the full coverage the chosen error correction allows.', 'lrob-qrcode-maker'),
+                'contentTypeHelp'   => __('What the QR encodes. Each type composes the correct payload format: URL, vCard 3.0 contact, Wi-Fi credentials, mailto:, SMS, tel:, geo:, plain text.', 'lrob-qrcode-maker'),
+                'foregroundHelp'    => __('Color of the QR modules (the dark squares that encode data). High contrast vs the background is critical — pure black is the most reliable.', 'lrob-qrcode-maker'),
+                'backgroundHelp'    => __('Color behind the modules. White or very light is best; coloured backgrounds reduce contrast and can break scanning on cheap phones.', 'lrob-qrcode-maker'),
+                'eyeColorHelp'      => __('Color of the three big corner finder patterns. Usually matches the foreground; a different color is decorative but should still contrast strongly with the background.', 'lrob-qrcode-maker'),
+                'transparentHelp'   => __('Drops the background fill so the underlying page or photo shows through. The QR scans only if the surface behind it is uniform and light — patterned or dark backgrounds will break it.', 'lrob-qrcode-maker'),
+                'dotShapeHelp'      => __('Visual style of the data modules. Square is the most scannable; rounded and classy shapes look softer but slightly reduce module-edge contrast.', 'lrob-qrcode-maker'),
+                'eyeShapeHelp'      => __('Visual style of the three big corner patterns. Square is the standard QR look; the others are decorative variations on the same finder geometry.', 'lrob-qrcode-maker'),
+                'logoSectionHelp'   => __('Overlay an image at the QR’s center — a logo, mascot, etc. The chosen Error correction level determines how much of the QR can be safely covered.', 'lrob-qrcode-maker'),
+                'logoBackgroundHelp'=> __('Erases the QR modules under the logo so it sits cleanly on the background color. Always on for opaque logos; uncheck only for transparent PNGs where you want the modules to show through the empty parts of the image.', 'lrob-qrcode-maker'),
+                'ecLevelAuto'       => __('Auto', 'lrob-qrcode-maker'),
+                'ecLevelMin'        => __('Min', 'lrob-qrcode-maker'),
+                'ecLevelLow'        => __('Low', 'lrob-qrcode-maker'),
+                'ecLevelMedium'     => __('Medium', 'lrob-qrcode-maker'),
+                'ecLevelHigh'       => __('High', 'lrob-qrcode-maker'),
             ],
         ];
 

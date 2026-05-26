@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-05-25T20:42:44+00:00\n"
+"POT-Creation-Date: 2026-05-26T10:29:04+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.4.0\n"
 "X-Domain: lrob-qrcode-maker\n"
@@ -35,244 +35,386 @@ msgid "https://www.lrob.fr"
 msgstr ""
 
 #: src/Admin/LibraryPage.php:27
-#: src/Block/Maker.php:116
-#: src/Block/Maker.php:129
-#: assets/js/block-editor.js:144
+#: src/Block/Maker.php:125
+#: src/Block/Maker.php:139
+#: assets/js/block-editor.js:143
 msgid "Square"
 msgstr ""
 
 #: src/Admin/LibraryPage.php:28
-#: src/Block/Maker.php:117
-#: src/Block/Maker.php:130
-#: assets/js/block-editor.js:145
+#: src/Block/Maker.php:126
+#: src/Block/Maker.php:140
+#: assets/js/block-editor.js:144
 msgid "Rounded"
 msgstr ""
 
 #: src/Admin/LibraryPage.php:29
-#: src/Block/Maker.php:131
+#: src/Block/Maker.php:141
 msgid "Extra rounded"
 msgstr ""
 
 #: src/Admin/LibraryPage.php:30
-#: src/Block/Maker.php:118
-#: src/Block/Maker.php:132
-#: assets/js/block-editor.js:146
+#: src/Block/Maker.php:127
+#: src/Block/Maker.php:142
+#: assets/js/block-editor.js:145
 msgid "Dots"
 msgstr ""
 
 #: src/Admin/LibraryPage.php:31
-#: src/Block/Maker.php:133
+#: src/Block/Maker.php:143
 msgid "Circle"
 msgstr ""
 
 #: src/Admin/LibraryPage.php:32
-#: src/Block/Maker.php:134
+#: src/Block/Maker.php:144
 msgid "Classy"
 msgstr ""
 
 #: src/Admin/LibraryPage.php:33
-#: src/Block/Maker.php:135
+#: src/Block/Maker.php:145
 msgid "Classy rounded"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:69
+#: src/Admin/LibraryPage.php:75
 #: src/Admin/SettingsPage.php:20
-#: src/Admin/SettingsPage.php:129
+#: src/Admin/SettingsPage.php:134
 msgid "Insufficient permissions."
 msgstr ""
 
-#: src/Admin/LibraryPage.php:80
+#: src/Admin/LibraryPage.php:87
 msgid "QR Code Library"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:82
+#: src/Admin/LibraryPage.php:91
 msgid "Create new QR code"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:89
+#: src/Admin/LibraryPage.php:98
 msgid "No QR codes saved yet. Click \"Create new QR code\" to start."
 msgstr ""
 
-#: src/Admin/LibraryPage.php:110
+#: src/Admin/LibraryPage.php:119
+#: src/Admin/Menu.php:122
 msgid "Target"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:126
+#: src/Admin/LibraryPage.php:135
+#: src/Admin/Menu.php:123
 msgid "Tracking URL"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:132
+#: src/Admin/LibraryPage.php:141
+#: src/Admin/Menu.php:124
 msgid "Scans"
 msgstr ""
 
 #. translators: %d: number of scans
-#: src/Admin/LibraryPage.php:137
+#: src/Admin/LibraryPage.php:146
+#: src/Admin/Menu.php:126
 msgid "%d scan"
 msgid_plural "%d scans"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/Admin/LibraryPage.php:143
-#: src/Admin/LibraryPage.php:215
-#: src/Admin/SettingsPage.php:36
+#: src/Admin/LibraryPage.php:152
+#: src/Admin/LibraryPage.php:223
+#: src/Admin/Menu.php:129
+#: src/Admin/SettingsPage.php:41
 msgid "Tracking"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:146
+#: src/Admin/LibraryPage.php:155
+#: src/Admin/Menu.php:130
 msgid "Off"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:154
-#: src/Admin/LibraryPage.php:320
-#: src/Admin/LibraryPage.php:337
-#: src/Admin/LibraryPage.php:374
-#: src/Block/Maker.php:128
-#: src/Block/Maker.php:141
-msgid "Export QR Code"
+#: src/Admin/LibraryPage.php:166
+#: src/Admin/LibraryPage.php:389
+#: src/Admin/LibraryPage.php:404
+#: src/Admin/LibraryPage.php:443
+#: src/Admin/Menu.php:131
+#: src/Block/Maker.php:138
+#: src/Block/Maker.php:151
+msgid "Generate image"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:157
-#: src/Admin/LibraryPage.php:158
+#: src/Admin/LibraryPage.php:169
+#: src/Admin/LibraryPage.php:173
+#: src/Admin/Menu.php:132
 msgid "Edit"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:164
-#: src/Admin/LibraryPage.php:165
+#: src/Admin/LibraryPage.php:176
+#: src/Admin/LibraryPage.php:177
+#: src/Admin/Menu.php:133
 msgid "Delete"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:178
-#: src/Admin/SettingsPage.php:102
+#: src/Admin/LibraryPage.php:190
+#: src/Admin/SettingsPage.php:107
 msgid "Sponsor message"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:185
+#: src/Admin/LibraryPage.php:195
 msgid "Designer"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:186
-#: src/Admin/LibraryPage.php:338
-#: src/Block/Maker.php:126
-msgid "Close"
-msgstr ""
-
-#: src/Admin/LibraryPage.php:196
+#: src/Admin/LibraryPage.php:197
 msgid "Label"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:200
-#: src/Block/Maker.php:109
+#: src/Admin/LibraryPage.php:197
+msgid "Your private name for this QR — helps you find it in the library. Never appears on the QR itself."
+msgstr ""
+
+#: src/Admin/LibraryPage.php:199
+#: src/Admin/LibraryPage.php:405
+#: src/Block/Maker.php:136
+msgid "Close"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:205
+#: src/Block/Maker.php:118
 msgid "Content type"
 msgstr ""
 
+#: src/Admin/LibraryPage.php:206
+#: src/Block/Maker.php:172
+msgid "What the QR encodes. Each type composes the correct payload format: URL, vCard 3.0 contact, Wi-Fi credentials, mailto:, SMS, tel:, geo:, plain text."
+msgstr ""
+
+#: src/Admin/LibraryPage.php:224
+msgid "Replaces the encoded payload with a short /qr/{slug} URL that redirects to your target. Lets you change the destination after the QR has been printed, and counts scans per QR. Recommended for vCards with accents — works around scanner bugs by serving a .vcf file."
+msgstr ""
+
 #. translators: %s: tracking URL prefix, e.g. /qr
-#: src/Admin/LibraryPage.php:223
+#: src/Admin/LibraryPage.php:233
 msgid "Use a short %s URL and count scans"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:230
+#: src/Admin/LibraryPage.php:240
 msgid "Will resolve to"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:235
-#: src/Block/Maker.php:123
+#: src/Admin/LibraryPage.php:245
+#: src/Block/Maker.php:133
 msgid "Design"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:244
-#: src/Admin/LibraryPage.php:245
-#: src/Block/Maker.php:110
-#: assets/js/block-editor.js:137
+#: src/Admin/LibraryPage.php:255
+#: src/Admin/LibraryPage.php:258
+#: src/Block/Maker.php:119
+#: assets/js/block-editor.js:136
 msgid "Foreground"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:248
-#: src/Admin/LibraryPage.php:249
-#: src/Block/Maker.php:111
-#: assets/js/block-editor.js:138
-msgid "Background"
-msgstr ""
-
-#: src/Admin/LibraryPage.php:252
-#: src/Admin/LibraryPage.php:253
-#: src/Block/Maker.php:112
-#: assets/js/block-editor.js:139
-msgid "Eye color"
-msgstr ""
-
-#: src/Admin/LibraryPage.php:257
-#: src/Block/Maker.php:113
-msgid "Transparent background"
+#: src/Admin/LibraryPage.php:256
+#: src/Block/Maker.php:173
+msgid "Color of the QR modules (the dark squares that encode data). High contrast vs the background is critical — pure black is the most reliable."
 msgstr ""
 
 #: src/Admin/LibraryPage.php:262
-#: src/Block/Maker.php:114
+#: src/Admin/LibraryPage.php:265
+#: src/Block/Maker.php:120
+#: assets/js/block-editor.js:137
+msgid "Background"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:263
+#: src/Block/Maker.php:174
+msgid "Color behind the modules. White or very light is best; coloured backgrounds reduce contrast and can break scanning on cheap phones."
+msgstr ""
+
+#: src/Admin/LibraryPage.php:269
+#: src/Admin/LibraryPage.php:272
+#: src/Block/Maker.php:121
+#: assets/js/block-editor.js:138
+msgid "Eye color"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:270
+#: src/Block/Maker.php:175
+msgid "Color of the three big corner finder patterns. Usually matches the foreground; a different color is decorative but should still contrast strongly with the background."
+msgstr ""
+
+#: src/Admin/LibraryPage.php:277
+#: src/Block/Maker.php:122
+msgid "Transparent background"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:278
+#: src/Block/Maker.php:176
+msgid "Drops the background fill so the underlying page or photo shows through. The QR scans only if the surface behind it is uniform and light — patterned or dark backgrounds will break it."
+msgstr ""
+
+#: src/Admin/LibraryPage.php:285
+#: src/Block/Maker.php:123
 msgid "Dot shape"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:275
-#: src/Block/Maker.php:115
-#: assets/js/block-editor.js:141
-msgid "Eye shape"
-msgstr ""
-
-#: src/Admin/LibraryPage.php:289
-#: src/Block/Maker.php:124
-msgid "Logo"
-msgstr ""
-
-#: src/Admin/LibraryPage.php:295
-#: src/Admin/Menu.php:118
-msgid "Pick logo from Media Library"
-msgstr ""
-
-#: src/Admin/LibraryPage.php:298
-#: src/Admin/Menu.php:120
-msgid "Remove logo"
+#: src/Admin/LibraryPage.php:286
+#: src/Block/Maker.php:177
+msgid "Visual style of the data modules. Square is the most scannable; rounded and classy shapes look softer but slightly reduce module-edge contrast."
 msgstr ""
 
 #: src/Admin/LibraryPage.php:301
+#: src/Block/Maker.php:124
+#: assets/js/block-editor.js:140
+msgid "Eye shape"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:302
+#: src/Block/Maker.php:178
+msgid "Visual style of the three big corner patterns. Square is the standard QR look; the others are decorative variations on the same finder geometry."
+msgstr ""
+
+#: src/Admin/LibraryPage.php:318
+#: src/Admin/LibraryPage.php:323
+#: src/Block/Maker.php:169
+msgid "Error correction"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:319
+#: src/Block/Maker.php:170
+msgid "Lets scanners read the QR even if it’s partly damaged or covered by a logo. Higher levels tolerate more damage but make the QR denser. Auto picks the best level for your case."
+msgstr ""
+
+#: src/Admin/LibraryPage.php:325
+#: src/Block/Maker.php:181
+msgid "Auto"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:325
+msgid "Picks the best level for your case: highest EC that doesn’t enlarge the QR if no logo, biggest possible logo if one is attached."
+msgstr ""
+
+#: src/Admin/LibraryPage.php:326
+#: src/Block/Maker.php:182
+msgid "Min"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:326
+msgid "Level L · 7% damage recovery. Smallest, densest QR — fragile if printed small or scanned at an angle. Use for short URLs in ideal conditions."
+msgstr ""
+
+#: src/Admin/LibraryPage.php:327
+#: src/Block/Maker.php:183
+msgid "Low"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:327
+msgid "Level M · 15% damage recovery. Slightly bigger QR. Solid default for screen display and clean prints."
+msgstr ""
+
+#: src/Admin/LibraryPage.php:328
+#: src/Admin/LibraryPage.php:370
+#: src/Block/Maker.php:167
+#: src/Block/Maker.php:184
+msgid "Medium"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:328
+msgid "Level Q · 25% damage recovery. Tolerates moderate dirt, glare or partial logo overlap. Good for print on uncoated paper."
+msgstr ""
+
+#: src/Admin/LibraryPage.php:329
+#: src/Block/Maker.php:185
+msgid "High"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:329
+msgid "Level H · 30% damage recovery. Biggest QR for the same data, most robust, allows the largest logo. Use for outdoor or rough-environment prints."
+msgstr ""
+
+#: src/Admin/LibraryPage.php:340
+#: src/Block/Maker.php:134
+msgid "Logo"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:341
+msgid "Overlay an image at the QR’s center — a logo, mascot, etc. The chosen Error correction level determines how much of the QR can be safely covered. The image is stored with the QR card and reused on every export."
+msgstr ""
+
+#: src/Admin/LibraryPage.php:348
+#: src/Admin/Menu.php:137
+msgid "Pick logo from Media Library"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:351
+#: src/Admin/Menu.php:139
+#: src/Block/Maker.php:131
+msgid "Remove logo"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:354
 msgid "PNG, JPEG, or WebP from the Media Library. Saved with the QR code."
 msgstr ""
 
-#: src/Admin/LibraryPage.php:304
-#: src/Block/Maker.php:121
+#: src/Admin/LibraryPage.php:359
+#: src/Block/Maker.php:130
 msgid "Clear QR modules behind logo"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:308
-#: src/Block/Maker.php:122
+#: src/Admin/LibraryPage.php:360
+#: src/Block/Maker.php:180
+msgid "Erases the QR modules under the logo so it sits cleanly on the background color. Always on for opaque logos; uncheck only for transparent PNGs where you want the modules to show through the empty parts of the image."
+msgstr ""
+
+#: src/Admin/LibraryPage.php:365
+#: src/Block/Maker.php:132
 msgid "Logo size"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:317
+#: src/Admin/LibraryPage.php:366
+#: src/Block/Maker.php:171
+msgid "How much of the QR the logo covers. Safe leaves an extra margin for damaged prints; Max uses the full coverage the chosen error correction allows."
+msgstr ""
+
+#: src/Admin/LibraryPage.php:369
+#: src/Block/Maker.php:166
+msgid "Safe"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:369
+msgid "~50% of the computed safe area. Extra margin for damaged or low-quality prints."
+msgstr ""
+
+#: src/Admin/LibraryPage.php:370
+msgid "~80% of the safe area. Mid-point between Safe and Max — clearly visible logo with a bit of scan headroom."
+msgstr ""
+
 #: src/Admin/LibraryPage.php:371
-#: src/Block/Maker.php:125
-msgid "Cancel"
+#: src/Block/Maker.php:168
+msgid "Max"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:323
-msgid "Save to library"
+#: src/Admin/LibraryPage.php:371
+msgid "Full safe area for the chosen error correction. Largest logo the QR can support without losing scannability under good conditions."
 msgstr ""
 
-#: src/Admin/LibraryPage.php:346
-#: src/Block/Maker.php:127
+#: src/Admin/LibraryPage.php:413
+#: src/Block/Maker.php:137
 msgid "Size"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:353
-#: src/Block/Maker.php:139
+#: src/Admin/LibraryPage.php:420
+#: src/Block/Maker.php:149
 msgid "Custom…"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:357
-#: src/Block/Maker.php:140
+#: src/Admin/LibraryPage.php:424
+#: src/Block/Maker.php:150
 msgid "Custom size (px)"
 msgstr ""
 
-#: src/Admin/LibraryPage.php:361
-#: src/Block/Maker.php:138
+#: src/Admin/LibraryPage.php:428
+#: src/Block/Maker.php:148
 msgid "Format"
+msgstr ""
+
+#: src/Admin/LibraryPage.php:437
+#: src/Block/Maker.php:135
+msgid "Cancel"
 msgstr ""
 
 #: src/Admin/Menu.php:31
@@ -293,180 +435,221 @@ msgstr ""
 msgid "Settings"
 msgstr ""
 
-#: src/Admin/Menu.php:114
+#: src/Admin/Menu.php:121
 msgid "Delete this QR code? This cannot be undone."
 msgstr ""
 
-#: src/Admin/Menu.php:115
+#. translators: %d: number of scans
+#: src/Admin/Menu.php:128
+msgid "%d scans"
+msgstr ""
+
+#: src/Admin/Menu.php:134
+#: src/Admin/Menu.php:144
 msgid "Saving…"
 msgstr ""
 
-#: src/Admin/Menu.php:116
+#: src/Admin/Menu.php:135
 msgid "Saved"
 msgstr ""
 
-#: src/Admin/Menu.php:117
+#: src/Admin/Menu.php:136
 msgid "Error"
 msgstr ""
 
-#: src/Admin/Menu.php:119
+#: src/Admin/Menu.php:138
 msgid "Change logo"
 msgstr ""
 
-#: src/Admin/Menu.php:121
+#: src/Admin/Menu.php:140
 msgid "Choose a logo image"
 msgstr ""
 
-#: src/Admin/Menu.php:122
+#: src/Admin/Menu.php:141
 msgid "Use this logo"
 msgstr ""
 
-#: src/Admin/Menu.php:123
+#: src/Admin/Menu.php:142
 msgid "Slug allocated on save"
 msgstr ""
 
-#. translators: JS template tokens (not sprintf): %v = QR version (1-40), %m = module side count, %b = encoded byte length, %e = effective EC level (L/M/Q/H).
-#: src/Admin/Menu.php:125
-#: src/Block/Maker.php:149
-msgid "QR v%v · %m×%m modules · %b bytes · EC %e"
+#: src/Admin/Menu.php:143
+msgid "Unsaved changes"
 msgstr ""
 
-#: src/Admin/Menu.php:126
-#: src/Block/Maker.php:150
-msgid "Past ~200 bytes, some smartphones may fail to scan the QR. Shorten the content for maximum compatibility."
-msgstr ""
-
-#: src/Admin/Menu.php:127
-#: src/Block/Maker.php:151
-msgid "For a contact card, hosting the .vcf file and encoding its URL keeps the QR much shorter."
-msgstr ""
-
-#: src/Admin/Menu.php:128
-#: src/Block/Maker.php:152
-msgid "Content too large to encode as a QR (max 2953 bytes at EC L). Shorten the content."
+#. translators: %d is the number of seconds since last save.
+#: src/Admin/Menu.php:146
+msgid "Saved %ds ago"
 msgstr ""
 
 #: src/Admin/Menu.php:147
-msgid "Your website is too slow?"
+msgid "Saved just now"
 msgstr ""
 
 #: src/Admin/Menu.php:148
-msgid "Get the fastest WordPress hosting"
+msgid "Save failed"
 msgstr ""
 
-#: src/Admin/Menu.php:152
-msgid "Managing multiple websites?"
+#: src/Admin/Menu.php:149
+msgid "The QR code could not be saved. Exit anyway?"
 msgstr ""
 
+#. translators: JS template tokens (not sprintf): {m} = module side count, {b} = encoded byte length, {e} = effective EC level (L/M/Q/H).
+#: src/Admin/Menu.php:151
+#: src/Block/Maker.php:159
+msgid "{m}×{m} modules · {b} bytes · EC {e}"
+msgstr ""
+
+#. translators: JS template tokens: {lw}×{lh} = logo size in QR modules, {lp} = actual coverage % of QR area. Leading separator part of the format.
 #: src/Admin/Menu.php:153
-msgid "Centralized WordPress hosting for agencies"
+#: src/Block/Maker.php:161
+msgid " · Logo {lw}×{lh} ({lp}%)"
+msgstr ""
+
+#: src/Admin/Menu.php:154
+#: src/Block/Maker.php:162
+msgid "Past ~512 bytes the QR gets dense — print it large (≥ 4 cm) for reliable scans, especially at high error correction."
+msgstr ""
+
+#: src/Admin/Menu.php:155
+#: src/Block/Maker.php:163
+msgid "Past ~1024 bytes the QR may be unscannable on many phones — shorten the content for reliable scans."
+msgstr ""
+
+#: src/Admin/Menu.php:156
+msgid "Tick Tracking above — the QR will then encode a short /qr/… URL and the contact card will be served as a downloadable .vcf file (works on every scanner)."
 msgstr ""
 
 #: src/Admin/Menu.php:157
-msgid "Tired of robotic support chatbots?"
+#: src/Block/Maker.php:165
+msgid "Content too large to encode as a QR (max 2953 bytes at EC L). Shorten the content."
 msgstr ""
 
-#: src/Admin/Menu.php:158
-msgid "Get human WordPress support by LRob"
-msgstr ""
-
-#: src/Admin/Menu.php:162
-msgid "Worried about WordPress attacks?"
-msgstr ""
-
-#: src/Admin/Menu.php:163
-msgid "Hardened WordPress hosting with WAF"
-msgstr ""
-
-#: src/Admin/Menu.php:167
-msgid "Backups shouldn’t be an extra."
-msgstr ""
-
-#: src/Admin/Menu.php:168
-msgid "WordPress hosting with 1-year backups included"
-msgstr ""
-
-#: src/Admin/Menu.php:172
-msgid "Going green?"
-msgstr ""
-
-#: src/Admin/Menu.php:173
-msgid "Eco-friendly WordPress hosting"
+#: src/Admin/Menu.php:176
+msgid "Your website is too slow?"
 msgstr ""
 
 #: src/Admin/Menu.php:177
-msgid "Need data sovereignty?"
+msgid "Get the fastest WordPress hosting"
 msgstr ""
 
-#: src/Admin/Menu.php:178
-msgid "French WordPress hosting, EU data residency"
+#: src/Admin/Menu.php:181
+msgid "Managing multiple websites?"
 msgstr ""
 
 #: src/Admin/Menu.php:182
+msgid "Centralized WordPress hosting for agencies"
+msgstr ""
+
+#: src/Admin/Menu.php:186
+msgid "Tired of robotic support chatbots?"
+msgstr ""
+
+#: src/Admin/Menu.php:187
+msgid "Get human WordPress support by LRob"
+msgstr ""
+
+#: src/Admin/Menu.php:191
+msgid "Worried about WordPress attacks?"
+msgstr ""
+
+#: src/Admin/Menu.php:192
+msgid "Hardened WordPress hosting with WAF"
+msgstr ""
+
+#: src/Admin/Menu.php:196
+msgid "Backups shouldn’t be an extra."
+msgstr ""
+
+#: src/Admin/Menu.php:197
+msgid "WordPress hosting with 1-year backups included"
+msgstr ""
+
+#: src/Admin/Menu.php:201
+msgid "Going green?"
+msgstr ""
+
+#: src/Admin/Menu.php:202
+msgid "Eco-friendly WordPress hosting"
+msgstr ""
+
+#: src/Admin/Menu.php:206
+msgid "Need data sovereignty?"
+msgstr ""
+
+#: src/Admin/Menu.php:207
+msgid "French WordPress hosting, EU data residency"
+msgstr ""
+
+#: src/Admin/Menu.php:211
 msgid "Stuck on a slow host?"
 msgstr ""
 
-#: src/Admin/Menu.php:183
+#: src/Admin/Menu.php:212
 msgid "Switch to LRob — migration included"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:28
-msgid "QR Code Maker — Settings"
+#: src/Admin/Menu.php:221
+msgid "by"
 msgstr ""
 
 #: src/Admin/SettingsPage.php:30
+msgid "QR Code Settings"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:35
 msgid "Settings saved."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:38
+#: src/Admin/SettingsPage.php:43
 msgid "Tracking URL prefix"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:41
+#: src/Admin/SettingsPage.php:46
 msgid "Used as the first path segment of tracked QR URLs, e.g. /qr/abc123"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:44
+#: src/Admin/SettingsPage.php:49
 msgid "Export defaults"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:46
+#: src/Admin/SettingsPage.php:51
 msgid "Pre-fill the Export modal with these values when opened."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:49
+#: src/Admin/SettingsPage.php:54
 msgid "Default export size (px)"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:64
+#: src/Admin/SettingsPage.php:69
 msgid "Default export format"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:79
+#: src/Admin/SettingsPage.php:84
 msgid "Uninstall behaviour"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:81
+#: src/Admin/SettingsPage.php:86
 msgid "What happens when this plugin is deleted from the WordPress admin."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:84
+#: src/Admin/SettingsPage.php:89
 msgid "Uninstall mode"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:87
+#: src/Admin/SettingsPage.php:92
 msgid "Keep everything (recommended)"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:90
+#: src/Admin/SettingsPage.php:95
 msgid "Drop settings, keep QR codes + scan history"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:93
+#: src/Admin/SettingsPage.php:98
 msgid "Wipe everything"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:98
+#: src/Admin/SettingsPage.php:103
 msgid "Save settings"
 msgstr ""
 
@@ -474,55 +657,63 @@ msgstr ""
 msgid "Customizable QR codes for WordPress — public Gutenberg block for visitors, admin library with optional scan tracking."
 msgstr ""
 
-#: src/Block/Maker.php:107
+#: src/Block/Maker.php:116
 msgid "URL, text, or contact info"
 msgstr ""
 
-#: src/Block/Maker.php:108
+#: src/Block/Maker.php:117
 msgid "https://example.com"
 msgstr ""
 
-#: src/Block/Maker.php:119
+#: src/Block/Maker.php:128
 msgid "Logo (optional)"
 msgstr ""
 
-#: src/Block/Maker.php:120
+#: src/Block/Maker.php:129
 msgid "PNG, JPEG, or WebP. Stays in your browser, never uploaded."
 msgstr ""
 
-#: src/Block/Maker.php:136
+#: src/Block/Maker.php:146
 msgid "Export"
 msgstr ""
 
-#: src/Block/Maker.php:137
+#: src/Block/Maker.php:147
 msgid "Size (px)"
 msgstr ""
 
-#: src/Block/Maker.php:142
+#: src/Block/Maker.php:152
 msgid "Generating…"
 msgstr ""
 
-#: src/Block/Maker.php:143
+#: src/Block/Maker.php:153
 msgid "Sorry, something went wrong. Please retry."
 msgstr ""
 
-#: src/Block/Maker.php:144
+#: src/Block/Maker.php:154
 msgid "Show advanced options"
 msgstr ""
 
-#: src/Block/Maker.php:145
+#: src/Block/Maker.php:155
 msgid "Hide advanced options"
 msgstr ""
 
-#: src/Block/Maker.php:146
+#: src/Block/Maker.php:156
 msgid "QR Code generator by LRob,"
 msgstr ""
 
-#: src/Block/Maker.php:147
+#: src/Block/Maker.php:157
 msgid "WordPress web hosting specialist"
 msgstr ""
 
-#: src/Block/Maker.php:212
+#: src/Block/Maker.php:164
+msgid "For a contact card, hosting the .vcf file and encoding its URL keeps the QR much shorter."
+msgstr ""
+
+#: src/Block/Maker.php:179
+msgid "Overlay an image at the QR’s center — a logo, mascot, etc. The chosen Error correction level determines how much of the QR can be safely covered."
+msgstr ""
+
+#: src/Block/Maker.php:245
 msgid "The QR code maker requires JavaScript to run in your browser."
 msgstr ""
 
@@ -570,7 +761,7 @@ msgid "Plain text"
 msgstr ""
 
 #: src/Support/ContentTypes.php:44
-#: assets/js/block-editor.js:178
+#: assets/js/block-editor.js:177
 msgid "Text"
 msgstr ""
 
@@ -700,98 +891,98 @@ msgstr ""
 msgid "Default format"
 msgstr ""
 
-#: assets/js/block-editor.js:126
+#: assets/js/block-editor.js:125
 msgid "Default size (px)"
 msgstr ""
 
-#: assets/js/block-editor.js:151
+#: assets/js/block-editor.js:150
 msgid "Maker layout"
 msgstr ""
 
-#: assets/js/block-editor.js:154
+#: assets/js/block-editor.js:153
 msgid "Preview right (default)"
 msgstr ""
 
-#: assets/js/block-editor.js:155
+#: assets/js/block-editor.js:154
 msgid "Preview left"
 msgstr ""
 
-#: assets/js/block-editor.js:156
+#: assets/js/block-editor.js:155
 msgid "Stacked (preview on top)"
 msgstr ""
 
-#: assets/js/block-editor.js:161
+#: assets/js/block-editor.js:160
 msgid "Color scheme"
 msgstr ""
 
-#: assets/js/block-editor.js:164
+#: assets/js/block-editor.js:163
 msgid "Auto (follow visitor’s OS preference)"
 msgstr ""
 
-#: assets/js/block-editor.js:165
+#: assets/js/block-editor.js:164
 msgid "Light"
 msgstr ""
 
-#: assets/js/block-editor.js:166
+#: assets/js/block-editor.js:165
 msgid "Dark"
 msgstr ""
 
-#: assets/js/block-editor.js:167
+#: assets/js/block-editor.js:166
 msgid "Inherit from site theme (FSE)"
 msgstr ""
 
-#: assets/js/block-editor.js:168
+#: assets/js/block-editor.js:167
 msgid "Custom"
 msgstr ""
 
-#: assets/js/block-editor.js:171
+#: assets/js/block-editor.js:170
 msgid "Maps the maker colors to your block theme’s palette (--wp--preset--color--background, --foreground, --primary, --secondary). Falls back to defaults on classic themes."
 msgstr ""
 
-#: assets/js/block-editor.js:175
+#: assets/js/block-editor.js:174
 msgid "Surface (shell background)"
 msgstr ""
 
-#: assets/js/block-editor.js:176
+#: assets/js/block-editor.js:175
 msgid "Soft surface (cards)"
 msgstr ""
 
-#: assets/js/block-editor.js:177
+#: assets/js/block-editor.js:176
 msgid "Select / input background"
 msgstr ""
 
-#: assets/js/block-editor.js:179
+#: assets/js/block-editor.js:178
 msgid "Muted text"
 msgstr ""
 
-#: assets/js/block-editor.js:180
+#: assets/js/block-editor.js:179
 msgid "Accent (download button)"
 msgstr ""
 
-#: assets/js/block-editor.js:182
+#: assets/js/block-editor.js:181
 msgid "Show credit footer"
 msgstr ""
 
-#: assets/js/block-editor.js:183
+#: assets/js/block-editor.js:182
 msgid "Small \"QR Code generator by LRob\" line + backlink at the bottom of the maker."
 msgstr ""
 
-#: assets/js/block-editor.js:195
+#: assets/js/block-editor.js:194
 msgid "QR Code Maker"
 msgstr ""
 
-#: assets/js/block-editor.js:196
+#: assets/js/block-editor.js:195
 msgid "Let visitors design and download their own QR codes."
 msgstr ""
 
-#: assets/js/block-editor.js:199
+#: assets/js/block-editor.js:198
 msgid "qr"
 msgstr ""
 
-#: assets/js/block-editor.js:199
+#: assets/js/block-editor.js:198
 msgid "qrcode"
 msgstr ""
 
-#: assets/js/block-editor.js:199
+#: assets/js/block-editor.js:198
 msgid "barcode"
 msgstr ""

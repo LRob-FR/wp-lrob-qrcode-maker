@@ -73,9 +73,24 @@ final class Router
         }
 
         $target = (string) $row['target_url'];
-        // Bare strings (vCard, plain text, etc.) shouldn't trip the redirect —
-        // a tracked QR only makes sense for an http(s) target. Fall through
-        // to a generic landing page if not a URL.
+
+        // vCard payload (BEGIN:VCARD…END:VCARD) → serve as a downloadable .vcf
+        // so the phone treats it as a contact file and prompts "Add to
+        // Contacts" instead of rendering raw text in a browser tab. This is
+        // what makes the "enable tracking" workaround actually scannable for
+        // long vCards that wouldn't fit inline.
+        if (preg_match('#^BEGIN:VCARD#i', $target)) {
+            nocache_headers();
+            header('Content-Type: text/vcard; charset=utf-8');
+            header('Content-Disposition: attachment; filename="contact.vcf"');
+            header('Content-Length: ' . strlen($target));
+            echo $target;
+            exit;
+        }
+
+        // Other bare strings (Wi-Fi, geo, SMS, tel, etc.) — show as plain text
+        // landing page. A tracked QR pointing here isn't typical; the inline
+        // payload is usually short enough to scan natively.
         if (!preg_match('#^https?://#i', $target)) {
             status_header(200);
             nocache_headers();

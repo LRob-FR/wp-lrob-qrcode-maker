@@ -10,8 +10,8 @@
  * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
  * Text Domain: lrob-qrcode-maker
  * Domain Path: /languages
- * Requires PHP: 8.4
- * Requires at least: 7.0
+ * Requires PHP: 8.3
+ * Requires at least: 6.0
  *
  * Built by LRob — https://www.lrob.fr
  *

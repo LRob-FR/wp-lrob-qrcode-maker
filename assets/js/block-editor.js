@@ -117,8 +117,7 @@
                     options: [
                         { label: 'WebP', value: 'webp' },
                         { label: 'PNG',  value: 'png' },
-                        { label: 'JPEG', value: 'jpeg' },
-                        { label: 'AVIF', value: 'avif' }
+                        { label: 'JPEG', value: 'jpeg' }
                     ],
                     onChange: function (v) { set({ defaultFormat: v }); }
                 }),

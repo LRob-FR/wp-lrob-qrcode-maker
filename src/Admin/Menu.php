@@ -84,9 +84,16 @@ final class Menu
             true
         );
         wp_enqueue_script(
+            'lrob-qrm-engine',
+            LROB_QRM_URL . 'assets/js/qr-engine.js',
+            ['lrob-qrm-content-types'],
+            self::asset_version('assets/js/qr-engine.js'),
+            true
+        );
+        wp_enqueue_script(
             'lrob-qrm-admin',
             LROB_QRM_URL . 'admin/js/admin.js',
-            ['wp-i18n', 'media-upload', 'lrob-qrm-content-types', 'wp-color-picker', 'jquery'],
+            ['wp-i18n', 'media-upload', 'lrob-qrm-content-types', 'lrob-qrm-engine', 'wp-color-picker', 'jquery'],
             self::asset_version('admin/js/admin.js'),
             true
         );
@@ -112,6 +119,18 @@ final class Menu
             'lrobPromos'     => self::lrob_promo_messages(),
             'i18n'        => [
                 'confirmDelete' => __('Delete this QR code? This cannot be undone.', 'lrob-qrcode-maker'),
+                'cardTarget'      => __('Target', 'lrob-qrcode-maker'),
+                'cardTrackingUrl' => __('Tracking URL', 'lrob-qrcode-maker'),
+                'cardScansLabel'  => __('Scans', 'lrob-qrcode-maker'),
+                /* translators: %d: number of scans */
+                'cardScanSingular'=> __('%d scan', 'lrob-qrcode-maker'),
+                /* translators: %d: number of scans */
+                'cardScansPlural' => __('%d scans', 'lrob-qrcode-maker'),
+                'cardTracking'    => __('Tracking', 'lrob-qrcode-maker'),
+                'cardOff'         => __('Off', 'lrob-qrcode-maker'),
+                'cardExport'      => __('Generate image', 'lrob-qrcode-maker'),
+                'cardEdit'        => __('Edit', 'lrob-qrcode-maker'),
+                'cardDelete'      => __('Delete', 'lrob-qrcode-maker'),
                 'saving'        => __('Saving…', 'lrob-qrcode-maker'),
                 'saved'         => __('Saved', 'lrob-qrcode-maker'),
                 'error'         => __('Error', 'lrob-qrcode-maker'),
@@ -121,10 +140,20 @@ final class Menu
                 'mediaTitle'    => __('Choose a logo image', 'lrob-qrcode-maker'),
                 'mediaButton'   => __('Use this logo', 'lrob-qrcode-maker'),
                 'trackingHint'  => __('Slug allocated on save', 'lrob-qrcode-maker'),
-                /* translators: JS template tokens (not sprintf): %v = QR version (1-40), %m = module side count, %b = encoded byte length, %e = effective EC level (L/M/Q/H). */
-                'statsTemplate'  => __('QR v%v · %m×%m modules · %b bytes · EC %e', 'lrob-qrcode-maker'),
-                'statsLengthWarn'        => __('Past ~200 bytes, some smartphones may fail to scan the QR. Shorten the content for maximum compatibility.', 'lrob-qrcode-maker'),
-                'statsLengthWarnVcardSuffix' => __('For a contact card, hosting the .vcf file and encoding its URL keeps the QR much shorter.', 'lrob-qrcode-maker'),
+                'saveDirty'     => __('Unsaved changes', 'lrob-qrcode-maker'),
+                'saveSaving'    => __('Saving…', 'lrob-qrcode-maker'),
+                /* translators: %d is the number of seconds since last save. */
+                'saveSaved'     => __('Saved %ds ago', 'lrob-qrcode-maker'),
+                'saveSavedNow'  => __('Saved just now', 'lrob-qrcode-maker'),
+                'saveError'     => __('Save failed', 'lrob-qrcode-maker'),
+                'saveErrorOnExit' => __('The QR code could not be saved. Exit anyway?', 'lrob-qrcode-maker'),
+                /* translators: JS template tokens (not sprintf): {m} = module side count, {b} = encoded byte length, {e} = effective EC level (L/M/Q/H). */
+                'statsTemplate'  => __('{m}×{m} modules · {b} bytes · EC {e}', 'lrob-qrcode-maker'),
+                /* translators: JS template tokens: {lw}×{lh} = logo size in QR modules, {lp} = actual coverage % of QR area. Leading separator part of the format. */
+                'statsLogoSuffix' => __(' · Logo {lw}×{lh} ({lp}%)', 'lrob-qrcode-maker'),
+                'statsDensityWarn'       => __('Past ~512 bytes the QR gets dense — print it large (≥ 4 cm) for reliable scans, especially at high error correction.', 'lrob-qrcode-maker'),
+                'statsLengthWarn'        => __('Past ~1024 bytes the QR may be unscannable on many phones — shorten the content for reliable scans.', 'lrob-qrcode-maker'),
+                'statsLengthWarnVcardSuffix' => __('Tick Tracking above — the QR will then encode a short /qr/… URL and the contact card will be served as a downloadable .vcf file (works on every scanner).', 'lrob-qrcode-maker'),
                 'statsOverflow'  => __('Content too large to encode as a QR (max 2953 bytes at EC L). Shorten the content.', 'lrob-qrcode-maker'),
             ],
         ]);
@@ -183,6 +212,15 @@ final class Menu
                 'link' => __('Switch to LRob — migration included', 'lrob-qrcode-maker'),
             ],
         ];
+    }
+
+    /** Small "by LRob" credit fragment appended to each admin page title. */
+    public static function page_credit_html(): string
+    {
+        return ' <small class="lrob-qrm-page-credit">'
+            . esc_html__('by', 'lrob-qrcode-maker') . ' '
+            . '<a href="https://www.lrob.fr" target="_blank" rel="noopener noreferrer">LRob</a>'
+            . '</small>';
     }
 
     public static function asset_version(string $relative): string

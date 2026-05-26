@@ -25,7 +25,12 @@ final class SettingsPage
         $uninstall = get_option(Activator::OPTION_UNINSTALL_MODE, Activator::UNINSTALL_MODE_DEFAULT);
         ?>
         <div class="lrob-qrm lrob-qrm-page">
-            <h1><?php esc_html_e('QR Code Maker — Settings', 'lrob-qrcode-maker'); ?></h1>
+            <header class="lrob-qrm-page-header">
+                <h1>
+                    <?php esc_html_e('QR Code Settings', 'lrob-qrcode-maker'); ?>
+                    <?php echo Menu::page_credit_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                </h1>
+            </header>
             <?php if (isset($_GET['saved'])) : ?>
                 <div class="notice notice-success is-dismissible"><p><?php esc_html_e('Settings saved.', 'lrob-qrcode-maker'); ?></p></div>
             <?php endif; ?>
