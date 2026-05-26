@@ -49,6 +49,7 @@
     ];
 
     function hydrate(root) {
+        if (!buildQrConfig) throw new Error('lrobQrmEngine missing');
         var raw = root.getAttribute('data-config') || '{}';
         var config;
         try { config = JSON.parse(raw); } catch (e) { config = {}; }
@@ -110,24 +111,37 @@
         renderStats(ui, initialData, initialParams, t);
         syncLogoSettingsVisibility(ui, state);
 
+        var lastSpecKey = '';
         function refreshPreview() {
             if (refreshTimer) { clearTimeout(refreshTimer); refreshTimer = null; }
+            lastRefreshAt = Date.now();
             var data = encodedData(state);
             var params = currentParams(data);
-            preview.update(buildQrConfig(specFromState(data, params)));
+            var config = buildQrConfig(specFromState(data, params));
+            // Dedup: skip the lib re-render when nothing changed (blur after
+            // a debounced refresh would otherwise re-paint the same SVG).
+            var key = JSON.stringify(config);
+            if (key === lastSpecKey) return;
+            lastSpecKey = key;
+            preview.update(config);
             renderStats(ui, data, params, t);
             syncLogoSettingsVisibility(ui, state);
         }
 
-        // Continuous events ('input': typing, colour-picker drag) debounce the
-        // QR refresh — re-rendering qr-code-styling on every keystroke chokes
-        // the browser on long payloads. Discrete events ('change': radio,
-        // select, checkbox, file) refresh immediately so clicks feel instant.
+        // Adaptive refresh: leading edge if we haven't rendered in the last
+        // 500 ms (one-off edits feel instant), trailing edge while inside the
+        // window (rapid typing batches into a single render after the pause).
         var REFRESH_DEBOUNCE_MS = 500;
         var refreshTimer = null;
+        var lastRefreshAt = 0;
         function refreshPreviewSoon() {
-            if (refreshTimer) clearTimeout(refreshTimer);
-            refreshTimer = setTimeout(refreshPreview, REFRESH_DEBOUNCE_MS);
+            var now = Date.now();
+            if (now - lastRefreshAt >= REFRESH_DEBOUNCE_MS) {
+                refreshPreview();
+            } else {
+                if (refreshTimer) clearTimeout(refreshTimer);
+                refreshTimer = setTimeout(refreshPreview, REFRESH_DEBOUNCE_MS);
+            }
         }
 
         ui.bind(state, refreshPreview, refreshPreviewSoon);
@@ -154,7 +168,7 @@
     }
 
     // Shape normalisation + qr-code-styling config builder live in qr-engine.js.
-    var buildQrConfig = window.lrobQrmEngine.buildQrConfig;
+    var buildQrConfig = (window.lrobQrmEngine || {}).buildQrConfig;
 
     /* The composed encoded payload comes from the content-type renderer.
      * Empty payload falls back to lrob.fr so the preview shows something
@@ -350,14 +364,9 @@
             // onChange    = immediate (clicks, single-action commits).
             var deferred = onChangeSoon || onChange;
             onChangeBound = deferred;   // content-type text fields → debounced
-
-            // wp-color-picker (jQuery + Iris) — wraps each text input into a
-            // swatch + popover identical to the admin library editor. Falls
-            // back to a plain native input listener if jQuery / wpColorPicker
-            // aren't available (e.g. perf plugin stripped them).
-            wireColor(state, fgField,  'fgColor',  deferred);
-            wireColor(state, bgField,  'bgColor',  deferred);
-            wireColor(state, eyeField, 'eyeColor', deferred);
+            fgField.input.addEventListener('input', function () { state.fgColor = fgField.input.value; deferred(); });
+            bgField.input.addEventListener('input', function () { state.bgColor = bgField.input.value; deferred(); });
+            eyeField.input.addEventListener('input', function () { state.eyeColor = eyeField.input.value; deferred(); });
             transparentField.input.addEventListener('change', function () { state.bgTransparent = transparentField.input.checked; onChange(); });
             dotPicker.bind(function (v) { state.dotShape = v; onChange(); });
             eyePicker.bind(function (v) { state.eyeShape = v; onChange(); });
@@ -450,32 +459,10 @@
     function colorField(labelText, def, helpText) {
         var f = field(labelText, helpText);
         var input = document.createElement('input');
-        // wp-color-picker upgrades a text input into a swatch + Iris popover.
-        // Plain text fallback if jQuery / wpColorPicker aren't available.
-        input.type = 'text';
+        input.type = 'color';
         input.value = def;
-        input.className = 'lrob-qrm-maker-color-picker';
-        input.setAttribute('data-default-color', def);
         f.appendChild(input);
         return { field: f, input: input };
-    }
-
-    /* Wire a color field through wp-color-picker (jQuery widget) when present;
-     * fall back to a plain native input listener otherwise. Called from bind(). */
-    function wireColor(state, fld, key, onChange) {
-        var $j = window.jQuery;
-        if ($j && $j.fn && $j.fn.wpColorPicker) {
-            $j(fld.input).wpColorPicker({
-                change: function () {
-                    setTimeout(function () { state[key] = fld.input.value; onChange(); }, 0);
-                },
-                clear: function () {
-                    setTimeout(function () { state[key] = fld.input.value || '#ffffff'; onChange(); }, 0);
-                }
-            });
-        } else {
-            fld.input.addEventListener('input', function () { state[key] = fld.input.value; onChange(); });
-        }
     }
 
     function inlineCheckbox(labelText, helpText) {
@@ -651,6 +638,14 @@
         fmtF.appendChild(fmtSel);
         body.appendChild(fmtF);
 
+        // Scan-test reminder — printed in large quantities = expensive mistake
+        // if the QR happens not to scan reliably on some phones.
+        var warning = document.createElement('p');
+        warning.className = 'lrob-qrm-maker-export-warning';
+        warning.textContent = L('exportWarning')
+            || 'Always scan-test the QR with a real phone before printing at scale — colours, logo overlap and print quality can affect readability.';
+        body.appendChild(warning);
+
         // Actions
         var actions = document.createElement('footer');
         actions.className = 'lrob-qrm-maker-modal-actions';
@@ -745,7 +740,8 @@
         for (var i = 0; i < nodes.length; i++) {
             if (nodes[i].getAttribute('data-hydrated') === '1') continue;
             nodes[i].setAttribute('data-hydrated', '1');
-            try { hydrate(nodes[i]); } catch (e) { /* per-instance failures */ }
+            try { hydrate(nodes[i]); }
+            catch (e) { if (window.console) window.console.error('[lrob-qrm-maker]', e); }
         }
     }
 

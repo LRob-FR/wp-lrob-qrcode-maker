@@ -442,6 +442,19 @@ body.lrob-qrm-modal-open {
     gap: 6px;
 }
 
+/* Scan-test reminder shown just above the Generate image button. Soft tone
+   (not red, this is a heads-up — not a blocking error). */
+.lrob-qrm-export-warning {
+    margin: 0 0 12px;
+    padding: 8px 12px;
+    font-size: 0.85em;
+    line-height: 1.4;
+    color: #4d4220;
+    background: #fcf3d8;
+    border-left: 3px solid #dba617;
+    border-radius: 4px;
+}
+
 .lrob-qrm-editor-stats {
     margin: 0;
     font-size: 0.75em;

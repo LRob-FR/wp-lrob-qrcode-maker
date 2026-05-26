@@ -240,6 +240,9 @@ final class LibraryPage
                                     <span class="lrob-qrm-field-label"><?php esc_html_e('Will resolve to', 'lrob-qrcode-maker'); ?>:</span>
                                     <code data-role="tracking-url"></code>
                                 </p>
+                                <p class="lrob-qrm-tracking-warning notice notice-warning inline" data-role="tracking-incompatible" hidden>
+                                    <?php esc_html_e('Tracking is only available for URL, plain text, and vCard content. Wi-Fi, email, SMS, Tel and Geo encode native schemes that scanners act on directly — an HTTP redirect would break the QR.', 'lrob-qrcode-maker'); ?>
+                                </p>
                             </div>
 
                             <h3 class="lrob-qrm-section-title"><?php esc_html_e('Design', 'lrob-qrcode-maker'); ?></h3>
@@ -432,6 +435,9 @@ final class LibraryPage
                                     <option value="jpeg">JPEG</option>
                                 </select>
                             </label>
+                            <p class="lrob-qrm-export-warning">
+                                <?php esc_html_e('Always scan-test the QR with a real phone before printing at scale — colours, logo overlap and print quality can affect readability.', 'lrob-qrcode-maker'); ?>
+                            </p>
                             <footer class="lrob-qrm-export-actions">
                                 <button type="button" class="button" data-action="export-cancel">
                                     <?php esc_html_e('Cancel', 'lrob-qrcode-maker'); ?>

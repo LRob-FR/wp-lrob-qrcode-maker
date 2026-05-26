@@ -387,16 +387,14 @@
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='%23a0a0a0' d='M2 4l4 4 4-4z'/%3E%3C/svg%3E");
 }
 
-/* wp-color-picker wraps each .lrob-qrm-maker-color-picker text input in a
-   .wp-picker-container that exposes the WP-admin colour swatch + Iris popover.
-   The wp-color-picker stylesheet (WP core) does the heavy lifting; we only
-   stretch the result button to the field width. */
-.lrob-qrm-maker-field .wp-picker-container {
+.lrob-qrm-maker-field input[type="color"] {
     width: 100%;
-}
-.lrob-qrm-maker-field .wp-color-result {
-    width: 100%;
-    margin: 0;
+    height: 42px;
+    padding: 4px;
+    border: 1px solid var(--lrob-qrm-border);
+    border-radius: 8px;
+    background: var(--lrob-qrm-input-bg);
+    cursor: pointer;
 }
 
 /* Styled file input — the native "Choose File" button is rendered via
@@ -752,6 +750,18 @@
     border-top: 1px solid var(--lrob-qrm-border);
     margin-top: 6px;
     padding-top: 14px;
+}
+
+/* Scan-test reminder shown just above the Generate image button. */
+.lrob-qrm-maker-export-warning {
+    margin: 4px 0 12px;
+    padding: 8px 12px;
+    font-size: 0.85em;
+    line-height: 1.4;
+    color: var(--lrob-qrm-text);
+    background: color-mix(in srgb, #dba617 18%, transparent);
+    border-left: 3px solid #dba617;
+    border-radius: 4px;
 }
 
 .lrob-qrm-maker-button {

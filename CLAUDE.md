@@ -99,7 +99,7 @@ The editor autosaves on every form input with a **1s debounce**. No "Save to lib
 
 - **State machine** (`saveState`): `idle | dirty | saving | saved | error`. Sticky indicator in the modal header.
 - **Race conditions**: only one save in flight; `dirtyDuringFlight` re-fires the next save after the current resolves. `suppressAutoSave` counter blocks autosave during programmatic form mutations (`form.reset()`, `loadIntoEditor`, `wpColorPicker` reinit, `setLogo` from existing-QR load).
-- **Slug arrival**: when a fresh save returns a slug, we update `data-current-slug` + `syncTrackingPreview()` text BUT intentionally skip `refreshPreview()` — calling `.update()` re-loads the logo image which causes a visible flash. Preview keeps encoding the `preview` placeholder slug until the next user input fires `refreshPreview()`; saved row + card grid already use the real slug.
+- **Slug arrival**: when a fresh save returns a NEW slug (first save with tracking on), we update `data-current-slug`, `syncTrackingPreview()`, AND call `refreshPreview()` so the QR encodes the real slug. Skipping refresh to avoid the logo-reload flash was tried but rejected: the preview kept encoding `/qr/preview` (placeholder) until next user input, and scanning that placeholder hits a Router 404 which WP serves as an unrelated page. The flash is the lesser evil. Gated on `prevSlug !== saved.slug` so subsequent saves don't re-flash.
 - **Close flow**: Cancel/backdrop/X/Escape → `requestCloseEditor()` → `flushSave()` → if `saveState === 'error'`, `confirm()` before closing.
 
 ## EC + logo coverage pipeline (qr-engine.js)
@@ -113,28 +113,33 @@ The editor autosaves on every form input with a **1s debounce**. No "Save to lib
   - Forced levels step DOWN if data overflows v40 at the chosen EC.
 - `Logo size`: Safe | Medium | Max → multipliers `{0.5, 0.8, 1.0}` on `safeArea`.
 
-**Formula**:
+**Formula** — proper Reed-Solomon math via the QR code's block structure:
 ```
-versionFactor = min(1, 0.5 + version/12)       // small-QR codeword safety
-dimCap        = 0.55² × sqrt(ecPct / 0.30) / max(k, 1/k)
-safeArea      = min(ecPct × 0.67 × versionFactor, dimCap)
-coverage      = LOGO_SIZE_MULT[preset] × safeArea
+totalEC    = ECC_PER_BLOCK[ec][version] × BLOCKS[ec][version]
+rsBudget   = (totalEC × 8 × RS_SAFETY) / (totalModules × √blocks)
+dimCap     = 0.55² / max(aspect, 1/aspect)
+safeArea   = min(rsBudget, dimCap)
+coverage   = LOGO_SIZE_MULT[preset] × safeArea
 {w, h, actual} = actualLogoLayout(coverage, modules, aspect)
-imageSize     = coverage / ecPct               // what we pass to qr-code-styling
+imageSize  = coverage / ecPct               // qr-code-styling's "imageSize" is a budget
 ```
 
-Key design choices encoded in the formula:
-- `dimCap` scales with `sqrt(ecPct/0.30)` so higher EC always permits an at-least-as-large logo (monotonic across EC levels, even for wide/tall logos).
-- `versionFactor` accounts for the absolute codeword count at small versions (v3 EC H only has ~13 RS-recoverable codewords).
-- `coverage` returned by `resolveQrParams` is the **actual rendered fraction** post qr-code-styling's odd-module quantization, not the theoretical target. Stats line shows `Logo {w}×{h} ({lp}%)` so the displayed % matches what the user actually sees.
-- No scanner-reliability sigmoid — it saturated to 1.0 for any QR rendered above ~3 px/module (every realistic case).
+Key design choices:
+- **`ECC_PER_BLOCK` + `BLOCKS` tables** from ISO/IEC 18004:2015 Annex D Table 9 (40 versions × 4 EC levels). These give the exact Reed-Solomon structure per (version, EC). Hardcoded in `qr-engine.js`.
+- **`totalEC × 4` (= ×8/2) modules** is the theoretical error-mode RS recovery budget (half the EC codewords as max errors, ×8 modules per codeword). We assume **error mode**, not erasure — scanners don't reliably treat hidden-background logo modules as erasures.
+- **`÷ √blocks`** accounts for damage concentration: a centred logo's modules don't distribute evenly across RS blocks. The √ scaling fits both empirical calibration points (v3 H 16% scans / v13 H 9% scans, 15% fails) within ~1pp.
+- **`RS_SAFETY = 0.54`** is the single empirical knob, calibrated against the two observed boundaries above.
+- **`dimCap` = 0.55² / thickness** is a separate cap on the logo's longest dimension (≤55% of the QR side). Scanner heuristics struggle to skip a logo region larger than that, no matter the RS budget. Kicks in for wide/tall logos.
+- **`coverage` returned by `resolveQrParams`** is the **actual rendered fraction** post qr-code-styling's odd-module quantization, not the theoretical target. Stats line shows `Logo {w}×{h} ({lp}%)` so the displayed % matches what the user actually sees.
+- No scanner-reliability sigmoid, no `versionFactor`, no `EC_H_REF`/`EC_BUDGET_FRAC` — the proper RS math handles per-version scaling correctly via the EC tables.
 
 **Constants** (all in `qr-engine.js`):
-- `EC_RECOVERY = { L: 0.07, M: 0.15, Q: 0.25, H: 0.30 }`
+- `EC_RECOVERY = { L: 0.07, M: 0.15, Q: 0.25, H: 0.30 }` — only used for the `imageSize = coverage / ecPct` mapping to qr-code-styling.
 - `EC_BYTE_CAP_V40 = { L: 2953, M: 2331, Q: 1663, H: 1273 }`
-- `EC_DIM_CAP_BASE = 0.3025` (= 0.55², longest-dim cap at EC H reference)
-- `EC_H_REF = 0.30`, `EC_BUDGET_FRAC = 0.67`
+- `EC_DIM_CAP_BASE = 0.3025` (= 0.55², scanner-heuristic linear cap on the logo's longest side)
+- `RS_SAFETY = 0.54` (empirical scanner safety margin on top of theoretical RS budget)
 - `LOGO_SIZE_MULT = { safe: 0.5, medium: 0.8, max: 1.0 }`
+- `ECC_PER_BLOCK[ec][i]` + `BLOCKS[ec][i]` — QR spec tables, 40 entries each, indexed by version-1.
 
 **Legacy migration** (in `normalizeEcMode` / `normalizeLogoSize` / `legacyLogoSize`):
 - `ecMode === 'reliability'` → `'H'`; `'readable'` → `'auto'`.

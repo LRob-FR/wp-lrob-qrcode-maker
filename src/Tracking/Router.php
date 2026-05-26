@@ -56,9 +56,17 @@ final class Router
 
         $row = (new Repository())->find_by_slug($slug);
         if ($row === null || empty($row['target_url'])) {
+            // Bare `return` here lets WP keep going and serve whatever
+            // template matches — for an unmatched query that's usually the
+            // home archive (= a giant page of unrelated posts). Force a
+            // clean 404 page and bail.
             status_header(404);
             nocache_headers();
-            return;
+            wp_die(
+                esc_html__('QR code not found.', 'lrob-qrcode-maker'),
+                esc_html__('Not Found', 'lrob-qrcode-maker'),
+                ['response' => 404]
+            );
         }
 
         // Only log the scan when tracking is on for the QR. Bots requesting

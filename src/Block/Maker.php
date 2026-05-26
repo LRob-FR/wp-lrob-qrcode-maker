@@ -45,7 +45,11 @@ final class Maker
                 'customAccent'      => ['type' => 'string',  'default' => '#1a73e8'],
             ],
             'render_callback' => [self::class, 'render'],
-            'supports'        => [
+            // WP 6.1+ block-presence-based enqueue; the manual wp_enqueue_script
+            // in render() below is the WP 6.0 fallback.
+            'view_script_handles' => ['lrob-qrm-maker'],
+            'style_handles'       => ['lrob-qrm-maker'],
+            'supports'            => [
                 'html'      => false,
                 'inserter'  => true,
                 'align'     => ['wide', 'full'],
@@ -76,19 +80,17 @@ final class Maker
             self::asset_version('assets/js/qr-engine.js'),
             true
         );
-        // wp-color-picker pulls in jQuery + Iris automatically. Same widget
-        // as the admin library editor so visitors get a consistent picker.
         wp_register_script(
             'lrob-qrm-maker',
             LROB_QRM_URL . 'assets/js/maker.js',
-            ['qr-code-styling', 'wp-i18n', 'lrob-qrm-content-types', 'lrob-qrm-engine', 'wp-color-picker'],
+            ['qr-code-styling', 'wp-i18n', 'lrob-qrm-content-types', 'lrob-qrm-engine'],
             self::asset_version('assets/js/maker.js'),
             true
         );
         wp_register_style(
             'lrob-qrm-maker',
             LROB_QRM_URL . 'assets/css/maker.css',
-            ['wp-color-picker'],
+            [],
             self::asset_version('assets/css/maker.css')
         );
         wp_set_script_translations('lrob-qrm-maker', 'lrob-qrcode-maker');
@@ -149,6 +151,7 @@ final class Maker
                 'custom'         => __('Custom…', 'lrob-qrcode-maker'),
                 'customSize'     => __('Custom size (px)', 'lrob-qrcode-maker'),
                 'download'       => __('Generate image', 'lrob-qrcode-maker'),
+                'exportWarning'  => __('Always scan-test the QR with a real phone before printing at scale — colours, logo overlap and print quality can affect readability.', 'lrob-qrcode-maker'),
                 'downloading'    => __('Generating…', 'lrob-qrcode-maker'),
                 'errorGeneric'   => __('Sorry, something went wrong. Please retry.', 'lrob-qrcode-maker'),
                 'showAdvanced'   => __('Show advanced options', 'lrob-qrcode-maker'),

@@ -84,7 +84,12 @@
         };
     }
 
+    var lastSpecKey = '';
     function refreshPreview() {
+        // Cancel any pending debounce — direct callers (loadIntoEditor, setLogo,
+        // 'change' events) shouldn't be followed by a stray trailing-edge fire.
+        if (refreshTimer) { clearTimeout(refreshTimer); refreshTimer = null; }
+        lastRefreshAt = Date.now();
         var qp = ensurePreview();
         if (!qp) return;
         var d = readSpec();
@@ -99,14 +104,22 @@
         }
         var hasLogo = !!logoPreviewUrl;
         var params = resolveQrParams(encoded, d.spec.logoSize, logoPreviewAspect, d.spec.ecMode, hasLogo);
-        qp.update(buildQrConfig({
+        var config = buildQrConfig({
             width: 240, data: encoded, ec: params.ec,
             fgColor: d.spec.fgColor, bgColor: d.spec.bgColor, eyeColor: d.spec.eyeColor,
             bgTransparent: d.spec.bgTransparent,
             dotShape: d.spec.dotShape, eyeShape: d.spec.eyeShape,
             logoUrl: logoPreviewUrl, logoBackground: d.spec.logoBackground,
             imageSize: params.imageSize
-        }));
+        });
+        // Dedup: if the lib config didn't change, skip the qp.update() call —
+        // qr-code-styling would otherwise re-render the same SVG (visible flash
+        // when an <input> blur fires 'change' right after the 'input' debounce
+        // already painted the same data).
+        var key = JSON.stringify(config);
+        if (key === lastSpecKey) return;
+        lastSpecKey = key;
+        qp.update(config);
         renderStats(encoded, params);
     }
 
@@ -239,7 +252,7 @@
         // colour-slider drag step — debounce the QR refresh so dragging stays smooth.
         $form.find('.lrob-qrm-color-picker').wpColorPicker({
             change: function () { setTimeout(function () { refreshPreviewSoon(); scheduleAutoSave(); }, 0); },
-            clear:  function () { setTimeout(function () { refreshPreviewNow();  scheduleAutoSave(); }, 0); }
+            clear:  function () { setTimeout(function () { refreshPreview();     scheduleAutoSave(); }, 0); }
         });
     }
 
@@ -269,21 +282,44 @@
         );
     }
 
-    if (contentTypeSelect) {
-        contentTypeSelect.addEventListener('change', function () {
-            renderContentType(contentTypeSelect.value, {});
-        });
-    }
-
     var trackingCheckbox = form.querySelector('input[name="tracking_enabled"]');
     var trackingPreview = form.querySelector('[data-role="tracking-preview"]');
     var trackingUrlEl = form.querySelector('[data-role="tracking-url"]');
+    var trackingIncompatNotice = form.querySelector('[data-role="tracking-incompatible"]');
+    // Tracking encodes a /qr/{slug} URL and 302-redirects to the target on
+    // scan. That only works for content the scanner treats as web content
+    // (url/text/vcard via .vcf). For native-scheme content (WIFI:, mailto:,
+    // sms:, tel:, geo:) the redirect drops the scheme — the scanner sees a
+    // plain HTML landing page instead of acting on the original payload.
+    var NON_TRACKABLE_TYPES = ['wifi', 'email', 'sms', 'tel', 'geo'];
+
+    if (contentTypeSelect) {
+        contentTypeSelect.addEventListener('change', function () {
+            var newType = contentTypeSelect.value;
+            // Switching to a non-trackable type force-unchecks tracking.
+            // syncTrackingPreview then sets disabled = true so it can't be
+            // re-enabled until the type changes back.
+            if (NON_TRACKABLE_TYPES.indexOf(newType) !== -1
+                && trackingCheckbox && trackingCheckbox.checked) {
+                trackingCheckbox.checked = false;
+            }
+            renderContentType(newType, {});
+        });
+    }
+
     function syncTrackingPreview() {
         if (!trackingCheckbox || !trackingPreview || !trackingUrlEl) return;
+        var typeKey = contentTypeSelect ? contentTypeSelect.value : 'url';
+        var incompatible = NON_TRACKABLE_TYPES.indexOf(typeKey) !== -1;
+        // Block enabling for incompatible types. If the box is currently
+        // checked (legacy DB state pre-restriction), leave the box enabled
+        // so the user can uncheck — but once unchecked, it locks.
+        trackingCheckbox.disabled = incompatible && !trackingCheckbox.checked;
+        if (trackingIncompatNotice) {
+            trackingIncompatNotice.hidden = !incompatible;
+        }
         if (trackingCheckbox.checked) {
             trackingPreview.hidden = false;
-            // We don't know the slug until save; show a placeholder showing
-            // the path shape so the user understands the URL structure.
             var existingSlug = trackingUrlEl.getAttribute('data-current-slug') || '';
             if (existingSlug) {
                 trackingUrlEl.textContent = (cfg.trackingBase || '/') + existingSlug;
@@ -295,6 +331,7 @@
         }
     }
     if (trackingCheckbox) trackingCheckbox.addEventListener('change', syncTrackingPreview);
+    if (contentTypeSelect) contentTypeSelect.addEventListener('change', syncTrackingPreview);
 
     /* ─── Form event wiring ──────────────────────────────────────────── */
 
@@ -302,23 +339,28 @@
     // otherwise reload the page since no submit handler exists.
     form.addEventListener('submit', function (e) { e.preventDefault(); });
 
-    // Continuous events ('input': typing, color-picker drag) debounce the QR
-    // refresh — re-rendering qr-code-styling on every keystroke chokes the
-    // browser on long payloads. Discrete events ('change': radio, select,
-    // checkbox, file) refresh immediately so clicks feel instant; they also
-    // cancel any pending input-debounce to avoid a redundant trailing render.
+    // Adaptive refresh: leading edge if we haven't rendered in the last 500 ms
+    // (one-off edit feels instant), trailing edge while inside the window
+    // (rapid typing batches into a single render after the user stops). The
+    // 'change' event path goes through refreshPreview() directly so a blur
+    // following a debounced input dedups via lastSpecKey instead of double-
+    // rendering.
     var REFRESH_DEBOUNCE_MS = 500;
     var refreshTimer = null;
+    var lastRefreshAt = 0;
     function refreshPreviewSoon() {
-        if (refreshTimer) clearTimeout(refreshTimer);
-        refreshTimer = setTimeout(function () {
-            refreshTimer = null;
+        var now = Date.now();
+        if (now - lastRefreshAt >= REFRESH_DEBOUNCE_MS) {
+            // Cold: render now (and update lastRefreshAt inside refreshPreview).
             refreshPreview();
-        }, REFRESH_DEBOUNCE_MS);
-    }
-    function refreshPreviewNow() {
-        if (refreshTimer) { clearTimeout(refreshTimer); refreshTimer = null; }
-        refreshPreview();
+        } else {
+            // Hot: schedule trailing edge.
+            if (refreshTimer) clearTimeout(refreshTimer);
+            refreshTimer = setTimeout(function () {
+                refreshTimer = null;
+                refreshPreview();
+            }, REFRESH_DEBOUNCE_MS);
+        }
     }
     form.addEventListener('input', function (e) {
         if (e.target && e.target.name === 'logo_attachment_id') return;
@@ -326,7 +368,8 @@
     });
     form.addEventListener('change', function (e) {
         if (e.target && e.target.name === 'logo_attachment_id') return;
-        refreshPreviewNow();
+        // refreshPreview() now cancels any pending debounce internally.
+        refreshPreview();
     });
 
     /* ─── Modal open / close ─────────────────────────────────────────── */
@@ -347,10 +390,12 @@
         currentId = 0;
         setLogo(0, null);
         if (trackingUrlEl) trackingUrlEl.removeAttribute('data-current-slug');
+        // Reset cross-session state so the next open starts clean instead of
+        // inheriting the previous QR's encoded payload or preview dedup key.
+        if (dataEncodedInput) dataEncodedInput.value = '';
+        lastSpecKey = '';
         var didSave = hasSavedThisSession;
         resetSaveState();
-        // Refresh the matching grid card in place instead of reloading the
-        // whole page — much less jarring than the full reload it replaced.
         if (didSave && savedId) refreshGridCard(savedId);
     }
 
@@ -835,15 +880,14 @@
             lastSaveError = null;
             if (saved && saved.id && !currentId) currentId = saved.id;
             if (saved && saved.slug && trackingUrlEl) {
+                var prevSlug = trackingUrlEl.getAttribute('data-current-slug') || '';
                 trackingUrlEl.setAttribute('data-current-slug', saved.slug);
                 syncTrackingPreview();
-                // Intentionally NOT calling refreshPreview() here. With a logo
-                // attached, the .update() re-loads the image which causes a
-                // visible flash. The QR preview keeps encoding the "preview"
-                // placeholder slug until the next user input fires refresh;
-                // by then the save has happened so the next refresh uses the
-                // real slug. Saved row + card grid both already use the real
-                // slug — only the in-modal preview lags briefly.
+                // Re-render so the preview encodes the real slug instead of
+                // the /qr/preview placeholder. Scanning the placeholder hits
+                // a 404 (looks like a redirect to an unrelated page), so the
+                // brief logo flash from .update() is the lesser evil.
+                if (prevSlug !== saved.slug) refreshPreview();
             }
             setSaveState('saved');
             if (dirtyDuringFlight) {
